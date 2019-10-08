@@ -177,11 +177,10 @@ from scipy.interpolate import interp1d
 transform_interp = {}
 for band in ['g', 'r', 'z']:
     if field=='north':
-        tmp = np.load('data/gaia_bassmzls_{}_transform.npz'.format(band))
+        tmp = Table.read('data/gaia_bassmzls_transform.txt', format='ascii.commented_header')
     else:
-        tmp = np.load('data/gaia_decals_{}_transform.npz'.format(band))
-    bin_center, bin_median, bin_scatter = tmp['arr_0'], tmp['arr_1'], tmp['arr_2']
-    transform_interp[band] = interp1d(bin_center, bin_median, bounds_error=False, fill_value='extrapolate', kind='linear')
+        tmp = Table.read('data/gaia_decals_transform.txt', format='ascii.commented_header')
+    transform_interp[band] = interp1d(tmp['bp_rp'], tmp['ls_'+band], bounds_error=False, fill_value='extrapolate', kind='linear')
     gaia['ls_'+band] = gaia['phot_g_mean_mag'] + transform_interp[band](gaia['bp_rp'])
 
 plt.figure(figsize=(15, 10))
@@ -198,12 +197,9 @@ plt.close()
 
 for band in ['g', 'r', 'z']:
 
-    if (field=='north') and ((band=='g') or (band=='r')):
-        pixscale_str = '0.454'
-        radius_binsize = 1.73
-    else:
-        pixscale_str = '0.262'
-        radius_binsize = 1.
+    # The native pixel size is 0.262 in both north and south in the cutouts
+    pixscale_str = '0.262'
+    radius_binsize = 1.
     pixscale = float(pixscale_str)
 
     radius_in_bin, flux_in_bin, flux_scatter_in_bin = [], [], []
@@ -358,7 +354,7 @@ for band in ['g', 'r', 'z']:
     plt.xlabel('Radius (arcsec)')
     plt.ylabel('SB (a.u.)')
     plt.legend()
-    plt.savefig('plots/{}_{}_{}mag_average_zoomin.png'.format(field, output_name, band))
+    plt.savefig('plots/more/{}_{}_{}mag_average_zoomin.png'.format(field, output_name, band))
     plt.close()
 
     ###################################################################################################
