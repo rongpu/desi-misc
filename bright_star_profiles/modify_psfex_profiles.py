@@ -16,22 +16,32 @@ region_name = 'decals_ngc'
 radius_lim1, radius_lim2 = 4.5, 5.5
 radius_lim3, radius_lim4 = 6., 6.8
 
-ccd = fitsio.read('/global/project/projectdirs/cosmo/work/legacysurvey/dr9/reorg/survey-ccds-decam-dr9-newlocs2.fits.gz')
+# ccd = fitsio.read('/global/project/projectdirs/cosmo/work/legacysurvey/dr9/reorg/survey-ccds-decam-dr9-newlocs2.fits.gz')
+ccd = fitsio.read('/global/project/projectdirs/cosmo/work/users/djschleg/dr9lists/survey-ccds-decam-dr9c.fits')
 ccd = Table(ccd)
 print(len(ccd))
 
+# convert column names to lower case
+for col in ccd.colnames:
+    ccd.rename_column(col, col.lower())
+
 # Load Schlegel's CCD file list
-fn = '/global/project/projectdirs/cosmo/work/users/djschleg/dr9lists/dr9c.txt'
+# fn = '/global/project/projectdirs/cosmo/work/users/djschleg/dr9lists/dr9c.txt'
+fn = '/global/project/projectdirs/cosmo/work/users/djschleg/dr9lists/exposures-dr9c.txt'
+
 with open(fn, 'r') as f:
     lines = list(map(str.rstrip, f.readlines()))
-print(len(lines))
+print('number of exposures in the list = {}'.format(len(lines)))
 # print(lines[0])
 
-ccd['basename'] = list(map(os.path.basename, ccd['image_filename']))
+# ccd['basename'] = list(map(os.path.basename, ccd['image_filename']))
+ccd['basename'] = [ss[:17] for ss in list(map(os.path.basename, ccd['image_filename']))]
 mask = np.in1d(ccd['basename'], np.array(lines))
 print(np.sum(mask)/len(mask))
 ccd = ccd[mask]
 print(len(ccd))
+
+print('total number of exposures = {}'.format(len(np.unique(ccd['expnum']))))
 
 for band in ['g', 'r', 'z']:
 
@@ -48,7 +58,7 @@ for band in ['g', 'r', 'z']:
     print(np.sum(ccd_mask))
 
     expnum_all = np.sort(np.unique(ccd[ccd_mask]['expnum']))
-    print('number of exposures:', len(expnum_all))
+    print('number of exposures in {} = {}'.format(band, len(expnum_all)))
 
     tmp = np.loadtxt('/global/homes/r/rongpu/desi/star_profiles/{}_poly_fit.txt'.format(region_name))
     band_index = np.where(band==np.array(['g', 'r', 'z']))[0][0]
