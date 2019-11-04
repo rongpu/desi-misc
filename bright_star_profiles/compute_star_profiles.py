@@ -79,7 +79,6 @@ def plot_cutout(img, pixscale, vmin=-1, vmax=1, unit='arcsec'):
     return ax
 
 def binned_stats(x, y, bins):
-    from scipy import stats
     nmad = lambda x: 1.4826*np.median(np.abs(x-np.median(x)))
     bin_center, bin_median, bin_scatter = np.zeros((3, len(bins)-1))
     for index in range(len(bins)-1):
