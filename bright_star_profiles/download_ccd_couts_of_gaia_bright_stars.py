@@ -1,3 +1,5 @@
+# In DECaLS
+
 from __future__ import division, print_function
 import sys, os, glob, time, warnings, gc
 # import matplotlib.pyplot as plt
@@ -10,12 +12,6 @@ from astropy import wcs
 import tarfile
 
 field = 'south'
-region_name = 'decals_ngc'
-
-if (field=='north') and ((band=='g') or (band=='r')):
-    pixscale = 0.454
-else:
-    pixscale = 0.262
 
 download_dir = '/global/homes/r/rongpu/temp/tmp/dr8_ccd_cutouts'
 gaia_output_path = '/global/homes/r/rongpu/notebooks/bright_star_profiles/data/gaia_sample_for_ccd_cutouts-decals_ngc.fits'
