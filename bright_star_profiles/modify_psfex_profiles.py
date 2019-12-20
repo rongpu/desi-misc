@@ -6,149 +6,226 @@ from astropy.table import Table, vstack, hstack
 import fitsio
 from astropy.io import fits
 
-input_dir = '/global/project/projectdirs/cosmo/work/legacysurvey/dr9/calib/decam/psfex-merged'
-# output_dir = '/global/cscratch1/sd/rongpu/temp/decam-psfex-merged'
-output_dir = '/global/project/projectdirs/desi/users/rongpu/dr9/new-psfex/decam-psfex-merged'
+from scipy.optimize import curve_fit
 
-field = 'south'
-region_name = 'decals_ngc'
+def get_frac_moffat(r, alpha, beta):
+    """
+    Calculate the fraction of light within radius r of a Moffat profile.
+    """    
+    frac = 1 - alpha**(2*(beta-1))*(alpha**2 + r**2)**(1-beta)
+    return(frac)
 
-radius_lim1, radius_lim2 = 4.5, 5.5
-radius_lim3, radius_lim4 = 6., 6.8
+def get_sb_moffat(r, alpha, beta):
+    """
+    Calculate the surface brightness of light at radius r of a Moffat profile.
+    The integral (i.e., total flux) is unity by definition.
+    """
+    i = (beta-1)/(np.pi * alpha**2)*(1 + (r/alpha)**2)**(-beta)
+    return i
 
-# ccd = fitsio.read('/global/project/projectdirs/cosmo/work/legacysurvey/dr9/reorg/survey-ccds-decam-dr9-newlocs2.fits.gz')
-ccd = fitsio.read('/global/project/projectdirs/cosmo/work/users/djschleg/dr9lists/survey-ccds-decam-dr9c.fits')
+def get_sb_moffat_plus_power_law(r, alpha1, beta1, plexp2, weight2):
+    """
+    Calculate the surface brightness of light at radius r of the sum of two Moffat profiles.
+    The integral (i.e., total flux) is NOT unity.
+    """
+    i = (beta1-1)/(np.pi * alpha1**2)*(1 + (r/alpha1)**2)**(-beta1) \
+        + weight2 *r**(plexp2)
+    return i
+
+def get_sb_double_moffat(r, alpha1, beta1, alpha2, beta2, weight2):
+    """
+    Calculate the surface brightness of light at radius r of the sum of two Moffat profiles.
+    The integral (i.e., total flux) is NOT unity.
+    """
+    i = (beta1-1)/(np.pi * alpha1**2)*(1 + (r/alpha1)**2)**(-beta1) \
+        + weight2 * (beta2-1)/(np.pi * alpha2**2)*(1 + (r/alpha2)**2)**(-beta2)
+    return i
+
+
+test_q = True  # only process a small number of exposures
+
+output_dir = '/global/project/projectdirs/desi/users/rongpu/dr9/new-psfex-v2'
+surveyccd_path = '/global/project/projectdirs/cosmo/work/legacysurvey/dr9/survey-ccds-decam-dr9-cut.fits.gz'
+
+radius_lim1, radius_lim2 = 5.0, 6.0
+radius_lim3, radius_lim4 = 7., 8.
+
+params = {
+'g_weight2': 0.00045, 'g_plexp2': -2.,
+'r_weight2': 0.00033, 'r_plexp2': -2.,
+'z_alpha2': 17.650, 'z_beta2': 1.7, 'z_weight2': 0.0145,
+}
+
+outlier_ccd_list = ['N20', 'S8', 'S10', 'S18', 'S21', 'S27']
+params_outlier = {'z_alpha2': 16, 'z_beta2': 2.3, 'z_weight2': 0.0095}
+pixscale = 0.262
+
+ccd = fitsio.read(surveyccd_path)
 ccd = Table(ccd)
-print(len(ccd))
 
-# convert column names to lower case
-for col in ccd.colnames:
-    ccd.rename_column(col, col.lower())
-
-# Load Schlegel's CCD file list
-# fn = '/global/project/projectdirs/cosmo/work/users/djschleg/dr9lists/dr9c.txt'
-fn = '/global/project/projectdirs/cosmo/work/users/djschleg/dr9lists/exposures-dr9c.txt'
-
-with open(fn, 'r') as f:
-    lines = list(map(str.rstrip, f.readlines()))
-print('number of exposures in the list = {}'.format(len(lines)))
-# print(lines[0])
-
-# ccd['basename'] = list(map(os.path.basename, ccd['image_filename']))
-ccd['basename'] = [ss[:17] for ss in list(map(os.path.basename, ccd['image_filename']))]
-mask = np.in1d(ccd['basename'], np.array(lines))
+mask = ccd['ccd_cuts']==0
 print(np.sum(mask)/len(mask))
 ccd = ccd[mask]
-print(len(ccd))
 
-print('total number of exposures = {}'.format(len(np.unique(ccd['expnum']))))
+unique_expnum = np.unique(ccd['expnum'])
+print(len(unique_expnum))
 
-for band in ['g', 'r', 'z']:
+# randomly select exposures for testing
+if test_q:
+    np.random.seed(123)
+    exp_index_list = np.random.choice(len(unique_expnum), size=50, replace=False)
+else:
+    exp_index_list = np.arange(len(unique_expnum))
 
-    print('\n################################################################################################################')
+# loop over the unique exposures
+# for exp_index in [0]:
+for exp_index in exp_index_list:
+
+    mask = ccd['expnum']==unique_expnum[exp_index]
+    band = ccd['filter'][mask][0]
     print('band = {}'.format(band))
 
-    if (field=='north') and ((band=='g') or (band=='r')):
-        pixscale_native = 0.454
-    else:
-        pixscale_native = 0.262
-    # pixscale = 0.262 # pixscale for cutout queries
+    image_filename = ccd['image_filename'][mask][0]
+    psfex_filename = image_filename[:image_filename.find('.fits.fz')]+'-psfex.fits'
+    psfex_filename_new = image_filename[:image_filename.find('.fits.fz')]+'-psfex-patched.fits'
+    psfex_path = os.path.join('/project/projectdirs/cosmo/work/legacysurvey/dr9/calib', psfex_filename)
 
-    ccd_mask = ccd['filter']==band
-    print(np.sum(ccd_mask))
+    output_path = os.path.join(output_dir, psfex_filename_new)
+    if os.path.isfile(output_path):
+        raise ValueError
+        # continue
 
-    expnum_all = np.sort(np.unique(ccd[ccd_mask]['expnum']))
-    print('number of exposures in {} = {}'.format(band, len(expnum_all)))
+    hdu = fits.open(psfex_path)
+    data = Table(hdu[1].data)
+    print(len(data))
 
-    tmp = np.loadtxt('/global/homes/r/rongpu/desi/star_profiles/{}_poly_fit.txt'.format(region_name))
-    band_index = np.where(band==np.array(['g', 'r', 'z']))[0][0]
-    poly = np.poly1d(tmp[band_index])
-    print(poly)
-    profile_fit = np.poly1d(poly)
+    data['psf_patch_ver'] = 'psf_patch_ver'
+    data['moffat_alpha'] = 0.
+    data['moffat_beta'] = 0.
+    # sum of the difference between the original and new PSF model (first eigen-image)
+    data['sum_diff'] = 0.
+    # the factor from fitting the new PSF with the original one; should be close to unity
+    data['fit_original'] = 0.
 
-    ################################################################################################################
+    # loop over the CCDs in each exposure (note: not all CCDs meet ccd_cuts)
+    for ccd_index in range(len(data)):
 
-    for index, expnum in enumerate(expnum_all):
+        # expnum_str = data['expnum'][ccd_index]
+        ccdname = data['ccdname'][ccd_index]
 
-        if (index+1)%(len(expnum_all)//10)==0:
-            print('{:.0f}%'.format(index/(len(expnum_all))*100))
-
-        expnum_str = str(expnum)
-
-        input_fn = os.path.join(input_dir, '{}/decam-{}.fits'.format((5-len(expnum_str[:3]))*'0'+expnum_str[:3], (8-len(expnum_str))*'0'+expnum_str))
-        output_fn = os.path.join(output_dir, '{}/decam-{}.fits'.format((5-len(expnum_str[:3]))*'0'+expnum_str[:3], (8-len(expnum_str))*'0'+expnum_str))
-        
-        # skip if the new psfex file already exists
-        if os.path.isfile(output_fn):
-            continue
-        
-        hdu = fits.open(input_fn)
-        psf_mask = hdu[1].data['psf_mask']
-        # print(psf_mask.shape)
-
-        for ccd_index in range(len(psf_mask)):
+        ########## Outer PSF parameters ###########
+        if band=='z' and (ccdname in outlier_ccd_list):
+            params_to_use = params_outlier
+        else:
+            params_to_use = params
             
-            psf_all = psf_mask[ccd_index]
-            # print(psf_all.shape)
+        if band!='z':
+            plexp2, weight2 = params_to_use[band+'_plexp2'], params_to_use[band+'_weight2']
+        else:
+            alpha2, beta2, weight2 = params_to_use[band+'_alpha2'], params_to_use[band+'_beta2'],  params_to_use[band+'_weight2']
 
-            # psf_index = 0
-            for psf_index in range(len(psf_all)):
-                
-                psfi = psf_all[psf_index]
+        ############################# Modify the first eigen-image ####################################
+        psf_index = 0
 
-                if psf_index==0:
-                    # normalize to a 22.5 magnitude star
-                    # print(np.sum(psfi))
-                    psfi = psfi/np.sum(psfi)
+        psfi_original = data['psf_mask'][ccd_index, psf_index].copy()
+        # normalize to a 22.5 magnitude star
+        norm_factor = np.sum(psfi_original)
+        psfi = psfi_original/norm_factor
 
-                    grid = pixscale_native * np.linspace(-0.5*(psfi.shape[0]-1), 0.5*(psfi.shape[0]-1), psfi.shape[0])
-                    xx, yy = np.meshgrid(grid, grid)
-                    radius_grid = np.sqrt(xx**2 + yy**2)
-                    radius = radius_grid.flatten()
+        # vrange = 0.0002
+        # ax = plot_cutout(psfi, pixscale, vmin=-vrange, vmax=vrange, axis_label=['DEC direction (arcsec)', 'RA direction (arcsec)'])
+        # plt.show()
 
-                    with warnings.catch_warnings():
-                        warnings.simplefilter("ignore")
-                        img_fit = 10**(profile_fit(np.log10(radius_grid)))
-                        img_fit[~np.isfinite(img_fit)] = 0
+        grid = pixscale * np.linspace(-0.5*(psfi.shape[0]-1), 0.5*(psfi.shape[0]-1), psfi.shape[0])
+        xx, yy = np.meshgrid(grid, grid)
+        radius_grid = np.sqrt(xx**2 + yy**2)
+        radius = radius_grid.flatten()
 
-                    psfi_combine = psfi.copy()
+        ################# Moffat fit ##############
 
-                    r1, r2 = radius_lim1, radius_lim2
-                    mask = (radius_grid>r1) & (radius_grid<r2)
-                    psfi_combine[mask] = psfi[mask] * (r2-radius_grid[mask])/(r2-r1) \
-                                   + img_fit[mask] * (radius_grid[mask]-r1)/(r2-r1)
+        radius_min, radius_max = 1.8, 5.0
 
-                    r1, r2 = radius_lim2, radius_lim3
-                    mask = (radius_grid>=r1) & (radius_grid<r2)
-                    psfi_combine[mask] = img_fit[mask]
+        psfi_flat = psfi.flatten()
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            # popt, pcov =  curve_fit(get_sb_moffat, radius, psfi_flat/(pixscale**2))
+            mask = (radius>radius_min) & (radius<radius_max)
+            popt, pcov = curve_fit(get_sb_moffat, radius[mask], psfi_flat[mask]/(pixscale**2), bounds=((0, 1.8), np.inf))
 
-                    r1, r2 = radius_lim3, radius_lim4
-                    mask = (radius_grid>=r1) & (radius_grid<r2)
-                    psfi_combine[mask] = img_fit[mask] * (r2-radius_grid[mask])/(r2-r1) \
-                                   + 0 * (radius_grid[mask]-r1)/(r2-r1)
+        alpha, beta = popt
+        print('{} {} alpha, beta = {:.3f}, {:.3f}'.format(ccdname, band, alpha, beta))
 
-                    mask = (radius_grid>radius_lim4)
-                    psfi_combine[mask] = 0
-                
-                else:
-                    
-                    psfi_combine = psfi.copy()
+        # save the Moffat parameters
+        data['moffat_alpha'][ccd_index] = alpha
+        data['moffat_beta'][ccd_index] = beta
 
-                    r1, r2 = radius_lim1, radius_lim2
-                    mask = (radius_grid>r1) & (radius_grid<r2)
-                    psfi_combine[mask] = psfi[mask] * (r2-radius_grid[mask])/(r2-r1) \
-                                   + 0 * (radius_grid[mask]-r1)/(r2-r1)
-                    
-                    mask = (radius_grid>radius_lim2)
-                    psfi_combine[mask] = 0
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
 
-                psf_all[psf_index] = psfi_combine
+            if band!='z':
+                psf_predict = pixscale**2 * get_sb_moffat_plus_power_law(radius_grid, alpha, beta, plexp2, weight2)
+            else:
+                psf_predict = pixscale**2 * get_sb_double_moffat(radius_grid, alpha, beta, alpha2, beta2, weight2)
 
-            psf_mask[ccd_index] = psf_all
+        ################# Create hybrid PSF model ##############
 
-        hdu[1].data['psf_mask'] = psf_mask
+        psfi_combine = psfi.copy()
 
-        if not os.path.exists(os.path.dirname(output_fn)):
-            os.makedirs(os.path.dirname(output_fn))
-        # hdu.writeto(output_fn)
-        hdu.writeto(output_fn, overwrite=False)
+        r1, r2 = radius_lim1, radius_lim2
+        mask = (radius_grid>r1) & (radius_grid<r2)
+        psfi_combine[mask] = psfi[mask] * (r2-radius_grid[mask])/(r2-r1) \
+                       + psf_predict[mask] * (radius_grid[mask]-r1)/(r2-r1)
+
+        r1, r2 = radius_lim2, radius_lim3
+        mask = (radius_grid>=r1) & (radius_grid<r2)
+        psfi_combine[mask] = psf_predict[mask]
+
+        r1, r2 = radius_lim3, radius_lim4
+        mask = (radius_grid>=r1) & (radius_grid<r2)
+        psfi_combine[mask] = psf_predict[mask] * (r2-radius_grid[mask])/(r2-r1) \
+                       + 0 * (radius_grid[mask]-r1)/(r2-r1)
+
+        mask = (radius_grid>radius_lim4)
+        psfi_combine[mask] = 0
+
+        # restore to the original normalization
+        psfi_combine = psfi_combine * norm_factor
+
+        data['psf_mask'][ccd_index, psf_index] = psfi_combine
+
+        #########################################################
+
+        data['sum_diff'][ccd_index] = np.sum(psfi_original-psfi_combine)
+
+        from scipy.optimize import minimize_scalar
+        func = lambda a: np.sum((a * psfi_combine - psfi_original)**2)
+        data['fit_original'][ccd_index] = minimize_scalar(func).x
+
+        ############################# Modify the other PSFEx eigen-images ####################################
+
+        for psf_index in range(1, 6):
+
+            psfi = data['psf_mask'][ccd_index, psf_index]
+
+            grid = pixscale * np.linspace(-0.5*(psfi.shape[0]-1), 0.5*(psfi.shape[0]-1), psfi.shape[0])
+            xx, yy = np.meshgrid(grid, grid)
+            radius_grid = np.sqrt(xx**2 + yy**2)
+            radius = radius_grid.flatten()
+
+            psfi_combine = psfi.copy()
+
+            r1, r2 = radius_lim1, radius_lim2
+            mask = (radius_grid>=r1) & (radius_grid<r2)
+            psfi_combine[mask] = psfi[mask] * (r2-radius_grid[mask])/(r2-r1) \
+                           + 0 * (radius_grid[mask]-r1)/(r2-r1)
+
+            mask = (radius_grid>radius_lim2)
+            psfi_combine[mask] = 0
+
+            data['psf_mask'][ccd_index, psf_index] = psfi_combine
+
+    ############################# Save new PSFEx file ####################################
+
+    if not os.path.exists(os.path.dirname(output_path)):
+        os.makedirs(os.path.dirname(output_path))
+    data.write(output_path)
