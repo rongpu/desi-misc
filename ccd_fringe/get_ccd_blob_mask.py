@@ -12,26 +12,6 @@ from astropy import wcs
 
 diagnostic_plot = False
 
-ccdnamenumdict = {'S1': 25, 'S2': 26, 'S3': 27, 'S4':28,
-                  'S5': 29, 'S6': 30, 'S7': 31,
-                  'S8': 19, 'S9': 20, 'S10': 21, 'S11': 22, 'S12': 23,
-                  'S13': 24,
-                  'S14': 13, 'S15': 14, 'S16': 15, 'S17': 16, 'S18': 17,
-                  'S19': 18,
-                  'S20': 8, 'S21': 9, 'S22': 10, 'S23': 11, 'S24': 12,
-                  'S25': 4, 'S26': 5, 'S27': 6, 'S28': 7,
-                  'S29': 1, 'S30': 2, 'S31': 3,
-                  'N1': 32, 'N2': 33, 'N3': 34, 'N4': 35,
-                  'N5': 36, 'N6': 37, 'N7': 38,
-                  'N8': 39, 'N9': 40, 'N10': 41, 'N11': 42, 'N12': 43,
-                  'N13': 44,
-                  'N14': 45, 'N15': 46, 'N16': 47, 'N17': 48, 'N18': 49,
-                  'N19': 50,
-                  'N20': 51, 'N21': 52, 'N22': 53, 'N23': 54, 'N24': 55,
-                  'N25': 56, 'N26': 57, 'N27': 58, 'N28': 59,
-                  'N29': 60, 'N30': 61, 'N31': 62,
-                  }
-
 image_dir = '/global/project/projectdirs/cosmo/staging/'
 surveyccd_path = '/global/project/projectdirs/cosmo/work/legacysurvey/dr9/survey-ccds-decam-dr9-cut.fits.gz'
 
@@ -66,6 +46,8 @@ frgscale = (hdulist[ccd['image_hdu'][ccd_index]].header)['FRGSCALE']
 pix_x_grid, pix_y_grid = np.meshgrid(np.arange(naxis1), np.arange(naxis2))
 pix_x, pix_y = pix_x_grid.flatten(), pix_y_grid.flatten()
 pix_ra, pix_dec = w.wcs_pix2world(pix_x, pix_y, 0)
+# I have checked and confired that this CCD offset correction does lead to better alignment 
+# with the coadds than without the correction
 pix_ra = pix_ra + ccd['ccdraoff'][ccd_index] / 3600.
 pix_dec = pix_dec + ccd['ccddecoff'][ccd_index] / 3600.
 
