@@ -2,6 +2,8 @@
 
 from __future__ import division, print_function
 import sys, os, glob, time, warnings, gc
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
 from astropy.table import Table, vstack, hstack
@@ -12,19 +14,25 @@ from astropy import wcs
 sys.path.append(os.path.expanduser('~/git/Python/user_modules/'))
 from match_coord import search_around
 
+from multiprocessing import Pool
+
 params = {'legend.fontsize': 'large',
          'axes.labelsize': 'large',
          'axes.titlesize':'large',
          'xtick.labelsize':'large',
          'ytick.labelsize':'large',
-         'figure.facecolor':'w'} 
+         'figure.facecolor':'w'}
 plt.rcParams.update(params)
 
+n_processess = 32
 diagnostic_plot = True
 
 image_dir = '/global/project/projectdirs/cosmo/staging/'
 surveyccd_path = '/global/project/projectdirs/cosmo/work/legacysurvey/dr9/survey-ccds-decam-dr9-cut.fits.gz'
-output_dir = '/global/homes/r/rongpu/data/decam_ccd_blob_mask'
+output_dir = '/global/project/projectdirs/desi/users/rongpu/dr9/decam_ccd_blob_mask'
+# output_dir = '/global/homes/r/rongpu/data/decam_ccd_blob_mask'
+
+##############################################################################################################################
 
 # Load brick list
 bricks = Table.read('/global/project/projectdirs/cosmo/data/legacysurvey/dr8/survey-bricks.fits.gz')
@@ -37,28 +45,31 @@ ccd = Table(ccd)
 mask = ccd['ccd_cuts']==0
 mask &= ccd['filter']=='z' # include only z-band images
 ccd = ccd[mask]
-print(len(ccd))
+print(len(ccd), 'CCD')
 
-ccd_all = ccd.copy()
+# # Find CCDs from a particular date
+# mask = np.char.find(np.array(ccd['image_filename'], dtype='str'), 'CP20170304')!=-1
+# ccd = ccd[mask]
+# print(len(ccd), 'CCDs')
+# # Remove the dawn frames
+# mjd_sort = np.sort(ccd['mjd_obs'])
+# mdj_sep = (mjd_sort[1:] - mjd_sort[:-1])
+# mask = ccd['mjd_obs']<=mjd_sort[np.argmax(mdj_sep)]
+# ccd = ccd[mask]
+# print(len(ccd))
 
-################################################
-# Find CCDs from a particular date
-mask = np.char.find(np.array(ccd['image_filename'], dtype='str'), 'CP20170304')!=-1
+# Find CCDs around some MJD
+mask = (ccd['mjd_obs']>(57815-4)) & (ccd['mjd_obs']<(57815+4))
 ccd = ccd[mask]
-print(len(ccd))
-# Remove the dawn frames
-mjd_sort = np.sort(ccd['mjd_obs'])
-mdj_sep = (mjd_sort[1:] - mjd_sort[:-1])
-mask = ccd['mjd_obs']<=mjd_sort[np.argmax(mdj_sep)]
-ccd = ccd[mask]
-print(len(ccd))
-################################################
+print(len(ccd), 'CCDs')
 
 expnum_list = np.unique(ccd['expnum'])
-print(len(expnum_list))
+print('Nubmer of exposures:', len(expnum_list))
+print()
 
-# for expnum in expnum_list:
-for expnum in expnum_list[[0]]:
+##############################################################################################################################
+
+def save_ccd_blob_mask(expnum):
 
     ccd_idx = np.where(ccd['expnum']==expnum)[0]
 
@@ -74,7 +85,8 @@ for expnum in expnum_list[[0]]:
     # Check if the blobmask file already exists
     if os.path.isfile(output_path):
         print(output_path+' already exists!')
-        continue
+        # continue
+        return None
 
     # Get CCD image info
     # ccd_index = len(ccd)//2
@@ -85,17 +97,16 @@ for expnum in expnum_list[[0]]:
 
     # Find bricks that cover the CCDs in this exposure
     search_radius = 1.414*((0.263*4096/2)+(0.26*3600/2)) # CCD size + brick size
-    idx1, idx2, d2d, d_ra, d_dec = search_around(ccd['ra'][ccd_idx], ccd['dec'][ccd_idx], bricks['RA'], bricks['DEC'], search_radius=search_radius)
+    idx1, idx2, d2d, d_ra, d_dec = search_around(ccd['ra'][ccd_idx], ccd['dec'][ccd_idx], bricks['RA'], bricks['DEC'], search_radius=search_radius, verbose=False)
     mask = np.abs(d_ra)<(0.263*4096/2+0.26*3600/2)
     mask &= np.abs(d_dec)<(0.263*2048/2+0.26*3600/2)
     idx1, idx2 = idx1[mask], idx2[mask]
 
     for loop_index, ccd_index in enumerate(ccd_idx):
-        
+
         # print(ccd_index)
         hdu_index = ccd['image_hdu'][ccd_index]
         brick_idx = idx2[idx1==loop_index]
-        print(loop_index, hdu_index)
 
         w = wcs.WCS(hdulist[hdu_index].header)
         naxis1 = hdulist[hdu_index].header['NAXIS1']
@@ -110,9 +121,9 @@ for expnum in expnum_list[[0]]:
         pix_dec = pix_dec + ccd['ccddecoff'][ccd_index] / 3600.
 
         # # Find bricks that cover the CCD --- OLD VERSION THAT DOES NOT ALWAYS WORK!!!
-        # ccd_corners = [[pix_ra.min(), pix_dec.min()], 
-        #                [pix_ra.min(), pix_dec.max()], 
-        #                [pix_ra.max(), pix_dec.min()], 
+        # ccd_corners = [[pix_ra.min(), pix_dec.min()],
+        #                [pix_ra.min(), pix_dec.max()],
+        #                [pix_ra.max(), pix_dec.min()],
         #                [pix_ra.max(), pix_dec.max()]]
         # ccd_corners = np.array(ccd_corners)
         # mask = np.zeros(len(bricks), dtype=bool)
@@ -122,11 +133,11 @@ for expnum in expnum_list[[0]]:
         # print(np.sum(mask))
         # brick_idx = np.where(mask)[0]
 
-        # Furthure reduce the number of non-overlapping bricks
+        # Further reduce the number of non-overlapping bricks
         # Only DEC limits; RA limits would be more complicated
         mask = (pix_dec.min()<=bricks['DEC2'][brick_idx]) & (pix_dec.max()>=bricks['DEC1'][brick_idx])
         brick_idx = brick_idx[mask]
-        print(len(brick_idx), 'bricks')
+        print('expnum={}, loop={}, {} bricks'.format(expnum, loop_index, len(brick_idx)))
 
         # Diagnostic plot to check the brick coverage
         if diagnostic_plot:
@@ -176,3 +187,27 @@ for expnum in expnum_list[[0]]:
 
     # Save blob mask image
     np.savez_compressed(output_path, **data)
+
+    return None
+
+def pool_wrapper(expnum_list):
+    if len(expnum_list)==0:
+        return None
+    for expnum in expnum_list:
+        save_ccd_blob_mask(expnum)
+    return None
+
+##############################################################################################################################
+
+def main():
+    
+    # # only process a single exposure
+    # save_ccd_blob_mask(expnum_list[0])
+
+    # parralism via multiprocessing
+    expnum_list_split = np.array_split(expnum_list, n_processess)
+    with Pool(processes=n_processess) as pool:
+        res = pool.map(pool_wrapper, expnum_list_split)
+
+if __name__=="__main__":
+    main()
