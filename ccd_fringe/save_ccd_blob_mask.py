@@ -24,7 +24,7 @@ params = {'legend.fontsize': 'large',
          'figure.facecolor':'w'}
 plt.rcParams.update(params)
 
-n_processess = 32
+n_processess = 60
 diagnostic_plot = True
 
 image_dir = '/global/project/projectdirs/cosmo/staging/'
@@ -59,12 +59,30 @@ print(len(ccd), 'CCD')
 # print(len(ccd))
 
 # Find CCDs around some MJD
-mask = (ccd['mjd_obs']>(57815-4)) & (ccd['mjd_obs']<(57815+4))
+mask = (ccd['mjd_obs']>(57815-4)) & (ccd['mjd_obs']<(57815+4)) # DECaLS observing run starting Feb 28, 2017
+mask |= ((ccd['mjd_obs']>(58359-2)) & (ccd['mjd_obs']<(58359+27))) # Starting Aug 28, 2018
+mask |= ((ccd['mjd_obs']>(58423-2)) & (ccd['mjd_obs']<(58423+30))) # Two runs starting Oct 28, 2018
+mask |= ((ccd['mjd_obs']>(57893-2)) & (ccd['mjd_obs']<(57893+30))) # Two runs starting May 18, 2017
 ccd = ccd[mask]
 print(len(ccd), 'CCDs')
 
 expnum_list = np.unique(ccd['expnum'])
-print('Nubmer of exposures:', len(expnum_list))
+print('Total nubmer of exposures:', len(expnum_list))
+
+# Find the CCDs whose blobmask files do not yet exist
+ccd_mask = np.zeros(len(ccd), dtype=bool) # True if exist
+for ccd_index in range(len(ccd)):
+    str_loc = str.find(ccd['image_filename'][ccd_index].strip(), '.fits')
+    img_filename_base = ccd['image_filename'][ccd_index].strip()[:str_loc]
+    blob_path = os.path.join(output_dir, 'blob_mask', img_filename_base+'-blobmask.npz')
+    if os.path.isfile(blob_path):
+        ccd_mask[ccd_index] = True
+print(np.sum(ccd_mask)/len(ccd_mask))
+ccd = ccd[~ccd_mask]
+print(len(ccd))
+expnum_list = np.unique(ccd['expnum'])
+expnum_list.sort()
+print('Nubmer of exposures left to process:', len(expnum_list))
 print()
 
 ##############################################################################################################################
@@ -158,8 +176,13 @@ def save_ccd_blob_mask(expnum):
         img_mask = np.zeros([naxis2, naxis1], dtype=bool)
         for brick_index in brick_idx:
             brickname = bricks['BRICKNAME'][brick_index]
-            blobs = fits.getdata('/global/project/projectdirs/cosmo/data/legacysurvey/dr8/south/metrics/{}/blobs-{}.fits.gz'.format(brickname[:3], brickname))
-            maskbits = fits.getdata('/global/project/projectdirs/cosmo/data/legacysurvey/dr8/south/coadd/{}/{}/legacysurvey-{}-maskbits.fits.fz'.format(brickname[:3], brickname, brickname))
+            # there are bricks are missing
+            try:
+                blobs = fits.getdata('/global/project/projectdirs/cosmo/data/legacysurvey/dr8/south/metrics/{}/blobs-{}.fits.gz'.format(brickname[:3], brickname))
+                maskbits = fits.getdata('/global/project/projectdirs/cosmo/data/legacysurvey/dr8/south/coadd/{}/{}/legacysurvey-{}-maskbits.fits.fz'.format(brickname[:3], brickname, brickname))
+            except:
+                print('Warning: brick {} does not exist'.format(brickname))
+                continue
             mask_bad = (blobs!=-1) # -1 means no source detected
             mask_bad |= (maskbits&2**0>0) # brick_primary
             mask_bad |= (maskbits&2**1>0) # BRIGHT star
@@ -205,7 +228,15 @@ def main():
     # save_ccd_blob_mask(expnum_list[0])
 
     # parralism via multiprocessing
-    expnum_list_split = np.array_split(expnum_list, n_processess)
+    # expnum_list_split = np.array_split(expnum_list, n_processess)
+    idx = np.arange(len(expnum_list))
+    expnum_list_split = []
+    for index in range(n_processess):
+        indices = idx[::n_processess]+index
+        indices = indices[indices<len(expnum_list)]
+        expnum_list_split.append(expnum_list[indices])
+    print()
+
     with Pool(processes=n_processess) as pool:
         res = pool.map(pool_wrapper, expnum_list_split)
 
