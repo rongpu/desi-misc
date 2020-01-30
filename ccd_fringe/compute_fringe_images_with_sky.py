@@ -51,9 +51,9 @@ image_dir = '/global/project/projectdirs/cosmo/staging/'
 surveyccd_path = '/global/project/projectdirs/cosmo/work/legacysurvey/dr9/survey-ccds-decam-dr9-cut.fits.gz'
 blob_dir = '/global/project/projectdirs/desi/users/rongpu/dr9/decam_ccd_blob_mask'
 
-sky_dir = '/global/cscratch1/sd/rongpu/fringe/smooth_sky'
-plot_dir = '/global/cscratch1/sd/rongpu/fringe/plots'
-output_dir = '/global/cscratch1/sd/rongpu/fringe/data'
+sky_dir = '/global/project/projectdirs/desi/users/rongpu/dr9/fringe/smooth_sky'
+plot_dir = '/global/project/projectdirs/desi/users/rongpu/dr9/fringe/plots'
+output_dir = '/global/project/projectdirs/desi/users/rongpu/dr9/fringe/data'
 
 # Load CCD list
 ccd_columns = ['image_filename', 'image_hdu', 'expnum', 'ccdname', 'filter', 'mjd_obs', 'ra', 'dec', 'skyrms', 'ccdraoff', 'ccddecoff', 'ccd_cuts']
@@ -139,6 +139,7 @@ for hdu_index in range(1, 62):
             try:
                 frgscale = (hdulist[ccd1['image_hdu'][ccd_index]].header)['FRGSCALE']
             except:
+                print('frgscale does not exist!!!')
                 continue
             # w = wcs.WCS(hdulist[ccd1['image_hdu'][ccd_index]].header)
             img = hdulist[ccd1['image_hdu'][ccd_index]].data
@@ -188,7 +189,7 @@ for hdu_index in range(1, 62):
     img_median_final = np.nanmedian(img_list_all, axis=0)
     np.save(os.path.join(output_dir, 'fringe_{}.npy'.format(hdu_index)), img_median_final)
 
-    plt.figure(figsize=(12, 6))
+    plt.figure(figsize=(17, 8))
     plt.imshow((img_median_final).T, cmap='seismic', vmin=-vrange, vmax=vrange)
     plt.tight_layout()
     plt.savefig(os.path.join(plot_dir, 'final_fringe_{}.png'.format(hdu_index)))
@@ -205,13 +206,13 @@ for hdu_index in range(1, 62):
     mask = (img_median_final>5*sky_nmad)
     img_median_final1[mask] = 5*sky_nmad
     img_median_4pix_gauss = gaussian_filter((img_median_final1), 4, mode='reflect')
-    plt.figure(figsize=(12, 6))
+    plt.figure(figsize=(17, 8))
     plt.imshow((img_median_4pix_gauss).T, cmap='seismic', vmin=-vrange, vmax=vrange)
     plt.tight_layout()
     plt.savefig(os.path.join(plot_dir, 'final_fringe_smooth_{}.png'.format(hdu_index)))
     plt.close()
 
-    plt.figure(figsize=(12, 6))
+    plt.figure(figsize=(17, 8))
     plt.imshow((fringe).T, cmap='seismic', vmin=-vrange, vmax=vrange)
     plt.tight_layout()
     plt.savefig(os.path.join(plot_dir, 'original_fringe_{}.png'.format(hdu_index)))
