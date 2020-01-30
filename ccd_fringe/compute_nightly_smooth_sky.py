@@ -53,9 +53,11 @@ image_dir = '/global/project/projectdirs/cosmo/staging/'
 surveyccd_path = '/global/project/projectdirs/cosmo/work/legacysurvey/dr9/survey-ccds-decam-dr9-cut.fits.gz'
 blob_dir = '/global/project/projectdirs/desi/users/rongpu/dr9/decam_ccd_blob_mask'
 
-plot_dir = '/global/cscratch1/sd/rongpu/fringe/plots'
-output_dir = '/global/cscratch1/sd/rongpu/fringe/smooth_sky'
+# plot_dir = '/global/cscratch1/sd/rongpu/fringe/plots'
+# output_dir = '/global/cscratch1/sd/rongpu/fringe/smooth_sky'
 
+plot_dir = '/global/project/projectdirs/desi/users/rongpu/dr9/fringe/plots'
+output_dir = '/global/project/projectdirs/desi/users/rongpu/dr9/fringe/smooth_sky'
 
 # Load CCD list
 ccd_columns = ['image_filename', 'image_hdu', 'ccdname', 'filter', 'mjd_obs', 'ccd_cuts']
@@ -80,7 +82,7 @@ def compute_smooth_sky(hdu_index):
 
     # skip S7
     if hdu_index==31:
-        continue
+        pass
 
     mask = ccd['image_hdu']==hdu_index
     ccd1 = ccd.copy()
@@ -119,7 +121,8 @@ def compute_smooth_sky(hdu_index):
     # ccd_mask = ccd1['obs_date']==obs_date
     # print(obs_date+':', np.sum(ccd_mask), 'CCDs')
 
-    obs_date_list = np.unique(ccd1['obs_date'])
+    obs_date_list, n_exp = np.unique(ccd1['obs_date'], return_counts=True)
+    obs_date_list = obs_date_list[np.argsort(n_exp)]
     print('Total nubmer of nights: ', len(obs_date_list))
 
     # # Randomly select a few nights
@@ -238,13 +241,13 @@ def compute_smooth_sky(hdu_index):
 
         plt.figure(figsize=(17, 8))
         plt.imshow((img_median_smooth).T, cmap='seismic', vmin=-2*vrange, vmax=2*vrange)
-        # plt.tight_layout()
+        plt.tight_layout()
         plt.savefig(os.path.join(plot_dir, '{}_smooth_sky_{}.png'.format(obs_date, hdu_index)))
         plt.close()
 
         plt.figure(figsize=(17, 8))
         plt.imshow((img_median-img_median_smooth).T, cmap='seismic', vmin=-vrange, vmax=vrange)
-        # plt.tight_layout()
+        plt.tight_layout()
         plt.savefig(os.path.join(plot_dir, '{}_fringe_{}.png'.format(obs_date, hdu_index)))
         plt.close()
 
@@ -252,7 +255,7 @@ def compute_smooth_sky(hdu_index):
         img_median_4pix_gauss = gaussian_filter((img_median-img_median_smooth), 4, mode='reflect')
         plt.figure(figsize=(17, 8))
         plt.imshow((img_median_4pix_gauss).T, cmap='seismic', vmin=-vrange, vmax=vrange)
-        # plt.tight_layout()
+        plt.tight_layout()
         plt.savefig(os.path.join(plot_dir, '{}_fringe_smooth_{}.png'.format(obs_date, hdu_index)))
         plt.close()
 
