@@ -45,7 +45,7 @@ ccd = Table(ccd)
 mask = ccd['ccd_cuts']==0
 mask &= ccd['filter']=='z' # include only z-band images
 ccd = ccd[mask]
-print(len(ccd), 'CCD')
+print(len(ccd), 'CCDs')
 
 # # Find CCDs from a particular date
 # mask = np.char.find(np.array(ccd['image_filename'], dtype='str'), 'CP20170304')!=-1
@@ -58,13 +58,40 @@ print(len(ccd), 'CCD')
 # ccd = ccd[mask]
 # print(len(ccd))
 
-# Find CCDs around some MJD
-mask = (ccd['mjd_obs']>(57815-4)) & (ccd['mjd_obs']<(57815+4)) # DECaLS observing run starting Feb 28, 2017
-mask |= ((ccd['mjd_obs']>(58359-2)) & (ccd['mjd_obs']<(58359+27))) # Starting Aug 28, 2018
-mask |= ((ccd['mjd_obs']>(58423-2)) & (ccd['mjd_obs']<(58423+30))) # Two runs starting Oct 28, 2018
-mask |= ((ccd['mjd_obs']>(57893-2)) & (ccd['mjd_obs']<(57893+30))) # Two runs starting May 18, 2017
+# ############################ For computing the fringe templates ############################
+# # Find CCDs around some MJD
+# mask = (ccd['mjd_obs']>(57815-4)) & (ccd['mjd_obs']<(57815+4)) # DECaLS observing run starting Feb 28, 2017
+# mask |= ((ccd['mjd_obs']>(58359-2)) & (ccd['mjd_obs']<(58359+27))) # Starting Aug 28, 2018
+# mask |= ((ccd['mjd_obs']>(58423-2)) & (ccd['mjd_obs']<(58423+30))) # Two runs starting Oct 28, 2018
+# mask |= ((ccd['mjd_obs']>(57893-2)) & (ccd['mjd_obs']<(57893+30))) # Two runs starting May 18, 2017
+# ccd = ccd[mask]
+# print(len(ccd), 'CCDs')
+# ############################################################################################
+
+############################ For testing the fringe fitting ################################
+# Only use exposures in DR8 CCD
+ccd_dr8 = fitsio.read('/global/project/projectdirs/cosmo/data/legacysurvey/dr8/survey-ccds-decam-dr8.fits.gz', columns=['expnum'])
+mask = np.in1d(ccd['expnum'], np.unique(ccd_dr8['expnum']))
+ccd = ccd[mask]
+print(len(ccd))
+
+# Only keep exposures with all 61 CCDs
+t = Table()
+t['expnum'], t['counts'] = np.unique(ccd['expnum'], return_counts=True)
+mask = t['counts']==61
+mask_remove = ~np.in1d(ccd['expnum'], t['expnum'][mask])
+ccd = ccd[~mask_remove]
+
+# Randomly select some exposures
+expnum_all = np.unique(ccd['expnum'])
+np.random.seed(123)
+expnum_select = np.random.choice(expnum_all, size=180, replace=False)
+print('Exposures:')
+print(expnum_select)
+mask = np.in1d(ccd['expnum'], expnum_select)
 ccd = ccd[mask]
 print(len(ccd), 'CCDs')
+############################################################################################
 
 expnum_list = np.unique(ccd['expnum'])
 print('Total nubmer of exposures:', len(expnum_list))
@@ -85,7 +112,6 @@ expnum_list.sort()
 print('Nubmer of exposures left to process:', len(expnum_list))
 print()
 
-##############################################################################################################################
 
 def save_ccd_blob_mask(expnum):
 
@@ -213,12 +239,12 @@ def save_ccd_blob_mask(expnum):
 
     return None
 
-def pool_wrapper(expnum_list):
-    if len(expnum_list)==0:
-        return None
-    for expnum in expnum_list:
-        save_ccd_blob_mask(expnum)
-    return None
+# def pool_wrapper(expnum_list):
+#     if len(expnum_list)==0:
+#         return None
+#     for expnum in expnum_list:
+#         save_ccd_blob_mask(expnum)
+#     return None
 
 ##############################################################################################################################
 
@@ -227,18 +253,18 @@ def main():
     # # only process a single exposure
     # save_ccd_blob_mask(expnum_list[0])
 
-    # parralism via multiprocessing
+    # # parralism via multiprocessing
     # expnum_list_split = np.array_split(expnum_list, n_processess)
-    idx = np.arange(len(expnum_list))
-    expnum_list_split = []
-    for index in range(n_processess):
-        indices = idx[::n_processess]+index
-        indices = indices[indices<len(expnum_list)]
-        expnum_list_split.append(expnum_list[indices])
-    print()
+    # idx = np.arange(len(expnum_list))
+    # expnum_list_split = []
+    # for index in range(n_processess):
+    #     indices = idx[::n_processess]+index
+    #     indices = indices[indices<len(expnum_list)]
+    #     expnum_list_split.append(expnum_list[indices])
+    # print()
 
     with Pool(processes=n_processess) as pool:
-        res = pool.map(pool_wrapper, expnum_list_split)
+        res = pool.map(save_ccd_blob_mask, expnum_list)
 
 if __name__=="__main__":
     main()

@@ -32,7 +32,7 @@ sky_dir = '/global/project/projectdirs/desi/users/rongpu/dr9/fringe/smooth_sky'
 plot_dir = '/global/project/projectdirs/desi/users/rongpu/dr9/fringe/plots_postproc'
 data_dir = '/global/project/projectdirs/desi/users/rongpu/dr9/fringe/data'
 
-# mask image from an arbitrary exposure
+# CP mask image from an arbitrary exposure
 ood_fn = '/global/project/projectdirs/cosmo/staging/decam/CP/V4.8.2/CP20170327/c4d_170328_100215_ood_z_ls9.fits.fz'
 
 
