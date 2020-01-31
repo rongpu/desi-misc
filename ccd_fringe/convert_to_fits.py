@@ -1,3 +1,18 @@
+from __future__ import division, print_function
+import sys, os, glob, time, warnings, gc
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+import numpy as np
+from astropy.table import Table, vstack, hstack
+import fitsio
+from astropy.io import fits
+import healpy as hp
+from astropy import wcs
+
+input_dir = '/global/project/projectdirs/desi/users/rongpu/dr9/fringe/data'
+output_dir = '/global/project/projectdirs/desi/users/rongpu/dr9/fringe/DECam_CP-Fringe'
+
 # http://www.ctio.noao.edu/noao/sites/default/files/DECam/DECamOrientation.png
 ccdnamenumdict = {'S1': 25, 'S2': 26, 'S3': 27, 'S4':28,
                   'S5': 29, 'S6': 30, 'S7': 31,
@@ -29,3 +44,26 @@ hdu2ccdname = {1: 'S29', 2: 'S30', 3: 'S31', 4: 'S25', 5: 'S26', 6: 'S27', 7: 'S
                 44: 'N13', 45: 'N14', 46: 'N15', 47: 'N16', 48: 'N17', 49: 'N18', 50: 'N19', 
                 51: 'N20', 52: 'N21', 53: 'N22', 54: 'N23', 55: 'N24', 56: 'N25', 57: 'N26', 
                 58: 'N27', 59: 'N28', 60: 'N29', 61: 'N31'}
+
+for ii, hdu_index in enumerate(range(1, 62)):
+
+    if hdu_index==31:
+        print('skipping S7')
+        # sys.exit()
+        continue
+
+    print(hdu_index)
+
+    data = np.load(os.path.join(input_dir, 'fringe_smooth_{}.npy'.format(hdu_index)))
+
+    data_padded = np.zeros((data.shape[0]+2, data.shape[1]+2))
+    data_padded[1:data_padded.shape[0]-1, 1:data_padded.shape[1]-1] = data
+    
+    mask = ~np.isfinite(data_padded)
+    data_padded[mask] = 0
+    data_padded = data_padded.astype(np.float32)
+
+    hdu = fits.PrimaryHDU(data_padded)
+    hdul = fits.HDUList([hdu])
+    hdul.writeto(os.path.join(output_dir, 'DECam_z_frg_{}_{}_hdu{}.fits'.format(hdu2ccdname[hdu_index], str(ccdnamenumdict[hdu2ccdname[hdu_index]]).zfill(2), str(hdu_index).zfill(2))))
+
