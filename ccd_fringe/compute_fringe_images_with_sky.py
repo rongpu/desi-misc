@@ -12,7 +12,6 @@ from astropy.io import fits
 import healpy as hp
 from astropy import wcs
 
-from scipy.interpolate import interp2d
 from scipy.ndimage.filters import gaussian_filter
 
 import argparse
@@ -226,7 +225,7 @@ np.save(os.path.join(output_dir, 'fringe_{}.npy'.format(hdu_index)), img_median_
 plt.figure(figsize=(17, 8))
 plt.imshow((img_median_final).T, cmap='seismic', vmin=-vrange, vmax=vrange)
 plt.tight_layout()
-plt.savefig(os.path.join(plot_dir, 'final_fringe_{}.png'.format(hdu_index)))
+plt.savefig(os.path.join(plot_dir, 'new_fringe_{}.png'.format(hdu_index)))
 plt.close()
 
 # Plot 4-pixel gaussian smoothed fringe image
@@ -243,13 +242,13 @@ img_median_4pix_gauss = gaussian_filter((img_median_final1), 4, mode='reflect')
 plt.figure(figsize=(17, 8))
 plt.imshow((img_median_4pix_gauss).T, cmap='seismic', vmin=-vrange, vmax=vrange)
 plt.tight_layout()
-plt.savefig(os.path.join(plot_dir, 'final_fringe_smooth_{}.png'.format(hdu_index)))
+plt.savefig(os.path.join(plot_dir, 'new_fringe_smooth_{}.png'.format(hdu_index)))
 plt.close()
 
 plt.figure(figsize=(17, 8))
 plt.imshow((fringe).T, cmap='seismic', vmin=-vrange, vmax=vrange)
 plt.tight_layout()
-plt.savefig(os.path.join(plot_dir, 'original_fringe_{}.png'.format(hdu_index)))
+plt.savefig(os.path.join(plot_dir, 'old_fringe_{}.png'.format(hdu_index)))
 plt.close()
 
 print('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@')
