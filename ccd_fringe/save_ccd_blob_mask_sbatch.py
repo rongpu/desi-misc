@@ -1,4 +1,5 @@
 # Based on get_blob_mask_for_ccd
+# Run with Cori job array
 
 from __future__ import division, print_function
 import sys, os, glob, time, warnings, gc
@@ -9,11 +10,13 @@ import numpy as np
 from astropy.table import Table, vstack, hstack
 import fitsio
 from astropy.io import fits
+import healpy as hp
 from astropy import wcs
 sys.path.append(os.path.expanduser('~/git/Python/user_modules/'))
 from match_coord import search_around
 
 from multiprocessing import Pool
+import argparse
 
 params = {'legend.fontsize': 'large',
          'axes.labelsize': 'large',
@@ -23,94 +26,40 @@ params = {'legend.fontsize': 'large',
          'figure.facecolor':'w'}
 plt.rcParams.update(params)
 
-n_processess = 60
-diagnostic_plot = True
+n_node = 6 # Haswell
+n_processess = 31
+diagnostic_plot = False
 
 image_dir = '/global/project/projectdirs/cosmo/staging/'
 surveyccd_path = '/global/project/projectdirs/cosmo/work/legacysurvey/dr9/survey-ccds-decam-dr9-cut.fits.gz'
-output_dir = '/global/project/projectdirs/desi/users/rongpu/dr9/decam_ccd_blob_mask'
+# output_dir = '/global/project/projectdirs/desi/users/rongpu/dr9/decam_ccd_blob_mask'
 # output_dir = '/global/homes/r/rongpu/data/decam_ccd_blob_mask'
+output_dir = '/global/cscratch1/sd/rongpu/fringe/decam_ccd_blob_mask'
 
-##############################################################################################################################
+
+parser = argparse.ArgumentParser()
+parser.add_argument('task_id')
+args = parser.parse_args()
+task_id = int(args.task_id)
 
 # Load brick list
 bricks = Table.read('/global/project/projectdirs/cosmo/data/legacysurvey/dr8/survey-bricks.fits.gz')
 
-# Load CCD list
-ccd_columns = ['image_filename', 'image_hdu', 'expnum', 'filter', 'mjd_obs', 'ra', 'dec', 'ccdraoff', 'ccddecoff', 'ccd_cuts']
-ccd = fitsio.read(surveyccd_path, columns=ccd_columns)
-# ccd = fitsio.read(surveyccd_path)
-ccd = Table(ccd)
-mask = ccd['ccd_cuts']==0
-mask &= ccd['filter']=='z' # include only z-band images
-ccd = ccd[mask]
-print(len(ccd), 'CCDs')
+# Load the list of CCDs left to process
+ccd = Table.read('/global/u2/r/rongpu/temp/blobmask_ccd.fits')
 
-# # Find CCDs from a particular date
-# mask = np.char.find(np.array(ccd['image_filename'], dtype='str'), 'CP20170304')!=-1
-# ccd = ccd[mask]
-# print(len(ccd), 'CCDs')
-# # Remove the dawn frames
-# mjd_sort = np.sort(ccd['mjd_obs'])
-# mdj_sep = (mjd_sort[1:] - mjd_sort[:-1])
-# mask = ccd['mjd_obs']<=mjd_sort[np.argmax(mdj_sep)]
-# ccd = ccd[mask]
-# print(len(ccd))
-
-# ############################ For computing the fringe templates ############################
-# # Find CCDs around some MJD
-# mask = (ccd['mjd_obs']>(57815-4)) & (ccd['mjd_obs']<(57815+4)) # DECaLS observing run starting Feb 28, 2017
-# mask |= ((ccd['mjd_obs']>(58359-2)) & (ccd['mjd_obs']<(58359+27))) # Starting Aug 28, 2018
-# mask |= ((ccd['mjd_obs']>(58423-2)) & (ccd['mjd_obs']<(58423+30))) # Two runs starting Oct 28, 2018
-# mask |= ((ccd['mjd_obs']>(57893-2)) & (ccd['mjd_obs']<(57893+30))) # Two runs starting May 18, 2017
-# ccd = ccd[mask]
-# print(len(ccd), 'CCDs')
-# ############################################################################################
-
-############################ For testing the fringe fitting ################################
-# Only use exposures in DR8 CCD
-ccd_dr8 = fitsio.read('/global/project/projectdirs/cosmo/data/legacysurvey/dr8/survey-ccds-decam-dr8.fits.gz', columns=['expnum'])
-mask = np.in1d(ccd['expnum'], np.unique(ccd_dr8['expnum']))
-ccd = ccd[mask]
-print(len(ccd))
-
-# Only keep exposures with all 61 CCDs
-t = Table()
-t['expnum'], t['counts'] = np.unique(ccd['expnum'], return_counts=True)
-mask = t['counts']==61
-mask_remove = ~np.in1d(ccd['expnum'], t['expnum'][mask])
-ccd = ccd[~mask_remove]
-
-# Randomly select some exposures
-expnum_all = np.unique(ccd['expnum'])
-np.random.seed(123)
-expnum_select = np.random.choice(expnum_all, size=180, replace=False)
-print('Exposures:')
-print(expnum_select)
-mask = np.in1d(ccd['expnum'], expnum_select)
-ccd = ccd[mask]
-print(len(ccd), 'CCDs')
-############################################################################################
-
-expnum_list = np.unique(ccd['expnum'])
-print('Total nubmer of exposures:', len(expnum_list))
-
-# Find the CCDs whose blobmask files do not yet exist
-ccd_mask = np.zeros(len(ccd), dtype=bool) # True if exist
-for ccd_index in range(len(ccd)):
-    str_loc = str.find(ccd['image_filename'][ccd_index].strip(), '.fits')
-    img_filename_base = ccd['image_filename'][ccd_index].strip()[:str_loc]
-    blob_path = os.path.join(output_dir, 'blob_mask', img_filename_base+'-blobmask.npz')
-    if os.path.isfile(blob_path):
-        ccd_mask[ccd_index] = True
-print(np.sum(ccd_mask)/len(ccd_mask))
-ccd = ccd[~ccd_mask]
-print(len(ccd))
 expnum_list = np.unique(ccd['expnum'])
 expnum_list.sort()
-print('Nubmer of exposures left to process:', len(expnum_list))
-print()
 
+# shuffle
+np.random.seed(123)
+# DO NOT USE NP.RANDOM.SHUFFLE
+expnum_list = np.random.choice(expnum_list, size=len(expnum_list), replace=False)
+
+# split among the Cori nodes
+expnum_list_split = np.array_split(expnum_list, n_node)
+expnum_list = expnum_list_split[task_id]
+print('Number of expousres in this node:', len(expnum_list))
 
 def save_ccd_blob_mask(expnum):
 
@@ -121,9 +70,15 @@ def save_ccd_blob_mask(expnum):
     output_path = os.path.join(output_dir, 'blob_mask', img_filename_base+'-blobmask.npz')
     plot_path = os.path.join(output_dir, 'plots', img_filename_base+'-blobmask')
     if not os.path.exists(os.path.dirname(plot_path)):
-        os.makedirs(os.path.dirname(plot_path))
+        try:
+            os.makedirs(os.path.dirname(plot_path))
+        except:
+            pass
     if not os.path.exists(os.path.dirname(output_path)):
-        os.makedirs(os.path.dirname(output_path))
+        try:
+            os.makedirs(os.path.dirname(output_path))
+        except:
+            pass
 
     # Check if the blobmask file already exists
     if os.path.isfile(output_path):
@@ -144,6 +99,8 @@ def save_ccd_blob_mask(expnum):
     mask = np.abs(d_ra)<(0.263*4096/2+0.26*3600/2)
     mask &= np.abs(d_dec)<(0.263*2048/2+0.26*3600/2)
     idx1, idx2 = idx1[mask], idx2[mask]
+
+    all_ccds_empty = True
 
     for loop_index, ccd_index in enumerate(ccd_idx):
 
@@ -222,6 +179,9 @@ def save_ccd_blob_mask(expnum):
             mask = (coadd_x>=0) & (coadd_x<blobs.shape[0]) & (coadd_y>=0) & (coadd_y<blobs.shape[0])
             img_mask[pix_y[mask], pix_x[mask]] |= mask_good[coadd_y[mask], coadd_x[mask]]
 
+        if np.sum(img_mask)!=0:
+            all_ccds_empty = False
+
         # Diagnostic plot to check the blobmask image
         if diagnostic_plot:
             fig = plt.figure(frameon=False, figsize=(8, 4))
@@ -234,7 +194,12 @@ def save_ccd_blob_mask(expnum):
         data['hdu'+str(hdu_index).zfill(2)] = img_mask
 
     # Save blob mask image
-    np.savez_compressed(output_path, **data)
+    if not all_ccds_empty:
+        np.savez_compressed(output_path, **data)
+    else:
+        print('Exposure {} is not in the DR8 footprint!!!'.format(expnum))
+        from pathlib import Path
+        Path(output_path).touch()
 
     return None
 
@@ -248,19 +213,6 @@ def save_ccd_blob_mask(expnum):
 ##############################################################################################################################
 
 def main():
-    
-    # # only process a single exposure
-    # save_ccd_blob_mask(expnum_list[0])
-
-    # # parralism via multiprocessing
-    # expnum_list_split = np.array_split(expnum_list, n_processess)
-    # idx = np.arange(len(expnum_list))
-    # expnum_list_split = []
-    # for index in range(n_processess):
-    #     indices = idx[::n_processess]+index
-    #     indices = indices[indices<len(expnum_list)]
-    #     expnum_list_split.append(expnum_list[indices])
-    # print()
 
     with Pool(processes=n_processess) as pool:
         res = pool.map(save_ccd_blob_mask, expnum_list)

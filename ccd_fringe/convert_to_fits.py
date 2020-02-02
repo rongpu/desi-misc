@@ -7,7 +7,6 @@ import numpy as np
 from astropy.table import Table, vstack, hstack
 import fitsio
 from astropy.io import fits
-import healpy as hp
 from astropy import wcs
 
 input_dir = '/global/project/projectdirs/desi/users/rongpu/dr9/fringe/data'
