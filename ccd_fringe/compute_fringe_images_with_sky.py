@@ -1,3 +1,8 @@
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Warning !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# Need to rewrite the code to stop using hdu_index as CCD identifier.
+# Luckily it worked here since the HDU indices are the same for all the
+# exposures used here.
+
 # Use the pre-computed nightly sky model for the computation
 
 from __future__ import division, print_function

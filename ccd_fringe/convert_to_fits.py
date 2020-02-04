@@ -1,3 +1,8 @@
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Warning !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# Need to rewrite the code to stop using hdu_index as CCD identifier.
+# Luckily it worked here since the HDU indices are the same for all the
+# exposures used here.
+
 from __future__ import division, print_function
 import sys, os, glob, time, warnings, gc
 import matplotlib
@@ -34,6 +39,7 @@ ccdnamenumdict = {'S1': 25, 'S2': 26, 'S3': 27, 'S4':28,
                   }
 
 # HDU index (image_hdu in survey-ccd table) to CCD name
+# Only for CCDs with 62 HDUs (or 61 CCDs), since S30 is missing from some exposures)
 hdu2ccdname = {1: 'S29', 2: 'S30', 3: 'S31', 4: 'S25', 5: 'S26', 6: 'S27', 7: 'S28', 
                 8: 'S20', 9: 'S21', 10: 'S22', 11: 'S23', 12: 'S24', 13: 'S14', 14: 'S15', 
                 15: 'S16', 16: 'S17', 17: 'S18', 18: 'S19', 19: 'S8', 20: 'S9', 21: 'S10', 
@@ -64,5 +70,5 @@ for ii, hdu_index in enumerate(range(1, 62)):
 
     hdu = fits.PrimaryHDU(data_padded)
     hdul = fits.HDUList([hdu])
-    hdul.writeto(os.path.join(output_dir, 'DECam_z_frg_{}_{}_hdu{}.fits'.format(hdu2ccdname[hdu_index], str(ccdnamenumdict[hdu2ccdname[hdu_index]]).zfill(2), str(hdu_index).zfill(2))))
+    hdul.writeto(os.path.join(output_dir, 'DECam_z_frg_{}_CCD{}.fits'.format(hdu2ccdname[hdu_index], str(ccdnamenumdict[hdu2ccdname[hdu_index]]).zfill(2))))
 

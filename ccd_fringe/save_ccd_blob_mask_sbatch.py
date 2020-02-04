@@ -31,7 +31,8 @@ n_processess = 31
 diagnostic_plot = False
 
 image_dir = '/global/project/projectdirs/cosmo/staging/'
-surveyccd_path = '/global/project/projectdirs/cosmo/work/legacysurvey/dr9/survey-ccds-decam-dr9-cut.fits.gz'
+# surveyccd_path = '/global/project/projectdirs/cosmo/work/legacysurvey/dr9/survey-ccds-decam-dr9-cut.fits.gz'
+surveyccd_path = '/global/homes/r/rongpu/mydesi/dr9/fringe/temp/survey-ccds-decam-dr9-z-band-only-trim.fits'
 # output_dir = '/global/project/projectdirs/desi/users/rongpu/dr9/decam_ccd_blob_mask'
 # output_dir = '/global/homes/r/rongpu/data/decam_ccd_blob_mask'
 output_dir = '/global/cscratch1/sd/rongpu/fringe/decam_ccd_blob_mask'

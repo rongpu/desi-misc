@@ -1,3 +1,8 @@
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Warning !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# Need to rewrite the code to stop using hdu_index as CCD identifier.
+# Luckily it worked here since the HDU indices are the same for all the
+# exposures used here.
+
 from __future__ import division, print_function
 import sys, os, glob, time, warnings, gc
 import matplotlib
