@@ -99,7 +99,7 @@ for exp_index in exp_index_list:
     data = Table(hdu[1].data)
     print(len(data))
 
-    data['psf_patch_ver'] = 'psf_patch_ver'
+    data['psf_patch_ver'] = 'd683d99'
     data['moffat_alpha'] = 0.
     data['moffat_beta'] = 0.
     # sum of the difference between the original and new PSF model (first eigen-image)
@@ -150,9 +150,13 @@ for exp_index in exp_index_list:
             warnings.simplefilter("ignore")
             # popt, pcov =  curve_fit(get_sb_moffat, radius, psfi_flat/(pixscale**2))
             mask = (radius>radius_min) & (radius<radius_max)
-            popt, pcov = curve_fit(get_sb_moffat, radius[mask], psfi_flat[mask]/(pixscale**2), bounds=((0, 1.8), np.inf))
-
-        alpha, beta = popt
+            try:
+                popt, pcov = curve_fit(get_sb_moffat, radius[mask], psfi_flat[mask]/(pixscale**2), bounds=((0, 1.8), np.inf))
+                alpha, beta = popt
+            except:
+                print('Moffat fitting failure: {} {}'.format(ccd_index, ccdname))
+                continue
+        
         print('{} {} alpha, beta = {:.3f}, {:.3f}'.format(ccdname, band, alpha, beta))
 
         # save the Moffat parameters
