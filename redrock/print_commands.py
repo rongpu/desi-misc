@@ -1,5 +1,6 @@
 # Get the a list of science exposures for a specficic date and tile
-# Print desi_coadd_spectra commands for coadds of single and multiple exposures
+# Print desi_coadd_spectra commands for coadds of single or multiple exposures
+# Print redrock commands
 
 from __future__ import division, print_function
 import sys, os, glob, time, warnings
