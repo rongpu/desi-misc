@@ -90,7 +90,8 @@ ccd['ccdnum'] = [ccdnamenumdict[ccd['ccdname'][ii].strip()] for ii in range(len(
 # Select CCDs in dr9e
 # with open('/global/project/projectdirs/desi/users/rongpu/dr9/fringe/misc/dr9d_decam.txt') as f:
 # with open('/global/project/projectdirs/cosmo/work/users/djschleg/dr9d/files-dr9d-south.txt') as f:
-with open('/global/cscratch1/sd/desimpp/dr9e/image_lists/exp-decam.txt') as f:
+# with open('/global/cscratch1/sd/desimpp/dr9e/image_lists/exp-decam.txt') as f:
+with open('/global/cscratch1/sd/desimpp/dr9e/image_lists/decamLGexp.txt') as f:
     filelist = np.array(list(map(str.rstrip, f.readlines())))
 print(len(filelist))
 # # Select z-band images

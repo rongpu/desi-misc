@@ -57,7 +57,7 @@ frgscale_output_dir = '/global/cscratch1/sd/rongpu/fringe/frgscale/'
 # image_output_dir = '/global/cscratch1/sd/rongpu/fringe/tmp_img/'
 # frgscale_output_dir = '/global/cscratch1/sd/rongpu/fringe/tmp_frgscale/'
 
-##############################################################################################################################
+############################################### Use survey-ccd ##################################################################
 
 # Load CCD list
 ccd_columns = ['image_filename', 'image_hdu', 'expnum', 'ccdname', 'filter', 'ccd_cuts']
@@ -84,3 +84,24 @@ for index, expnum in enumerate(expnum_list):
         expnum_list_done[index] = True
 
 print(np.sum(expnum_list_done), np.sum(~expnum_list_done), np.sum(expnum_list_done)/len(expnum_list_done))
+
+############################################### Use txt list ##################################################################
+
+with open('/global/cscratch1/sd/desimpp/dr9e/image_lists/decamLGexp.txt') as f:
+    filelist = np.array(list(map(str.rstrip, f.readlines())))
+print(len(filelist))
+
+# Select z-band images
+mask = np.array([tt.find('_z_')!=-1 for tt in filelist])
+filelist = filelist[mask]
+print(len(filelist))
+
+filelist_done = np.zeros(len(filelist), dtype=bool)
+
+for index, img_fn in enumerate(filelist):
+    frgscale_output_path = os.path.join(frgscale_output_dir, img_fn.replace('.fits.fz', '.txt'))
+    if os.path.isfile(frgscale_output_path):
+        filelist_done[index] = True
+
+print(np.sum(filelist_done), np.sum(~filelist_done), np.sum(filelist_done)/len(filelist_done))
+
