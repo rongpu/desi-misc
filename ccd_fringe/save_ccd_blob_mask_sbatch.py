@@ -32,7 +32,7 @@ diagnostic_plot = False
 
 image_dir = '/global/project/projectdirs/cosmo/staging/'
 # surveyccd_path = '/global/project/projectdirs/cosmo/work/legacysurvey/dr9/survey-ccds-decam-dr9-cut.fits.gz'
-surveyccd_path = '/global/homes/r/rongpu/mydesi/dr9/fringe/temp/survey-ccds-decam-dr9-z-band-only-trim.fits'
+# surveyccd_path = '/global/project/projectdirs/desi/users/rongpu/dr9/fringe/temp/survey-ccds-decam-dr9-z-band-only-trim.fits'
 # output_dir = '/global/project/projectdirs/desi/users/rongpu/dr9/decam_ccd_blob_mask'
 # output_dir = '/global/homes/r/rongpu/data/decam_ccd_blob_mask'
 output_dir = '/global/cscratch1/sd/rongpu/fringe/decam_ccd_blob_mask'
@@ -47,7 +47,7 @@ task_id = int(args.task_id)
 bricks = Table.read('/global/project/projectdirs/cosmo/data/legacysurvey/dr8/survey-bricks.fits.gz')
 
 # Load the list of CCDs left to process
-ccd = Table.read('/global/u2/r/rongpu/temp/blobmask_ccd.fits')
+ccd = Table.read('/global/u2/r/rongpu/temp/blobmask_ccd_all_dr9.fits')
 
 expnum_list = np.unique(ccd['expnum'])
 expnum_list.sort()

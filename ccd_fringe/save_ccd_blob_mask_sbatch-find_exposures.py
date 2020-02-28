@@ -34,12 +34,13 @@ output_dir = '/global/cscratch1/sd/rongpu/fringe/decam_ccd_blob_mask'
 bricks = Table.read('/global/project/projectdirs/cosmo/data/legacysurvey/dr8/survey-bricks.fits.gz')
 
 # Load CCD list
-ccd_columns = ['image_filename', 'image_hdu', 'expnum', 'filter', 'mjd_obs', 'ra', 'dec', 'ccdraoff', 'ccddecoff', 'ccd_cuts']
+ccd_columns = ['image_filename', 'image_hdu', 'expnum', 'filter', 'ra', 'dec', 'ccdraoff', 'ccddecoff', 'ccd_cuts']
 ccd = fitsio.read(surveyccd_path, columns=ccd_columns)
 # ccd = fitsio.read(surveyccd_path)
 ccd = Table(ccd)
-mask = ccd['ccd_cuts']==0
-mask &= ccd['filter']=='z' # include only z-band images
+# mask = ccd['ccd_cuts']==0
+# mask &= ccd['filter']=='z' # include only z-band images
+mask = ccd['filter']=='z' # include only z-band images
 ccd = ccd[mask]
 print(len(ccd), 'CCDs')
 
@@ -60,4 +61,4 @@ expnum_list = np.unique(ccd['expnum'])
 print('Nubmer of exposures left to process:', len(expnum_list))
 print()
 
-ccd.write('/global/u2/r/rongpu/temp/blobmask_ccd.fits')
+ccd.write('/global/u2/r/rongpu/temp/blobmask_ccd_all_dr9.fits')

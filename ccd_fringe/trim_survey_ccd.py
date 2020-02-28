@@ -19,4 +19,4 @@ mask = ccd['ccd_cuts']==0
 mask &= ccd['filter']=='z' # include only z-band images
 ccd = ccd[mask]
 
-ccd.write('/global/u2/r/rongpu/temp/survey-ccds-decam-dr9-z-band-only-trim.fits')
+ccd.write('/global/project/projectdirs/desi/users/rongpu/dr9/fringe/temp/survey-ccds-decam-dr9-z-band-only-trim.fits')
