@@ -7,7 +7,7 @@ from astropy.io import fits
 
 surveyccd_path = '/global/project/projectdirs/cosmo/work/legacysurvey/dr9/survey-ccds-decam-dr9-cut.fits.gz'
 psfex_dir = '/global/cfs/cdirs/cosmo/work/legacysurvey/dr9/calib/patched-psfex'
-psfex_dir_new = '/global/project/projectdirs/desi/users/rongpu/dr9/patched-psfex'
+psfex_dir_new = '/global/project/projectdirs/desi/users/rongpu/dr9/patched-psfex-20200304'
 
 ccd_columns = ['image_filename', 'image_hdu', 'expnum', 'ccdname', 'filter', 'ccd_cuts']
 ccd = fitsio.read(surveyccd_path, columns=ccd_columns)
@@ -37,7 +37,7 @@ for exp_index in exp_index_list:
 
     image_filename = ccd['image_filename'][mask][0]
     psfex_filename = image_filename[:image_filename.find('.fits.fz')]+'-psfex.fits'
-    psfex_filename_new = image_filename[:image_filename.find('.fits.fz')]+'-psfex-patched.fits'
+    # psfex_filename_new = image_filename[:image_filename.find('.fits.fz')]+'-psfex-patched.fits'
     psfex_path = os.path.join(psfex_dir, psfex_filename)
     
     # print(psfex_path)
