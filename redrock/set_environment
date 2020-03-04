@@ -1,0 +1,13 @@
+# git clone -b coadd-fibermaps https://github.com/desihub/desispec
+
+source /global/cfs/cdirs/desi/software/desi_environment.sh master
+module unload desispec
+export DESI_SPECTRO_CALIB=${DESI_ROOT}/spectro/desi_spectro_calib/trunk
+export PYTHONPATH=/global/homes/r/rongpu/moregit/desispec/py/:$PYTHONPATH
+export PATH=/global/homes/r/rongpu/moregit/desispec/bin/:$PATH
+
+export REDUXDIR=/global/cfs/cdirs/desi/spectro/redux/daily
+export OUTDIR=$SCRATCH/desi/minisv2/2_exp_coadd
+mkdir -p $OUTDIR
+
+
