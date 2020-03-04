@@ -26,7 +26,7 @@ params = {'legend.fontsize': 'large',
          'figure.facecolor':'w'}
 plt.rcParams.update(params)
 
-n_node = 6 # Haswell
+n_node = 3 # Haswell
 n_processess = 31
 diagnostic_plot = False
 

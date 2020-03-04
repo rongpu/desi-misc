@@ -113,11 +113,12 @@ for tileid in np.unique(cframes['tileid']):
             else:
                 output_argument = os.path.join('$OUTDIR', str(tileid), 'coadd-{}-{}exp-subset-{}.fits'.
                 format(petal_loc, n_exp, subset_index))
-            output_argument_list.append(output_argument)
 
-            if os.path.isfile(output_argument) and (not overwrite):
+            if os.path.isfile(os.path.expandvars(output_argument)) and (not overwrite):
                 print('\nWarninig: {} already exists!\n'.format(output_argument))
                 continue
+
+            output_argument_list.append(output_argument)
 
             print('time desi_coadd_spectra --coadd-cameras -i {} -o {}'.format(input_argument, output_argument))
 

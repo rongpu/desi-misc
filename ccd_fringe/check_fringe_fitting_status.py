@@ -49,7 +49,8 @@ fringe_old_dir = '/global/homes/d/djschleg/cosmo/staging/decam/DECam_CP-Fringe'
 fringe_new_dir = '/global/project/projectdirs/desi/users/rongpu/dr9/fringe/DECam_CP-Fringe'
 image_dir = '/global/project/projectdirs/cosmo/staging/'
 # surveyccd_path = '/global/project/projectdirs/cosmo/work/legacysurvey/dr9/survey-ccds-decam-dr9-cut.fits.gz'
-surveyccd_path = '/global/homes/r/rongpu/mydesi/dr9/fringe/misc/survey-ccds-decam-dr9-z-band-only-trim.fits'
+# surveyccd_path = '/global/homes/r/rongpu/mydesi/dr9/fringe/misc/survey-ccds-decam-dr9-z-band-only-trim.fits'
+surveyccd_path = '/global/project/projectdirs/desi/users/rongpu/dr9/fringe/temp/survey-ccds-decam-dr9-z-band-only-trim-all-dr9.fits'
 blob_dir = '/global/cscratch1/sd/rongpu/fringe/decam_ccd_blob_mask'
 
 # image_output_dir = '/global/cscratch1/sd/rongpu/fringe/fringe_corrected_image/'
@@ -64,8 +65,9 @@ ccd_columns = ['image_filename', 'image_hdu', 'expnum', 'ccdname', 'filter', 'cc
 ccd = fitsio.read(surveyccd_path, columns=ccd_columns)
 # ccd = fitsio.read(surveyccd_path)
 ccd = Table(ccd)
-mask = ccd['ccd_cuts']==0
-mask &= ccd['filter']=='z' # include only z-band images
+# mask = ccd['ccd_cuts']==0
+# mask &= ccd['filter']=='z' # include only z-band images
+mask = ccd['filter']=='z' # include only z-band images
 ccd = ccd[mask]
 print(len(ccd))
 ccd['ccdnum'] = [ccdnamenumdict[ccd['ccdname'][ii].strip()] for ii in range(len(ccd))]
@@ -103,5 +105,6 @@ for index, img_fn in enumerate(filelist):
     if os.path.isfile(frgscale_output_path):
         filelist_done[index] = True
 
+print('Done     Not-done    Done/Not-done')
 print(np.sum(filelist_done), np.sum(~filelist_done), np.sum(filelist_done)/len(filelist_done))
 

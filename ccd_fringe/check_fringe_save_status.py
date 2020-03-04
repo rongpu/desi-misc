@@ -49,10 +49,11 @@ fringe_old_dir = '/global/homes/d/djschleg/cosmo/staging/decam/DECam_CP-Fringe'
 fringe_new_dir = '/global/project/projectdirs/desi/users/rongpu/dr9/fringe/DECam_CP-Fringe'
 image_dir = '/global/project/projectdirs/cosmo/staging/'
 # surveyccd_path = '/global/project/projectdirs/cosmo/work/legacysurvey/dr9/survey-ccds-decam-dr9-cut.fits.gz'
-surveyccd_path = '/global/homes/r/rongpu/mydesi/dr9/fringe/misc/survey-ccds-decam-dr9-z-band-only-trim.fits'
+# surveyccd_path = '/global/homes/r/rongpu/mydesi/dr9/fringe/misc/survey-ccds-decam-dr9-z-band-only-trim.fits'
+surveyccd_path = '/global/project/projectdirs/desi/users/rongpu/dr9/fringe/temp/survey-ccds-decam-dr9-z-band-only-trim-all-dr9.fits'
 blob_dir = '/global/cscratch1/sd/rongpu/fringe/decam_ccd_blob_mask'
 
-image_output_dir = '/global/cscratch1/sd/rongpu/fringe/fringe_corrected_image/'
+image_output_dir = '/global/cscratch1/sd/rongpu/fringe/fringe_corrected_image_20200302/'
 # frgscale_output_dir = '/global/cscratch1/sd/rongpu/fringe/frgscale/'
 # image_output_dir = '/global/cscratch1/sd/rongpu/fringe/tmp_img/'
 # frgscale_output_dir = '/global/cscratch1/sd/rongpu/fringe/tmp_frgscale/'
@@ -64,8 +65,9 @@ ccd_columns = ['image_filename', 'image_hdu', 'expnum', 'ccdname', 'filter', 'cc
 ccd = fitsio.read(surveyccd_path, columns=ccd_columns)
 # ccd = fitsio.read(surveyccd_path)
 ccd = Table(ccd)
-mask = ccd['ccd_cuts']==0
-mask &= ccd['filter']=='z' # include only z-band images
+# mask = ccd['ccd_cuts']==0
+# mask &= ccd['filter']=='z' # include only z-band images
+mask = ccd['filter']=='z' # include only z-band images
 ccd = ccd[mask]
 print(len(ccd))
 ccd['ccdnum'] = [ccdnamenumdict[ccd['ccdname'][ii].strip()] for ii in range(len(ccd))]
@@ -82,26 +84,29 @@ for index, expnum in enumerate(expnum_list):
     img_fn_write = os.path.join(image_output_dir, ccd['image_filename'][ccd_index].strip())
     if os.path.isfile(img_fn_write):
         expnum_list_done[index] = True
+    else:
+        print(img_fn_write)
 
 print(np.sum(expnum_list_done), np.sum(~expnum_list_done), np.sum(expnum_list_done)/len(expnum_list_done))
 
-############################################### Use txt list ##################################################################
+# ############################################### Use txt list ##################################################################
 
-with open('/global/cscratch1/sd/desimpp/dr9e/image_lists/decamLGexp.txt') as f:
-    filelist = np.array(list(map(str.rstrip, f.readlines())))
-print(len(filelist))
+# with open('/global/cscratch1/sd/desimpp/dr9e/image_lists/decamLGexp.txt') as f:
+#     filelist = np.array(list(map(str.rstrip, f.readlines())))
+# print(len(filelist))
 
-# Select z-band images
-mask = np.array([tt.find('_z_')!=-1 for tt in filelist])
-filelist = filelist[mask]
-print(len(filelist))
+# # Select z-band images
+# mask = np.array([tt.find('_z_')!=-1 for tt in filelist])
+# filelist = filelist[mask]
+# print(len(filelist))
 
-filelist_done = np.zeros(len(filelist), dtype=bool)
+# filelist_done = np.zeros(len(filelist), dtype=bool)
 
-for index, img_fn in enumerate(filelist):
-    img_fn_write = os.path.join(image_output_dir, img_fn)
-    if os.path.isfile(img_fn_write):
-        filelist_done[index] = True
+# for index, img_fn in enumerate(filelist):
+#     img_fn_write = os.path.join(image_output_dir, img_fn)
+#     if os.path.isfile(img_fn_write):
+#         filelist_done[index] = True
 
-print(np.sum(filelist_done), np.sum(~filelist_done), np.sum(filelist_done)/len(filelist_done))
+# print('Done     Not-done    Done/Not-done')
+# print(np.sum(filelist_done), np.sum(~filelist_done), np.sum(filelist_done)/len(filelist_done))
 

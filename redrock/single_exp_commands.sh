@@ -58,6 +58,7 @@ time desi_coadd_spectra --coadd-cameras -i $REDUXDIR/exposures/20200219/00051073
 
 ################# redrock commands: #################
 
+# run redrock in the interactive node:
 # salloc -N 1 -C haswell -q interactive -t 04:00:00
 
 srun -N 1 -n 32 -c 2 rrdesi_mpi -o $OUTDIR/70003/redrock-0-00051053.h5 -z $OUTDIR/70003/zbest-0-00051053.fits $OUTDIR/70003/coadd-0-00051053.fits

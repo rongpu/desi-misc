@@ -11,7 +11,7 @@ from astropy.io import fits
 surveyccd_path = '/global/project/projectdirs/cosmo/work/legacysurvey/dr9/survey-ccds-decam-dr9-cut.fits.gz'
 
 # Load CCD list
-ccd_columns = ['image_filename', 'image_hdu', 'expnum', 'ccdname', 'filter', 'ccd_cuts']
+ccd_columns = ['image_filename', 'image_hdu', 'expnum', 'ccdname', 'filter', 'ccd_cuts', 'mjd_obs']
 ccd = fitsio.read(surveyccd_path, columns=ccd_columns)
 # ccd = fitsio.read(surveyccd_path)
 ccd = Table(ccd)

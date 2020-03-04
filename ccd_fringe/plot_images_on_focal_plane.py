@@ -69,15 +69,16 @@ ccd_dec = [ 0.90299039, 0.90274404, 0.90285652, 0.73894001, 0.73933177, 0.739194
  -0.57674114,-0.74071528,-0.74115162,-0.74130891,-0.74095896,-0.9049206 ,
  -0.90515532]
 
-plot_dir = '/global/project/projectdirs/desi/www/users/rongpu/plots/dr9dev/ccd_fringe_plots/fringe_corrected_img'
+plot_dir = '/global/project/projectdirs/desi/www/users/rongpu/plots/dr9dev/ccd_fringe_plots/fringe_corrected_img_20200302'
 
 img_old_dir = '/global/project/projectdirs/cosmo/staging/'
-img_new_dir = '/global/cscratch1/sd/rongpu/fringe/fringe_corrected_image/'
+img_new_dir = '/global/cscratch1/sd/rongpu/fringe/fringe_corrected_image_20200302/'
 # img_new_dir = '/global/cscratch1/sd/rongpu/fringe/tmp_img2/'
-frgscale_dir = '/global/cscratch1/sd/rongpu/fringe/frgscale/'
+frgscale_dir = '/global/cscratch1/sd/rongpu/fringe/frgscale_applied_20200302/'
 
 # surveyccd_path = '/global/homes/r/rongpu/mydesi/dr9/fringe/misc/survey-ccds-decam-dr9-z-band-only-trim.fits'
-surveyccd_path = '/global/project/projectdirs/cosmo/work/legacysurvey/dr9/survey-ccds-decam-dr9-cut.fits.gz'
+# surveyccd_path = '/global/project/projectdirs/cosmo/work/legacysurvey/dr9/survey-ccds-decam-dr9-cut.fits.gz'
+surveyccd_path = '/global/project/projectdirs/desi/users/rongpu/dr9/fringe/temp/survey-ccds-decam-dr9-z-band-only-trim-all-dr9.fits'
 
 pix_size = 0.262/3600
 
@@ -86,30 +87,38 @@ pix_size = 0.262/3600
 # ccd = fitsio.read(surveyccd_path, columns=ccd_columns)
 ccd = fitsio.read(surveyccd_path)
 ccd = Table(ccd)
-mask = ccd['ccd_cuts']==0
-mask &= ccd['filter']=='z' # include only z-band images
+# mask = ccd['ccd_cuts']==0
+# mask &= ccd['filter']=='z' # include only z-band images
+mask = ccd['filter']=='z' # include only z-band images
 ccd = ccd[mask]
 print(len(ccd))
 ccd['ccdnum'] = [ccdnamenumdict[ccd['ccdname'][ii].strip()] for ii in range(len(ccd))]
 
-# Select CCDs in dr9e
-# with open('/global/project/projectdirs/desi/users/rongpu/dr9/fringe/misc/dr9d_decam.txt') as f:
-with open('/global/project/projectdirs/cosmo/work/users/djschleg/dr9d/files-dr9d-south.txt') as f:
-    filelist = np.array(list(map(str.rstrip, f.readlines())))
-print(len(filelist))
-# # Select z-band images
-# mask = np.array([tt.find('_z_')!=-1 for tt in filelist])
-# filelist = filelist[mask]
-image_filename_list = np.array(list(map(str.rstrip, ccd['image_filename'])))
-mask = np.in1d(image_filename_list, filelist)
-print(np.sum(mask), np.sum(~mask))
-ccd = ccd[mask]
+# # Select CCDs in dr9e
+# # with open('/global/project/projectdirs/desi/users/rongpu/dr9/fringe/misc/dr9d_decam.txt') as f:
+# with open('/global/project/projectdirs/cosmo/work/users/djschleg/dr9d/files-dr9d-south.txt') as f:
+#     filelist = np.array(list(map(str.rstrip, f.readlines())))
+# print(len(filelist))
+# # # Select z-band images
+# # mask = np.array([tt.find('_z_')!=-1 for tt in filelist])
+# # filelist = filelist[mask]
+# image_filename_list = np.array(list(map(str.rstrip, ccd['image_filename'])))
+# mask = np.in1d(image_filename_list, filelist)
+# print(np.sum(mask), np.sum(~mask))
+# ccd = ccd[mask]
 
 expnum_list = np.unique(ccd['expnum'])
+
 # shuffle
 np.random.seed(123)
 # DO NOT USE NP.RANDOM.SHUFFLE
 expnum_list = np.random.choice(expnum_list, size=len(expnum_list), replace=False)
+
+# split among the Cori nodes
+n_node = 4
+task_id = 0
+expnum_list_split = np.array_split(expnum_list, n_node)
+expnum_list = expnum_list_split[task_id]
 
 for expnum in expnum_list[:20]:
 

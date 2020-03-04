@@ -57,10 +57,12 @@ ccdnamenumdict = {'S1': 25, 'S2': 26, 'S3': 27, 'S4':28,
 ccdnamenumdict_inv = {aa: bb for bb, aa in ccdnamenumdict.items()}
 
 fringe_old_dir = '/global/homes/d/djschleg/cosmo/staging/decam/DECam_CP-Fringe'
+# Here using the unnormalized fringe template:
 fringe_new_dir = '/global/project/projectdirs/desi/users/rongpu/dr9/fringe/DECam_CP-Fringe'
 image_dir = '/global/project/projectdirs/cosmo/staging/'
 # surveyccd_path = '/global/project/projectdirs/cosmo/work/legacysurvey/dr9/survey-ccds-decam-dr9-cut.fits.gz'
-surveyccd_path = '/global/homes/r/rongpu/mydesi/dr9/fringe/misc/survey-ccds-decam-dr9-z-band-only-trim.fits'
+# surveyccd_path = '/global/homes/r/rongpu/mydesi/dr9/fringe/misc/survey-ccds-decam-dr9-z-band-only-trim.fits'
+surveyccd_path = '/global/project/projectdirs/desi/users/rongpu/dr9/fringe/temp/survey-ccds-decam-dr9-z-band-only-trim-all-dr9.fits'
 blob_dir = '/global/cscratch1/sd/rongpu/fringe/decam_ccd_blob_mask'
 
 # image_output_dir = '/global/cscratch1/sd/rongpu/fringe/fringe_corrected_image/'
@@ -101,13 +103,27 @@ ccd_columns = ['image_filename', 'image_hdu', 'expnum', 'ccdname', 'filter', 'cc
 ccd = fitsio.read(surveyccd_path, columns=ccd_columns)
 # ccd = fitsio.read(surveyccd_path)
 ccd = Table(ccd)
-mask = ccd['ccd_cuts']==0
-mask &= ccd['filter']=='z' # include only z-band images
+# mask = ccd['ccd_cuts']==0
+# mask &= ccd['filter']=='z' # include only z-band images
+mask = ccd['filter']=='z' # include only z-band images
 ccd = ccd[mask]
 print(len(ccd))
 ccd['ccdnum'] = [ccdnamenumdict[ccd['ccdname'][ii].strip()] for ii in range(len(ccd))]
 
 expnum_list = np.unique(ccd['expnum'])
+
+# Remove exposures that are already done
+expnum_list_done = np.zeros(len(expnum_list), dtype=bool)
+for index, expnum in enumerate(expnum_list):
+    # Find an arbitrary CCD in the exposure to get the image filename
+    ccd_index = np.where((ccd['expnum']==expnum))[0][0]
+    frgscale_output_path = os.path.join(frgscale_output_dir, ccd['image_filename'][ccd_index].strip().replace('.fits.fz', '.txt'))
+    if os.path.isfile(frgscale_output_path):
+        expnum_list_done[index] = True
+print('Done     Not-done    Done/Not-done')
+print(np.sum(expnum_list_done), np.sum(~expnum_list_done), np.sum(expnum_list_done)/len(expnum_list_done))
+expnum_list = expnum_list[~expnum_list_done]
+
 # shuffle
 np.random.seed(123)
 # DO NOT USE NP.RANDOM.SHUFFLE
