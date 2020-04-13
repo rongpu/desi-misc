@@ -8,6 +8,25 @@ from astropy.io import fits
 
 from scipy.optimize import curve_fit
 
+test_q = False  # only process a small number of exposures
+
+output_dir = '/global/cfs/projectdirs/cosmo/work/legacysurvey/dr9/calib/patched-psfex'
+surveyccd_path = '/global/cfs/projectdirs/cosmo/work/legacysurvey/dr9/survey-ccds-decam-dr9-cut.fits.gz'
+
+radius_lim1, radius_lim2 = 5.0, 6.0
+radius_lim3, radius_lim4 = 7., 8.
+
+params = {
+'g_weight2': 0.00045, 'g_plexp2': -2.,
+'r_weight2': 0.00033, 'r_plexp2': -2.,
+'z_alpha2': 17.650, 'z_beta2': 1.7, 'z_weight2': 0.0145,
+}
+
+outlier_ccd_list = ['N20', 'S8', 'S10', 'S18', 'S21', 'S27']
+params_outlier = {'z_alpha2': 16, 'z_beta2': 2.3, 'z_weight2': 0.0095}
+pixscale = 0.262
+
+
 def get_frac_moffat(r, alpha, beta):
     """
     Calculate the fraction of light within radius r of a Moffat profile.
@@ -41,24 +60,6 @@ def get_sb_double_moffat(r, alpha1, beta1, alpha2, beta2, weight2):
         + weight2 * (beta2-1)/(np.pi * alpha2**2)*(1 + (r/alpha2)**2)**(-beta2)
     return i
 
-
-test_q = False  # only process a small number of exposures
-
-output_dir = '/global/cfs/projectdirs/cosmo/work/legacysurvey/dr9/calib/patched-psfex'
-surveyccd_path = '/global/cfs/projectdirs/cosmo/work/legacysurvey/dr9/survey-ccds-decam-dr9-cut.fits.gz'
-
-radius_lim1, radius_lim2 = 5.0, 6.0
-radius_lim3, radius_lim4 = 7., 8.
-
-params = {
-'g_weight2': 0.00045, 'g_plexp2': -2.,
-'r_weight2': 0.00033, 'r_plexp2': -2.,
-'z_alpha2': 17.650, 'z_beta2': 1.7, 'z_weight2': 0.0145,
-}
-
-outlier_ccd_list = ['N20', 'S8', 'S10', 'S18', 'S21', 'S27']
-params_outlier = {'z_alpha2': 16, 'z_beta2': 2.3, 'z_weight2': 0.0095}
-pixscale = 0.262
 
 ccd = fitsio.read(surveyccd_path)
 ccd = Table(ccd)
