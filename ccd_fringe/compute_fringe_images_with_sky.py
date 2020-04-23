@@ -3,7 +3,7 @@
 # Luckily it worked here since the HDU indices are the same for all the
 # exposures used here.
 
-# Use the pre-computed nightly sky model for the computation
+# Use the pre-computed nightly sky model for the computation to save memory
 
 from __future__ import division, print_function
 import sys, os, glob, time, warnings, gc
