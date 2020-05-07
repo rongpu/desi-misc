@@ -1,5 +1,3 @@
-# This is the v1 template fitting code
-
 from __future__ import division, print_function
 import sys, os, glob, time, warnings, gc
 import matplotlib
@@ -88,24 +86,28 @@ image_dir = '/global/project/projectdirs/cosmo/staging'
 blob_dir = '/global/cfs/cdirs/desi/users/rongpu/dr9/decam_ccd_blob_mask'
 surveyccd_path = '/global/project/projectdirs/cosmo/work/legacysurvey/dr9/survey-ccds-decam-dr9.fits.gz'
 template_dir = '/global/cscratch1/sd/rongpu/dr9dev/sky_pattern/sky_templates_v2/'
+skyscale_dir = '/global/cscratch1/sd/rongpu/dr9dev/sky_pattern/sky_scales_v2/'
 
 skyrun = Table.read('/global/cscratch1/sd/rongpu/temp/skyrunsgoodcountexpnumv48dr8.fits')
 print(len(skyrun))
 
 sky_path_list = glob.glob(os.path.join(template_dir, '*.fits.fz'))
+print(len(sky_path_list))
 
 ccd_columns = ['image_hdu', 'expnum', 'ccdname', 'ccdskycounts']
 ccd = Table(fitsio.read(surveyccd_path, columns=ccd_columns))
 
-plot_dir = '/global/cfs/cdirs/desi/www/users/rongpu/plots/dr9dev/sky_pattern/sky_templates_v2/fit_scale'
+plot_dir = '/global/cfs/cdirs/desi/www/users/rongpu/plots/dr9dev/sky_pattern/sky_templates_v2/median_fit_scale'
 
 binsize = 2
 pix_size = 0.262/3600*binsize
+##..##
+##..##
 plots_per_run = 3
 
 image_vrange = {'g':5, 'r':6, 'z':30}
 
-overwrite = False
+overwrite = True
 
 def make_plots(sky_path):
     
@@ -115,8 +117,7 @@ def make_plots(sky_path):
         # continue
         return None
 
-    str_loc1, str_loc2 = sky_path.find('sky_template_'), sky_path.find('.fits.fz')
-    run = int(sky_path[str_loc1+15:str_loc2])
+    run = int(sky_path[len(os.path.join(template_dir, 'sky_templates_'))+1:-8])
     
     # Get run info
     mask = skyrun['run']==run
@@ -127,17 +128,43 @@ def make_plots(sky_path):
     vrange = image_vrange[band]
 
     skyrun_idx = np.where(mask)[0]
+    print('\nrun {}, {} exposures'.format(run, len(skyrun_idx)))
+
     np.random.seed(123+run)
     skyrun_idx = np.random.choice(skyrun_idx, size=plots_per_run, replace=False)
 
-    for index in skyrun_idx:
+    made_it = False
+
+    # Loop over exposures in the run
+    for jj, index in enumerate(skyrun_idx[:1]):
+
+        ####################
+        start = time.time()
+        ####################
 
         image_filename = skyrun['image_filename'][index].strip()
         image_path = os.path.join(image_dir, image_filename)
-        ood_path = image_path.replace('_ooi_', '_ood_')
         expnum = skyrun['expnum'][index]
 
-        plot_path = os.path.join(plot_dir, band, '{}_{}_image_{}_fitscale.png'.format(band, run, expnum))
+        plot_path = os.path.join(plot_dir, band, '{}_{}_image_{}_medianscale.png'.format(band, run, expnum))
+        skyscale_path = os.path.join(skyscale_dir, image_filename.replace('.fits.fz', '-skyscale.txt'))
+
+        if not os.path.isfile(skyscale_path):
+            # print(skyscale_path, 'does not exist!!')
+            continue
+
+
+        # # The file should be at least 1 hours old to ensure it's not being written
+        # time_modified = os.path.getmtime(skyscale_path)
+        # if (time.time() - time_modified)/3600 < 1:
+        #     continue
+
+        skyscale = Table.read(skyscale_path, format='ascii.commented_header')
+        mask = skyscale['ccdname']!='S7'
+        n_ccd = np.sum(mask)
+        if n_ccd==0:
+            print(skyscale_path, 'has no good CCD! skip')
+            continue
 
         if (overwrite==False) and os.path.isfile(plot_path):
             # print(plot_path, 'already exists!!!')
@@ -146,17 +173,15 @@ def make_plots(sky_path):
         if not os.path.exists(os.path.dirname(plot_path)):
             os.makedirs(os.path.dirname(plot_path))
 
+        medianskyscale = skyscale['medianskyscale'][0]
+
+        mask = ccd['expnum']==skyrun['expnum'][index]
+        ccdskycounts_median = np.median(ccd['ccdskycounts'][mask])
+
         print(plot_path)
         Path(plot_path).touch()
 
-        text = 'run {}, {} band\n'.format(run, band)
-        text += 'expnum = {}\n'.format(expnum)
-        text += 'scale = per-CCD fit\n'
-        # text += '{} exposures stacked\n'.format(n_exposure)
-        # text += 'observed over {:.1f} days\n'.format(mjd_span)
-
-        scale_min, scale_max = np.inf, -np.inf
-        scale_list = []
+        print(jj, '/', len(skyrun_idx), plot_path)
 
         plt.figure(figsize=(13.7, 13.075))
 
@@ -165,114 +190,49 @@ def make_plots(sky_path):
             # print(ii)
             ccdname = ccdnamenumdict_inv[ccdnum]
 
-            try:
-                img = fits.getdata(image_path, extname=ccdname)
-                ood = fits.getdata(ood_path, extname=ccdname)
-            except:
-                print(ccdname+' does not exist in image!')
-                continue
+            if ii==0:
+                try:
+                    img = fits.getdata(image_path, extname=ccdname)
+                except:
+                    print(ccdname+' does not exist in image!')
+                    continue
 
-            try:
-                sky = fits.getdata(sky_path, extname=ccdname)
-            except:
-                print(ccdname+' does not exist in template!')
-                continue
+                try:
+                    sky = fits.getdata(sky_path, extname=ccdname)
+                except:
+                    print(ccdname+' does not exist in template!')
+                    continue
 
-            blob_path = os.path.join(blob_dir, 'blob_mask', image_filename.replace('.fits.fz', '-blobmask.npz'))
-            try:
-                blob_data = np.load(blob_path)
-            except:
-                print(blob_path+' does not exist!')
-                continue
+                # Apply the median scale to the template
+                sky *= medianskyscale
 
-            # Find the entry in survey-ccd
-            if len(ccdname)==3:
-                ccdname_space_filled = ccdname
-            else:
-                ccdname_space_filled = ccdname+' '
-            ccd_index = np.where((ccd['expnum']==expnum) & (ccd['ccdname']==ccdname_space_filled))[0][0]
+                # # Remove median sky
+                # sky = np.median(img[blob].flatten())
+                # img = img - sky
 
-            # Get HDU index
-            # with fitsio.FITS(img_fn) as f:
-            #     hdu_index = f.movnam_ext(ccdname)
-            hdu_index = ccd['image_hdu'][ccd_index]
+                # naive sky estimation
+                mask = (img<np.percentile(img.flatten(), 95))
+                median_sky = np.median(img[mask].flatten())
+                img = img - median_sky
 
-            # Rescale the sky template by ccdskycounts
-            sky *= ccd['ccdskycounts'][ccd_index]
+                # Apply sky pattern correction
+                img = img - sky
 
-            try:
-                blob = blob_data['hdu'+str(hdu_index).zfill(2)]
-            except:
-                print(blob_path+' hdu'+str(hdu_index)+' does not exist!')
+                ################ downsize image ################
 
-            # # Remove median sky
-            # sky = np.median(img[blob].flatten())
-            # img = img - sky
+                # trim edges to enable downsizing
+                # trimmed image size need to be multiples of binsize
+                trim_size_x = img.shape[1] % binsize
+                trim_size_y = img.shape[0] % binsize
+                img = img[:(img.shape[0]-trim_size_y), :(img.shape[1]-trim_size_x)]
 
-            # naive sky estimation
-            mask = (img<np.percentile(img.flatten(), 95))
-            median_sky = np.median(img[mask].flatten())
-            img = img - median_sky
+                # to ignore NAN values, use np.nanmean
+                img = np.nanmean(np.nanmean(img.reshape((img.shape[0]//binsize, binsize, img.shape[1]//binsize,-1)), axis=3), axis=1)
 
-            # Apply blob mask
-            img1 = img.copy()
-            img1_mask = (blob==True) & (ood==0)
-            img1[~img1_mask] = np.nan
-            img1_mask = np.isfinite(img1)
+                ################################################
 
-            if np.sum(~img1_mask)/np.prod(img1_mask.shape)>0.8:
-                print('{} {:.3f}% pixels are masked; skip'.format(ccdname, np.sum(~img1_mask)/np.prod(img1_mask.shape)*100))
-                continue
-            # elif np.sum(~img1_mask)/np.prod(img1_mask.shape)>0.3:
-            #     print('{} {:.3f}% pixels are masked'.format(ccdname, np.sum(~img1_mask)/np.prod(img1_mask.shape)*100))
-
-            # 3-sigma clipping
-            img1_nmad = nmad(img1[img1_mask]) # sky level
-            # mask = (img1<-3*img1_nmad) | (img1>3*img1_nmad)
-            # img1[mask] = 0
-            ##############################################################
-            mask = (img1<-3*img1_nmad) | (img1>3*img1_nmad)
-            if np.sum(mask)/np.sum(img1_mask)>0.03:
-                print('{} {:.3f}% pixels are clipped'.format(ccdname, np.sum(mask)/np.sum(img1_mask)*100))
-            ##############################################################
-            mask = (img1<-3*img1_nmad)
-            img1[mask] = -3*img1_nmad
-            mask = (img1>3*img1_nmad)
-            img1[mask] = 3*img1_nmad
-
-            img1_flat = img1[img1_mask].flatten()
-            sky_flat = sky[img1_mask].flatten()
-            slope, intercept, r_value, p_value, std_err = stats.linregress(sky_flat, img1_flat)
-            scale_list.append(slope)
-
-            if (slope < scale_min) and (ccdname!='S7'):
-                scale_min = slope
-                scale_min_ccdname = ccdname
-            if (slope > scale_max) and (ccdname!='S7'):
-                scale_max = slope
-                scale_max_ccdname = ccdname
-
-            if slope>2 or slope<0:
-                print('{} slope, intercept = {:.4f}, {:4f}'.format(ccdname, slope, intercept))
-
-            # Apply sky pattern correction
-            img = img - sky * slope
-
-            ################ downsize image ################
-
-            # trim edges to enable downsizing
-            # trimmed image size need to be multiples of binsize
-            trim_size_x = img.shape[1] % binsize
-            trim_size_y = img.shape[0] % binsize
-            img = img[:(img.shape[0]-trim_size_y), :(img.shape[1]-trim_size_x)]
-
-            # to ignore NAN values, use np.nanmean
-            img = np.nanmean(np.nanmean(img.reshape((img.shape[0]//binsize, binsize, img.shape[1]//binsize,-1)), axis=3), axis=1)
-
-            ################################################
-
-            img[~np.isfinite(img)] = 0
-            img = gaussian_filter(img, 3, mode='reflect', truncate=3)
+                img[~np.isfinite(img)] = 0
+                img = gaussian_filter(img, 3, mode='reflect', truncate=3)
 
             ysize, xsize = img.shape
             ra, dec = ccd_ra[ii], ccd_dec[ii]
@@ -280,10 +240,13 @@ def make_plots(sky_path):
             fig = plt.imshow(img.T, cmap='seismic', vmin=-vrange, vmax=vrange, 
                        extent=(ra-ysize*pix_size/2, ra+ysize*pix_size/2, dec-xsize*pix_size/2, dec+xsize*pix_size/2))
 
-        text += 'median scale = {:.1f}\n'.format(np.median(scale_list))
-        text += 'min scale = {:.1f} ({})\n'.format(scale_min, scale_min_ccdname)
-        text += 'max scale = {:.1f} ({})\n'.format(scale_max, scale_max_ccdname)
-        plt.text(1.08, 0.660, text, fontsize=17)
+        text = 'run {}, {} band\n'.format(run, band)
+        text += 'expnum = {}\n'.format(expnum)
+        text += 'scale = median scale\n'
+        text += 'median ccdskycounts = {:.1f}\n'.format(ccdskycounts_median)
+        text += 'median scale = {:.1f}\n'.format(medianskyscale)
+        text += 'n_ccd = {}\n'.format(n_ccd)
+        plt.text(1.08, 0.710, text, fontsize=16)
 
         plt.axis([1.1, -1.1, -1.05, 1.05])
         plt.axis('off')
@@ -294,13 +257,13 @@ def make_plots(sky_path):
         plt.savefig(plot_path)
         plt.close()
 
-def main():
+        made_it = True
 
-    with Pool(processes=n_processess) as pool:
-        res = pool.map(make_plots, sky_path_list)
+    return made_it
 
-    print('Done!!!!!!!!!!!!!!!!!!!!!')
+########################################################
 
-if __name__=="__main__":
-    main()
+for sky_path in sky_path_list:
 
+    if make_plots(sky_path):
+        break

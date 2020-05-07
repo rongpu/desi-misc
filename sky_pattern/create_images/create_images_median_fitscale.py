@@ -14,7 +14,10 @@ from astropy import wcs
 
 from scipy.ndimage.filters import gaussian_filter
 from pathlib import Path
+from scipy import stats
+from multiprocessing import Pool
 
+################################################################################
 
 params = {'legend.fontsize': 'large',
          'axes.labelsize': 'large',
@@ -23,6 +26,8 @@ params = {'legend.fontsize': 'large',
          'ytick.labelsize':'large',
          'figure.facecolor':'w'} 
 plt.rcParams.update(params)
+
+nmad = lambda x: 1.4826 * np.median(np.abs(x-np.median(x)))
 
 ccdnamenumdict = {'S1': 25, 'S2': 26, 'S3': 27, 'S4':28,
                   'S5': 29, 'S6': 30, 'S7': 31,
@@ -73,34 +78,46 @@ ccd_dec = [ 0.90299039, 0.90274404, 0.90285652, 0.73894001, 0.73933177, 0.739194
  -0.57674114,-0.74071528,-0.74115162,-0.74130891,-0.74095896,-0.9049206 ,
  -0.90515532]
 
+################################################################################
+
+n_processess = 32
+
 image_dir = '/global/project/projectdirs/cosmo/staging'
+blob_dir = '/global/cfs/cdirs/desi/users/rongpu/dr9/decam_ccd_blob_mask'
 surveyccd_path = '/global/project/projectdirs/cosmo/work/legacysurvey/dr9/survey-ccds-decam-dr9.fits.gz'
+template_dir = '/global/cscratch1/sd/rongpu/dr9dev/sky_pattern/sky_templates_v2/'
+skyscale_dir = '/global/cscratch1/sd/rongpu/dr9dev/sky_pattern/sky_scales_v2/'
 
+skyrun = Table.read('/global/cscratch1/sd/rongpu/temp/skyrunsgoodcountexpnumv48dr8.fits')
+print(len(skyrun))
 
-skyrun = Table.read('/global/cscratch1/sd/rongpu/temp/skyrunsgoodcountexpnumv48dr8_less.fits')
-sky_path_list = glob.glob('/global/cscratch1/sd/rongpu/dr9dev/sky_pattern/sky_templates_v1/*.fits.fz')
-
-plot_dir = '/global/cfs/cdirs/desi/www/users/rongpu/plots/dr9dev/sky_pattern/ccdskycounts_weighted'
+sky_path_list = glob.glob(os.path.join(template_dir, '*.fits.fz'))
+print(len(sky_path_list))
 
 ccd_columns = ['image_hdu', 'expnum', 'ccdname', 'ccdskycounts']
 ccd = Table(fitsio.read(surveyccd_path, columns=ccd_columns))
 
+plot_dir = '/global/cfs/cdirs/desi/www/users/rongpu/plots/dr9dev/sky_pattern/sky_templates_v2/median_fit_scale'
+
 binsize = 2
 pix_size = 0.262/3600*binsize
-plots_per_run = 2
+##..##
+##..##
+plots_per_run = 3
 
-image_vrange = {'g':6, 'r':7, 'z':30}
+image_vrange = {'g':5, 'r':6, 'z':30}
 
-# first_plot = True
-for sky_path in sky_path_list[::-1]:
+overwrite = False
+
+def make_plots(sky_path):
     
-    # The file should be at least 30 minutes old to ensure it's not being written
+    # The file should be at least 5 hours old to ensure it's not being written
     time_modified = os.path.getmtime(sky_path)
-    if (time.time() - time_modified)/3600 < 0.5:
-        continue
-        
-    str_loc1, str_loc2 = sky_path.find('sky_template_'), sky_path.find('.fits.fz')
-    run = int(sky_path[str_loc1+15:str_loc2])
+    if (time.time() - time_modified)/3600 < 5:
+        # continue
+        return None
+
+    run = int(sky_path[len(os.path.join(template_dir, 'sky_templates_'))+1:-8])
     
     # Get run info
     mask = skyrun['run']==run
@@ -111,33 +128,62 @@ for sky_path in sky_path_list[::-1]:
     vrange = image_vrange[band]
 
     skyrun_idx = np.where(mask)[0]
+    print('\nrun {}, {} exposures'.format(run, len(skyrun_idx)))
+
     np.random.seed(123+run)
     skyrun_idx = np.random.choice(skyrun_idx, size=plots_per_run, replace=False)
 
-    for index in skyrun_idx:
+    # Loop over exposures in the run
+    for jj, index in enumerate(skyrun_idx):
 
-        image_path = os.path.join(image_dir, skyrun['image_filename'][index])
+        ####################
+        start = time.time()
+        ####################
+
+        image_filename = skyrun['image_filename'][index].strip()
+        image_path = os.path.join(image_dir, image_filename)
         expnum = skyrun['expnum'][index]
 
-        plot_path = os.path.join(plot_dir, band, '{}_{}_image_{}.png'.format(band, run, expnum))
-        if os.path.isfile(plot_path):
+        plot_path = os.path.join(plot_dir, band, '{}_{}_image_{}_medianscale.png'.format(band, run, expnum))
+        skyscale_path = os.path.join(skyscale_dir, image_filename.replace('.fits.fz', '-skyscale.txt'))
+
+        if not os.path.isfile(skyscale_path):
+            # print(skyscale_path, 'does not exist!!')
+            continue
+
+        # The file should be at least 1 hours old to ensure it's not being written
+        time_modified = os.path.getmtime(skyscale_path)
+        if (time.time() - time_modified)/3600 < 1:
+            continue
+
+        skyscale = Table.read(skyscale_path, format='ascii.commented_header')
+        mask = skyscale['ccdname']!='S7'
+        n_ccd = np.sum(mask)
+        if n_ccd==0:
+            print(skyscale_path, 'has no good CCD! skip')
+            continue
+
+        if (overwrite==False) and os.path.isfile(plot_path):
             # print(plot_path, 'already exists!!!')
             continue
 
-        Path(plot_path).touch()
-        
-        print(plot_path)
+        if not os.path.exists(os.path.dirname(plot_path)):
+            os.makedirs(os.path.dirname(plot_path))
 
-        text = 'run {}, {} band\n'.format(run, band)
-        text += 'expnum = {}'.format(expnum)
-        # text += '{} exposures stacked\n'.format(n_exposure)
-        # text += 'observed over {:.1f} days\n'.format(mjd_span)
+        medianskyscale = skyscale['medianskyscale'][0]
+
+        mask = ccd['expnum']==skyrun['expnum'][index]
+        ccdskycounts_median = np.median(ccd['ccdskycounts'][mask])
+
+        print(plot_path)
+        Path(plot_path).touch()
+
+        print(jj, '/', len(skyrun_idx), plot_path)
 
         plt.figure(figsize=(13.7, 13.075))
-        plt.text(1.04, 0.821, text, fontsize=17)
 
         for ii, ccdnum in enumerate(ccdnum_list):
-            
+    
             # print(ii)
             ccdname = ccdnamenumdict_inv[ccdnum]
 
@@ -153,12 +199,12 @@ for sky_path in sky_path_list[::-1]:
                 print(ccdname+' does not exist in template!')
                 continue
 
-            # Find the entry in survey-ccd
-            if len(ccdname)==3:
-                ccdname_space_filled = ccdname
-            else:
-                ccdname_space_filled = ccdname+' '
-            ccd_index = np.where((ccd['expnum']==expnum) & (ccd['ccdname']==ccdname_space_filled))[0][0]
+            # Apply the median scale to the template
+            sky *= medianskyscale
+
+            # # Remove median sky
+            # sky = np.median(img[blob].flatten())
+            # img = img - sky
 
             # naive sky estimation
             mask = (img<np.percentile(img.flatten(), 95))
@@ -166,7 +212,7 @@ for sky_path in sky_path_list[::-1]:
             img = img - median_sky
 
             # Apply sky pattern correction
-            img = img - sky * ccd['ccdskycounts'][ccd_index]
+            img = img - sky
 
             ################ downsize image ################
 
@@ -184,17 +230,36 @@ for sky_path in sky_path_list[::-1]:
             img[~np.isfinite(img)] = 0
             img = gaussian_filter(img, 3, mode='reflect', truncate=3)
 
-            ysize, xsize = img.shape        
+            ysize, xsize = img.shape
             ra, dec = ccd_ra[ii], ccd_dec[ii]
 
             fig = plt.imshow(img.T, cmap='seismic', vmin=-vrange, vmax=vrange, 
                        extent=(ra-ysize*pix_size/2, ra+ysize*pix_size/2, dec-xsize*pix_size/2, dec+xsize*pix_size/2))
+
+        text = 'run {}, {} band\n'.format(run, band)
+        text += 'expnum = {}\n'.format(expnum)
+        text += 'scale = median scale\n'
+        text += 'median ccdskycounts = {:.1f}\n'.format(ccdskycounts_median)
+        text += 'median scale = {:.1f}\n'.format(medianskyscale)
+        text += 'n_ccd = {}\n'.format(n_ccd)
+        plt.text(1.08, 0.710, text, fontsize=16)
 
         plt.axis([1.1, -1.1, -1.05, 1.05])
         plt.axis('off')
         fig.axes.get_xaxis().set_visible(False)
         fig.axes.get_yaxis().set_visible(False)
         # plt.colorbar(fraction=0.04, pad=0.04)
-        plt.tight_layout()        
+        plt.tight_layout()
         plt.savefig(plot_path)
         plt.close()
+
+def main():
+
+    with Pool(processes=n_processess) as pool:
+        res = pool.map(make_plots, sky_path_list)
+
+    print('Done!!!!!!!!!!!!!!!!!!!!!')
+
+if __name__=="__main__":
+    main()
+

@@ -133,7 +133,7 @@ def compute_smooth_sky(run, plot_q=False, diagnostic_touch=True):
         print(ccdnum)
 
         # ####################
-        # start = time.clock()
+        # start = time.time()
         # ####################
 
         img_list = []
@@ -260,7 +260,7 @@ def compute_smooth_sky(run, plot_q=False, diagnostic_touch=True):
         hdul_w.write(data=img_median_smooth, extname=ccdname, compress='rice')
 
         # ##################
-        # end = time.clock()
+        # end = time.time()
         # print('Took {:.1f} seconds'.format(end - start))
         # ##################
 

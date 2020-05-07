@@ -1,7 +1,3 @@
-# To get the same plots as from Jupyter notebooks:
-# 1. Run everything in Ipython notebook
-# 2. Run the imports first, then the other lines
-
 from __future__ import division, print_function
 import sys, os, glob, time, warnings, gc
 import matplotlib
@@ -89,9 +85,12 @@ n_processess = 32
 image_dir = '/global/project/projectdirs/cosmo/staging'
 blob_dir = '/global/cfs/cdirs/desi/users/rongpu/dr9/decam_ccd_blob_mask'
 surveyccd_path = '/global/project/projectdirs/cosmo/work/legacysurvey/dr9/survey-ccds-decam-dr9.fits.gz'
+template_dir = '/global/cscratch1/sd/rongpu/dr9dev/sky_pattern/sky_templates_v2/'
 
-skyrun = Table.read('/global/cscratch1/sd/rongpu/temp/skyrunsgoodcountexpnumv48dr8_less.fits')
-sky_path_list = glob.glob('/global/cscratch1/sd/rongpu/dr9dev/sky_pattern/sky_templates_v1/*.fits.fz')
+skyrun = Table.read('/global/cscratch1/sd/rongpu/temp/skyrunsgoodcountexpnumv48dr8.fits')
+print(len(skyrun))
+
+sky_path_list = glob.glob(os.path.join(template_dir, '*.fits.fz'))
 
 ccd_columns = ['image_hdu', 'expnum', 'ccdname', 'ccdskycounts']
 ccd = Table(fitsio.read(surveyccd_path, columns=ccd_columns))
@@ -100,7 +99,7 @@ plot_dir = '/global/cfs/cdirs/desi/www/users/rongpu/plots/dr9dev/sky_pattern/sky
 
 binsize = 2
 pix_size = 0.262/3600*binsize
-plots_per_run = 2
+plots_per_run = 3
 
 image_vrange = {'g':5, 'r':6, 'z':30}
 
@@ -108,9 +107,9 @@ overwrite = False
 
 def make_plots(sky_path):
     
-    # The file should be at least 30 minutes old to ensure it's not being written
+    # The file should be at least 5 hours old to ensure it's not being written
     time_modified = os.path.getmtime(sky_path)
-    if (time.time() - time_modified)/3600 < 0.5:
+    if (time.time() - time_modified)/3600 < 5:
         # continue
         return None
 
@@ -140,6 +139,9 @@ def make_plots(sky_path):
         if (overwrite==False) and os.path.isfile(plot_path):
             # print(plot_path, 'already exists!!!')
             continue
+
+        if not os.path.exists(os.path.dirname(plot_path)):
+            os.makedirs(os.path.dirname(plot_path))
 
         print(plot_path)
         Path(plot_path).touch()

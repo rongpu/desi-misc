@@ -1,13 +1,13 @@
 #!/bin/bash
 #SBATCH --qos=debug
-#SBATCH --nodes=9
+#SBATCH --nodes=4
 #SBATCH --cpus-per-task=64
 #SBATCH --constraint=haswell
-#SBATCH --time=00:30:00
-#SBATCH --ntasks=9
+#SBATCH --time=00:10:00
+#SBATCH --ntasks=4
 
-cd $HOME/jobs/sky_template_taskfarmer
+cd $HOME/temp/taskfarmer_debug
 export PATH=$PATH:/usr/common/tig/taskfarmer/1.5/bin:$(pwd)
 export THREADS=1
 
-runcommands.sh sky_task.txt
+runcommands.sh task.txt

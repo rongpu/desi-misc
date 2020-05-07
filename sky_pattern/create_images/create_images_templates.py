@@ -1,7 +1,3 @@
-# To get the same plots as from Jupyter notebooks:
-# 1. Run everything in Ipython notebook
-# 2. Run the imports first, then the other lines
-
 from __future__ import division, print_function
 import sys, os, glob, time, warnings, gc
 import matplotlib
@@ -92,7 +88,16 @@ surveyccd_path = '/global/project/projectdirs/cosmo/work/legacysurvey/dr9/survey
 # template_dir = '/global/cscratch1/sd/rongpu/dr9dev/sky_pattern/sky_templates_v1/'
 template_dir = '/global/cscratch1/sd/rongpu/dr9dev/sky_pattern/sky_templates_v2/'
 
-skyrun = Table.read('/global/cscratch1/sd/rongpu/temp/skyrunsgoodcountexpnumv48dr8_less.fits')
+max_exposure = 50
+
+skyrun = Table.read('/global/cscratch1/sd/rongpu/temp/skyrunsgoodcountexpnumv48dr8.fits')
+# skyrun = Table.read('/global/cscratch1/sd/rongpu/temp/skyrunsgoodcountexpnumv48dr8_less.fits')
+print(len(skyrun))
+
+mask = skyrun['ok']==True
+skyrun = skyrun[mask]
+print(len(skyrun))
+
 sky_path_list = glob.glob(os.path.join(template_dir, '*.fits.fz'))
 
 # ccd_columns = ['image_hdu', 'expnum', 'ccdname', 'ccdskycounts']
@@ -109,9 +114,9 @@ overwrite = False
 
 def make_plots(sky_path):
     
-    # The file should be at least 30 minutes old to ensure it's not being written
+    # The file should be at least 5 hours old to ensure it's not being written
     time_modified = os.path.getmtime(sky_path)
-    if (time.time() - time_modified)/3600 < 0.5:
+    if (time.time() - time_modified)/3600 < 5:
         # continue
         return None
 
@@ -120,7 +125,7 @@ def make_plots(sky_path):
     
     # Get run info
     mask = skyrun['run']==run
-    n_exposure = np.sum(mask)
+    n_exposure = np.minimum(max_exposure, np.sum(mask))
     band = skyrun['filter'][mask][0]
     mjd_span = skyrun['mjd_obs'][mask].max() - skyrun['mjd_obs'][mask].min()
 
@@ -129,6 +134,9 @@ def make_plots(sky_path):
     if (overwrite==False) and os.path.isfile(plot_path):
         # print(plot_path, 'already exists!!!')
         return None
+
+    if not os.path.exists(os.path.dirname(plot_path)):
+        os.makedirs(os.path.dirname(plot_path))
 
     print(plot_path)
     Path(plot_path).touch()

@@ -88,15 +88,25 @@ mask = skyrun['ok']==True
 skyrun = skyrun[mask]
 print(len(skyrun))
 
+# Exclude templates already created
+fn_list = glob.glob(os.path.join(output_dir, '*.fits.fz'))
+run_list_done = [int(fn[len(os.path.join(output_dir, 'sky_templates_'))+1:-8]) for fn in fn_list]
+mask = ~np.in1d(skyrun['run'], run_list_done)
+skyrun = skyrun[mask]
+print(len(skyrun), len(run_list_done))
+
+########################## Exclude z band ##########################
 band = 'z'
-mask = skyrun['filter']==band
+mask = skyrun['filter']!=band
 skyrun = skyrun[mask]
 print(len(skyrun))
+####################################################################
 
 run_list = np.unique(skyrun['run'])
+print(len(run_list))
 
 # shuffle
-np.random.seed(123)
+np.random.seed(444)
 # DO NOT USE NP.RANDOM.SHUFFLE
 run_list = np.random.choice(run_list, size=len(run_list), replace=False)
 
@@ -137,7 +147,7 @@ def compute_smooth_sky(run, plot_q=False, diagnostic_touch=True):
         print(ccdnum)
 
         # ####################
-        # start = time.clock()
+        # start = time.time()
         # ####################
 
         img_list = []
@@ -187,7 +197,8 @@ def compute_smooth_sky(run, plot_q=False, diagnostic_touch=True):
             # ccd_index = np.where((ccd['expnum']==skyrun['expnum'][skyrun_index]) & (ccd['image_hdu']==hdu_index))[0][0]
 
             # Get the median ccdskycounts of the exposure
-            mask = (ccd['expnum']==skyrun['expnum'][skyrun_index]) & (ccd['ccdname']!='S7') & (ccd['ccdname']!='S7 ')
+            # mask = (ccd['expnum']==skyrun['expnum'][skyrun_index]) & (ccd['ccdname']!='S7') & (ccd['ccdname']!='S7 ') # too slow!
+            mask = ccd['expnum']==skyrun['expnum'][skyrun_index]
             ccdskycounts_median = np.median(ccd['ccdskycounts'][mask])
             # print('ccdskycounts_median = {:.4f}'.format(ccdskycounts_median))
             
@@ -299,7 +310,7 @@ def compute_smooth_sky(run, plot_q=False, diagnostic_touch=True):
         hdul_w.write(data=img_median_smooth, extname=ccdname, compress='rice')
 
         # ##################
-        # end = time.clock()
+        # end = time.time()
         # print('Took {:.1f} seconds'.format(end - start))
         # ##################
 
