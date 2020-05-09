@@ -101,8 +101,7 @@ plot_dir = '/global/cfs/cdirs/desi/www/users/rongpu/plots/dr9dev/sky_pattern/sky
 
 binsize = 2
 pix_size = 0.262/3600*binsize
-##..##
-##..##
+
 plots_per_run = 3
 
 image_vrange = {'g':5, 'r':6, 'z':30}
@@ -157,8 +156,10 @@ def make_plots(sky_path):
             continue
 
         skyscale = Table.read(skyscale_path, format='ascii.commented_header')
-        mask = skyscale['ccdname']!='S7'
-        n_ccd = np.sum(mask)
+        if len(skyscale)==0:
+            print(skyscale_path, 'has no good CCD! skip')
+            continue
+        n_ccd = np.sum(skyscale['ccdname']!='S7')
         if n_ccd==0:
             print(skyscale_path, 'has no good CCD! skip')
             continue

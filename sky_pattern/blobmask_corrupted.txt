@@ -1,0 +1,8 @@
+242836 /global/cfs/cdirs/desi/users/rongpu/dr9/decam_ccd_blob_mask/blob_mask/decam/CP/V4.8.2a/CP20131010/c4d_131011_073337_ooi_g_ls9-blobmask.npz
+349335 /global/cfs/cdirs/desi/users/rongpu/dr9/decam_ccd_blob_mask/blob_mask/decam/CP/V4.8.2a/CP20140817/c4d_140818_063938_ooi_z_ls9-blobmask.npz
+577943 /global/cfs/cdirs/desi/users/rongpu/dr9/decam_ccd_blob_mask/blob_mask/decam/CP/V4.8.2a/CP20160926/c4d_160927_091257_ooi_z_ls9-blobmask.npz
+605581 /global/cfs/cdirs/desi/users/rongpu/dr9/decam_ccd_blob_mask/blob_mask/decam/CP/V4.8.2/CP20161230/c4d_161231_014834_ooi_r_ls9-blobmask.npz
+674014 /global/cfs/cdirs/desi/users/rongpu/dr9/decam_ccd_blob_mask/blob_mask/decam/CP/V4.8.2a/CP20170831/c4d_170901_065640_ooi_z_ls9-blobmask.npz
+691514 /global/cfs/cdirs/desi/users/rongpu/dr9/decam_ccd_blob_mask/blob_mask/decam/CP/V4.1/CP20171027/c4d_171028_012841_ooi_z_v1-blobmask.npz
+775108 /global/cfs/cdirs/desi/users/rongpu/dr9/decam_ccd_blob_mask/blob_mask/decam/CP/V4.8.2a/CP20180917/c4d_180918_050826_ooi_z_ls9-blobmask.npz
+784973 /global/cfs/cdirs/desi/users/rongpu/dr9/decam_ccd_blob_mask/blob_mask/decam/CP/V4.1/CP20181018/c4d_181019_022956_ooi_z_v1-blobmask.npz

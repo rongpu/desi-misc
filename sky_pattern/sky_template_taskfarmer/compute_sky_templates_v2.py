@@ -26,7 +26,7 @@ params = {'legend.fontsize': 'large',
          'figure.facecolor':'w'} 
 plt.rcParams.update(params)
 
-n_processess = 10
+n_processess = 16
 
 parser = argparse.ArgumentParser()
 parser.add_argument('n_task')
@@ -144,7 +144,7 @@ def compute_smooth_sky(run, plot_q=False, diagnostic_touch=True):
 
     for ccdnum in ccdnum_list:
 
-        print(ccdnum)
+        # print(ccdnum)
 
         # ####################
         # start = time.time()
@@ -220,7 +220,7 @@ def compute_smooth_sky(run, plot_q=False, diagnostic_touch=True):
 
         # Fill in NAN values
         mask = ~np.isfinite(img_median)
-        print('number of NAN pixels:', np.sum(mask))
+        # print('number of NAN pixels:', np.sum(mask))
         img_median[mask] = 0
 
         img_median1 = img_median.copy()
@@ -252,7 +252,7 @@ def compute_smooth_sky(run, plot_q=False, diagnostic_touch=True):
 
         else:
 
-            print('Edge glow exposure')
+            # print('Edge glow exposure')
 
             # r-band edge glow
             # trim edges
@@ -281,8 +281,8 @@ def compute_smooth_sky(run, plot_q=False, diagnostic_touch=True):
 
         # Convert the downsized smooth image to full size
         interp_func = interp2d(x_small_grid, y_small_grid, img_median1_smooth, kind='linear')
-        x_grid, y_grid = np.arange(img.shape[1]), np.arange(img.shape[0])
-        img_median_smooth = interp_func(x_grid, y_grid).reshape(img.shape)
+        x_grid, y_grid = np.arange(img_median.shape[1]), np.arange(img_median.shape[0])
+        img_median_smooth = interp_func(x_grid, y_grid).reshape(img_median.shape)
 
         ######################################## Plots ########################################
         if plot_q:
@@ -291,7 +291,7 @@ def compute_smooth_sky(run, plot_q=False, diagnostic_touch=True):
             plt.imshow((img_median_smooth).T, cmap='seismic', vmin=-2*sky_nmad, vmax=2*sky_nmad)
             plt.colorbar()
             plt.tight_layout()
-            plt.savefig(os.path.join(plot_dir, 'smooth_sky_{}_{}_{}.png'.format(band, run, ccdnum)))
+            plt.savefig(os.path.join(plot_dir, 'smooth_sky_{}_{}_{}_template.png'.format(band, run, ccdnum)))
             plt.close()
             # plt.show()
 
@@ -301,7 +301,7 @@ def compute_smooth_sky(run, plot_q=False, diagnostic_touch=True):
             plt.imshow((img_median_4pix_gauss).T, cmap='seismic', vmin=-2*sky_nmad, vmax=2*sky_nmad)
             plt.colorbar()
             plt.tight_layout()
-            plt.savefig(os.path.join(plot_dir, 'smooth_sky_residual_{}_{}_{}.png'.format(band, run, ccdnum)))
+            plt.savefig(os.path.join(plot_dir, 'smooth_sky_{}_{}_{}_residual.png'.format(band, run, ccdnum)))
             plt.close()
             # plt.show()
 

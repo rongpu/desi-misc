@@ -16,6 +16,7 @@ from scipy.ndimage.filters import gaussian_filter
 from pathlib import Path
 from scipy import stats
 from multiprocessing import Pool
+import argparse
 
 ################################################################################
 
@@ -26,6 +27,15 @@ params = {'legend.fontsize': 'large',
          'ytick.labelsize':'large',
          'figure.facecolor':'w'} 
 plt.rcParams.update(params)
+
+n_processes = 32
+
+parser = argparse.ArgumentParser()
+parser.add_argument('n_task')
+parser.add_argument('task_id')
+args = parser.parse_args()
+n_task = int(args.n_task)
+task_id = int(args.task_id)
 
 nmad = lambda x: 1.4826 * np.median(np.abs(x-np.median(x)))
 
@@ -80,8 +90,6 @@ ccd_dec = [ 0.90299039, 0.90274404, 0.90285652, 0.73894001, 0.73933177, 0.739194
 
 ################################################################################
 
-n_processess = 32
-
 image_dir = '/global/project/projectdirs/cosmo/staging'
 blob_dir = '/global/cfs/cdirs/desi/users/rongpu/dr9/decam_ccd_blob_mask'
 surveyccd_path = '/global/project/projectdirs/cosmo/work/legacysurvey/dr9/survey-ccds-decam-dr9.fits.gz'
@@ -89,16 +97,43 @@ template_dir = '/global/cscratch1/sd/rongpu/dr9dev/sky_pattern/sky_templates_v2/
 skyscale_dir = '/global/cscratch1/sd/rongpu/dr9dev/sky_pattern/sky_scales_v2/'
 
 skyrun = Table.read('/global/cscratch1/sd/rongpu/temp/skyrunsgoodcountexpnumv48dr8.fits')
-print(len(skyrun))
+print('skyrun', len(skyrun))
 
 sky_path_list = glob.glob(os.path.join(template_dir, '*.fits.fz'))
-print(len(sky_path_list))
+
+# ####################################################################################
+# # The file should be at least 5 hours old to ensure it's not being written
+# for sky_path in sky_path_list:
+#     time_modified = os.path.getmtime(sky_path)
+#     if (time.time() - time_modified)/3600 < 5:
+#         sky_path_list.remove(sky_path)
+# print('sky_path_list', len(sky_path_list))
+# ####################################################################################
 
 # #################################### Exclude z band ####################################
-# sky_path_list = sky_path_list[::-1]
 # mask = np.array(['_z_' in sky_path for sky_path in sky_path_list])
 # sky_path_list = np.array(sky_path_list)[~mask]
 # ########################################################################################
+
+run_list = np.array([int(fn[len(os.path.join(template_dir, 'sky_templates_'))+1:-8]) for fn in sky_path_list])
+print('run_list', len(run_list))
+
+# Remove completed runs from list
+run_status = Table.read('/global/cscratch1/sd/rongpu/dr9dev/sky_pattern/fitting_status.fits')
+run_status = run_status[run_status['done']==False]
+mask = np.in1d(run_list, run_status['run'])
+run_list = run_list[mask]
+print('run_list', len(run_list))
+
+# shuffle
+np.random.seed(123)
+# DO NOT USE NP.RANDOM.SHUFFLE
+run_list = np.random.choice(run_list, size=len(run_list), replace=False)
+
+# split among the Cori nodes
+run_list_split = np.array_split(run_list, n_task)
+run_list = run_list_split[task_id]
+print('Number of runs in this node:', len(run_list))
 
 ccd_columns = ['image_hdu', 'expnum', 'ccdname', 'ccdskycounts']
 ccd = Table(fitsio.read(surveyccd_path, columns=ccd_columns))
@@ -115,15 +150,15 @@ image_vrange = {'g':5, 'r':6, 'z':30}
 
 overwrite = False
 
-def template_fitting(sky_path, diagnostic_touch=True):
+def template_fitting(run, diagnostic_touch=True):
     
-    # The file should be at least 5 hours old to ensure it's not being written
-    time_modified = os.path.getmtime(sky_path)
-    if (time.time() - time_modified)/3600 < 5:
-        # continue
-        return None
+    # # The file should be at least 5 hours old to ensure it's not being written
+    # time_modified = os.path.getmtime(sky_path)
+    # if (time.time() - time_modified)/3600 < 5:
+    #     # continue
+    #     return None
 
-    run = int(sky_path[len(os.path.join(template_dir, 'sky_templates_'))+1:-8])
+    # run = int(sky_path[len(os.path.join(template_dir, 'sky_templates_'))+1:-8])
 
     # Get run info
     mask = skyrun['run']==run
@@ -131,6 +166,8 @@ def template_fitting(sky_path, diagnostic_touch=True):
     band = skyrun['filter'][mask][0]
     mjd_span = skyrun['mjd_obs'][mask].max() - skyrun['mjd_obs'][mask].min()
     
+    sky_path = os.path.join(template_dir, 'sky_template_{}_{}.fits.fz'.format(band, run))
+
     vrange = image_vrange[band]
 
     skyrun_idx = np.where(mask)[0]
@@ -318,8 +355,9 @@ def template_fitting(sky_path, diagnostic_touch=True):
                 fig = plt.imshow(img.T, cmap='seismic', vmin=-vrange, vmax=vrange, 
                            extent=(ra-ysize*pix_size/2, ra+ysize*pix_size/2, dec-xsize*pix_size/2, dec+xsize*pix_size/2))
 
-        mask = result['ccdname']!='S7'
-        if np.sum(mask)>0:
+        mask = skyscale['ccdname']!='S7'
+        n_ccd = np.sum(mask)
+        if n_ccd>0:
             medianskyscale = np.median(result['ccdskyscale'][mask])
             result['medianskyscale'] = medianskyscale
         else:
@@ -357,8 +395,8 @@ def template_fitting(sky_path, diagnostic_touch=True):
 
 def main():
 
-    with Pool(processes=n_processess) as pool:
-        res = pool.map(template_fitting, sky_path_list)
+    with Pool(processes=n_processes) as pool:
+        res = pool.map(template_fitting, run_list)
 
     print('Done!!!!!!!!!!!!!!!!!!!!!')
 
