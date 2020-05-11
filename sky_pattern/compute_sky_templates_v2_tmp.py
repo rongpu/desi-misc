@@ -1,3 +1,7 @@
+# Changes:
+# 1. median_over_exposure(ccdskycounts)
+# 2. r-band edge glow removal
+
 from __future__ import division, print_function
 import sys, os, glob, time, warnings, gc
 import matplotlib
@@ -23,13 +27,6 @@ params = {'legend.fontsize': 'large',
 plt.rcParams.update(params)
 
 n_processes = 12
-
-parser = argparse.ArgumentParser()
-parser.add_argument('n_task')
-parser.add_argument('task_id')
-args = parser.parse_args()
-n_task = int(args.n_task)
-task_id = int(args.task_id)
 
 nmad = lambda x: 1.4826 * np.median(np.abs(x-np.median(x)))
 
@@ -59,12 +56,7 @@ ccdnum_list = [ 1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 16, 1
        35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51,
        52, 53, 54, 55, 56, 57, 58, 59, 60, 62]
 
-# Shape of the DECam CP image
-img_shape = (4094, 2046)
-
 max_exposure = 50
-
-expnum_blacklist = [569657, 600963, 600966, 768677, 803349, 803356]
 
 #######################################################################################################################
 
@@ -73,7 +65,8 @@ blob_dir = '/global/cfs/cdirs/desi/users/rongpu/dr9/decam_ccd_blob_mask'
 
 image_dir = '/global/project/projectdirs/cosmo/staging'
 surveyccd_path = '/global/project/projectdirs/cosmo/work/legacysurvey/dr9/survey-ccds-decam-dr9.fits.gz'
-output_dir = '/global/cscratch1/sd/rongpu/dr9dev/sky_pattern/sky_templates_v2_new'
+plot_dir = '/global/cfs/cdirs/desi/www/users/rongpu/plots/dr9dev/sky_pattern/test'
+output_dir = '/global/cscratch1/sd/rongpu/dr9dev/sky_pattern/sky_templates_v2'
 
 # ccd_columns = ['image_filename', 'image_hdu', 'expnum', 'ccdname', 'filter', 'ccd_cuts', 'ccdskycounts', 'plver']
 ccd_columns = ['image_hdu', 'expnum', 'ccdname', 'ccdskycounts']
@@ -105,22 +98,13 @@ print(len(skyrun), len(run_list_done))
 run_list = np.unique(skyrun['run'])
 print(len(run_list))
 
-# shuffle
-np.random.seed(123)
-# DO NOT USE NP.RANDOM.SHUFFLE
-run_list = np.random.choice(run_list, size=len(run_list), replace=False)
-
-# split among the Cori nodes
-run_list_split = np.array_split(run_list, n_task)
-run_list = run_list_split[task_id]
 print('Number of runs in this node:', len(run_list))
 
-# Wait to avoid race condition from writing files and checking file status
 time.sleep(60)
 
 #######################################################################################################################
 
-def compute_smooth_sky(run, diagnostic_touch=True):
+def compute_smooth_sky(run, plot_q=False, diagnostic_touch=True):
 
     skyrun_idx = np.where(skyrun['run']==run)[0]
     band = skyrun['filter'][skyrun_idx[0]]
@@ -157,11 +141,6 @@ def compute_smooth_sky(run, diagnostic_touch=True):
         ccdname = ccdnamenumdict_inv[ccdnum]
         
         for index, skyrun_index in enumerate(skyrun_idx):
-
-            expnum = skyrun['expnum'][skyrun_index]
-            
-            if expnum in expnum_blacklist:
-                continue
             
             # print(ccdnum, ccdname, index, '/', len(skyrun_idx))
 
@@ -197,12 +176,6 @@ def compute_smooth_sky(run, diagnostic_touch=True):
                 print(blob_path+' hdu'+str(hdu_index)+' does not exist!')
                 continue
             
-            if ccdname=='S7':
-                # Only keep the good half of the S7
-                half = img_shape[1] // 2
-                img = img[:, half:]
-                blob = blob[:, half:]
-
             # Remove median sky
             sky = np.median(img[blob].flatten())
             img = img - sky
@@ -248,22 +221,25 @@ def compute_smooth_sky(run, diagnostic_touch=True):
         mask = (img_median>3*sky_nmad)
         img_median1[mask] = 3*sky_nmad
 
-        if ccdname=='S7':
+        ########################## Remove the large-scale smooth component with gaussian filter ##########################
 
-            # trim three of edges
-            trim_size = 20
-            trim_size_top = 1
-            img_median1 = img_median1[trim_size:(img_median1.shape[0]-trim_size), trim_size_top:(img_median1.shape[1]-trim_size)]
+        if not (band=='r' and skyrun['expnum'][skyrun_index]<298251):
+            
+            ################### Normal exposures ####################
+
+            # trim edges
+            trim_size = 10            
+            img_median1 = img_median1[trim_size:(img_median1.shape[0]-trim_size), trim_size:(img_median1.shape[1]-trim_size)]
 
             # downsize the image to speed up gaussian filter
             binsize = 2
             img_median1 = np.nanmean(np.nanmean(img_median1.reshape((img_median1.shape[0]//binsize, binsize, img_median1.shape[1]//binsize,-1)), axis=3), axis=1)
-            x_small_grid = trim_size_top + binsize/2 + binsize*np.arange(img_median1.shape[1])
+            x_small_grid = trim_size + binsize/2 + binsize*np.arange(img_median1.shape[1])
             y_small_grid = trim_size + binsize/2 + binsize*np.arange(img_median1.shape[0])
 
-        elif (band=='r' and skyrun['expnum'][skyrun_index]<298251):
+        else:
 
-            ################### r band edge glow exposures ###################
+            # print('Edge glow exposure')
 
             # r-band edge glow
             # trim edges
@@ -287,20 +263,6 @@ def compute_smooth_sky(run, diagnostic_touch=True):
             else:
                 y_small_grid = trim_size + extra_trim_size + binsize/2 + binsize*np.arange(img_median1.shape[0])
 
-        else:
-
-            ################### Normal exposures ####################
-
-            # trim edges
-            trim_size = 10            
-            img_median1 = img_median1[trim_size:(img_median1.shape[0]-trim_size), trim_size:(img_median1.shape[1]-trim_size)]
-
-            # downsize the image to speed up gaussian filter
-            binsize = 2
-            img_median1 = np.nanmean(np.nanmean(img_median1.reshape((img_median1.shape[0]//binsize, binsize, img_median1.shape[1]//binsize,-1)), axis=3), axis=1)
-            x_small_grid = trim_size + binsize/2 + binsize*np.arange(img_median1.shape[1])
-            y_small_grid = trim_size + binsize/2 + binsize*np.arange(img_median1.shape[0])
-
         # Gaussian filtering
         img_median1_smooth = gaussian_filter(img_median1, 60, mode='reflect')
 
@@ -309,13 +271,26 @@ def compute_smooth_sky(run, diagnostic_touch=True):
         x_grid, y_grid = np.arange(img_median.shape[1]), np.arange(img_median.shape[0])
         img_median_smooth = interp_func(x_grid, y_grid).reshape(img_median.shape)
 
-        if ccdname=='S7':
-            # Add back the other half
-            tmp = np.zeros(img_shape)
-            half = img_shape[1] // 2
-            tmp[:, half:] = img_median_smooth
-            img_median_smooth = tmp
+        ######################################## Plots ########################################
+        if plot_q:
 
+            plt.figure(figsize=(17, 8))
+            plt.imshow((img_median_smooth).T, cmap='seismic', vmin=-2*sky_nmad, vmax=2*sky_nmad)
+            plt.colorbar()
+            plt.tight_layout()
+            plt.savefig(os.path.join(plot_dir, 'smooth_sky_{}_{}_{}_template.png'.format(band, run, ccdnum)))
+            plt.close()
+            # plt.show()
+
+            # Plot 4-pixel gaussian smoothed fringe image
+            img_median_4pix_gauss = gaussian_filter((img_median-img_median_smooth), 4, mode='reflect')
+            plt.figure(figsize=(17, 8))
+            plt.imshow((img_median_4pix_gauss).T, cmap='seismic', vmin=-2*sky_nmad, vmax=2*sky_nmad)
+            plt.colorbar()
+            plt.tight_layout()
+            plt.savefig(os.path.join(plot_dir, 'smooth_sky_{}_{}_{}_residual.png'.format(band, run, ccdnum)))
+            plt.close()
+            # plt.show()
 
         ################################ Save sky template ###############################
 

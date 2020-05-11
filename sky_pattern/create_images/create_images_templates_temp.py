@@ -86,7 +86,7 @@ image_dir = '/global/project/projectdirs/cosmo/staging'
 blob_dir = '/global/cfs/cdirs/desi/users/rongpu/dr9/decam_ccd_blob_mask'
 surveyccd_path = '/global/project/projectdirs/cosmo/work/legacysurvey/dr9/survey-ccds-decam-dr9.fits.gz'
 # template_dir = '/global/cscratch1/sd/rongpu/dr9dev/sky_pattern/sky_templates_v1/'
-template_dir = '/global/cscratch1/sd/rongpu/dr9dev/sky_pattern/sky_templates_v2_patched/'
+template_dir = '/global/cscratch1/sd/rongpu/dr9dev/sky_pattern/sky_templates_v2_new'
 
 max_exposure = 50
 
@@ -104,13 +104,15 @@ sky_path_list = glob.glob(os.path.join(template_dir, '*.fits.fz'))
 # ccd = Table(fitsio.read(surveyccd_path, columns=ccd_columns))
 
 # plot_dir = '/global/cfs/cdirs/desi/www/users/rongpu/plots/dr9dev/sky_pattern/sky_templates_v1/templates'
-plot_dir = '/global/cfs/cdirs/desi/www/users/rongpu/plots/dr9dev/sky_pattern/sky_templates_v2/templates_s7_patched'
+plot_dir = '/global/cfs/cdirs/desi/www/users/rongpu/plots/dr9dev/sky_pattern/sky_templates_v2/templates_new'
 
 vrange = 2
 binsize = 2
 pix_size = 0.262/3600*binsize
 
 overwrite = False
+
+# run_list = [239, 414, 426, 610, 800]
 
 def make_plots(sky_path):
     
@@ -122,6 +124,9 @@ def make_plots(sky_path):
 
     str_loc1, str_loc2 = sky_path.find('sky_template_'), sky_path.find('.fits.fz')
     run = int(sky_path[str_loc1+15:str_loc2])
+
+    # if not run in run_list:
+    #     continue
     
     # Get run info
     mask = skyrun['run']==run

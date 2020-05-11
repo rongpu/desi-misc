@@ -118,6 +118,8 @@ print('Number of runs in this node:', len(run_list))
 # Wait to avoid race condition from writing files and checking file status
 time.sleep(60)
 
+run_list = [239, 414, 426, 610, 800]
+
 #######################################################################################################################
 
 def compute_smooth_sky(run, diagnostic_touch=True):

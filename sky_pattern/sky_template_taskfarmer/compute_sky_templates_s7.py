@@ -25,7 +25,7 @@ params = {'legend.fontsize': 'large',
          'figure.facecolor':'w'} 
 plt.rcParams.update(params)
 
-n_processess = 20
+n_processes = 20
 plot_q = True
 vrange = 2
 
@@ -304,7 +304,7 @@ def compute_smooth_sky(run, plot_q=plot_q, diagnostic_touch=True):
 
 def main():
 
-    with Pool(processes=n_processess) as pool:
+    with Pool(processes=n_processes) as pool:
         res = pool.map(compute_smooth_sky, run_list)
 
     print('All done!!!!!!!!!!!!!!!')
