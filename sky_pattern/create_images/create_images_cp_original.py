@@ -93,12 +93,12 @@ skyscale_dir = '/global/cscratch1/sd/rongpu/dr9dev/sky_pattern/sky_scales_v2/'
 skyrun = Table.read('/global/cscratch1/sd/rongpu/temp/skyrunsgoodcountexpnumv48dr8.fits')
 print(len(skyrun))
 
-sky_path_list = glob.glob(os.path.join(template_dir, '*.fits.fz'))
+run_list = np.unique(skyrun['run'])
 
 # shuffle
 np.random.seed(323)
 # DO NOT USE NP.RANDOM.SHUFFLE
-sky_path_list = np.random.choice(sky_path_list, size=len(sky_path_list), replace=False)
+run_list = np.random.choice(run_list, size=len(run_list), replace=False)
 
 # ccd_columns = ['image_hdu', 'expnum', 'ccdname', 'ccdskycounts']
 # ccd = Table(fitsio.read(surveyccd_path, columns=ccd_columns))
@@ -113,15 +113,7 @@ image_vrange = {'g':5, 'r':6, 'z':30}
 
 overwrite = True
 
-def make_plots(sky_path):
-    
-    # # The file should be at least 5 hours old to ensure it's not being written
-    # time_modified = os.path.getmtime(sky_path)
-    # if (time.time() - time_modified)/3600 < 5:
-    #     # continue
-    #     return None
-
-    run = int(sky_path[len(os.path.join(template_dir, 'sky_templates_'))+1:-8])
+def make_plots(run):
     
     # Get run info
     mask = skyrun['run']==run
@@ -223,7 +215,7 @@ def make_plots(sky_path):
 def main():
 
     with Pool(processes=n_processes) as pool:
-        res = pool.map(make_plots, sky_path_list)
+        res = pool.map(make_plots, run_list)
 
     print('Done!!!!!!!!!!!!!!!!!!!!!')
 

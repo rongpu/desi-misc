@@ -85,6 +85,8 @@ img_shape = (4094, 2046)
 
 n_processes = 32
 
+overwrite = False
+
 parser = argparse.ArgumentParser()
 parser.add_argument('n_task')
 parser.add_argument('task_id')
@@ -95,11 +97,15 @@ task_id = int(args.task_id)
 image_dir = '/global/project/projectdirs/cosmo/staging'
 blob_dir = '/global/cfs/cdirs/desi/users/rongpu/dr9/decam_ccd_blob_mask'
 surveyccd_path = '/global/project/projectdirs/cosmo/work/legacysurvey/dr9/survey-ccds-decam-dr9.fits.gz'
-template_dir = '/global/cscratch1/sd/rongpu/dr9dev/sky_pattern/sky_templates_v2_patched/'
-skyscale_dir = '/global/cscratch1/sd/rongpu/dr9dev/sky_pattern/sky_scales_v2/'
+########################!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!########################!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+template_dir = '/global/cscratch1/sd/rongpu/dr9dev/sky_pattern/sky_templates/'
+########################!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!########################!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+skyscale_dir = '/global/cscratch1/sd/rongpu/dr9dev/sky_pattern/sky_scales/'
 
 skyrun = Table.read('/global/cscratch1/sd/rongpu/temp/skyrunsgoodcountexpnumv48dr8.fits')
 print('skyrun', len(skyrun))
+
+skyrun_all = skyrun.copy()
 
 # sky_path_list = glob.glob(os.path.join(template_dir, '*.fits.fz'))
 
@@ -152,8 +158,6 @@ plots_per_run = 3
 
 image_vrange = {'g':5, 'r':6, 'z':30}
 
-overwrite = False
-
 def template_fitting(expnum, diagnostic_touch=True):
     
     # # The file should be at least 5 hours old to ensure it's not being written
@@ -176,9 +180,12 @@ def template_fitting(expnum, diagnostic_touch=True):
     mask = skyrun['run']==run
     skyrun_idx = np.where(mask)[0]
     # print('\nrun {}, {} exposures'.format(run, len(skyrun_idx)))
+
+    mask = skyrun_all['run']==run
+    expnum_list_plot = skyrun_all['expnum']
     
     np.random.seed(123+run)
-    skyrun_idx_plot = np.random.choice(skyrun_idx, size=plots_per_run, replace=False)
+    expnum_list_plot = np.random.choice(expnum_list_plot, size=plots_per_run, replace=False)
 
     ####################
     start = time.time()
@@ -219,11 +226,11 @@ def template_fitting(expnum, diagnostic_touch=True):
     else:
         blob_data = np.load(blob_path)
 
-    Path(skyscale_path).touch()        
+    Path(skyscale_path).touch()
     if diagnostic_touch:
         Path('/global/u2/r/rongpu/temp/sky_scale_being_written/expnum_{}'.format(expnum)).touch()
 
-    if plot_q and (skyrun_index in skyrun_idx_plot):
+    if plot_q and (expnum in expnum_list_plot):
 
         plot_path = os.path.join(plot_dir, band, '{}_{}_image_{}_fitscale.png'.format(band, run, expnum))
 
@@ -246,6 +253,9 @@ def template_fitting(expnum, diagnostic_touch=True):
 
         ccdname = ccdnamenumdict_inv[ccdnum]
         # print(ii, ccdname)
+
+        if ccdname=='S7':
+            continue
 
         try:
             img = fits.getdata(image_path, extname=ccdname)
@@ -281,15 +291,15 @@ def template_fitting(expnum, diagnostic_touch=True):
             blob = blob_data['hdu'+str(hdu_index).zfill(2)]
         except:
             print(blob_path+' hdu'+str(hdu_index)+' does not exist!')
+            continue
 
         if ccdname=='S7':
-
             # Only keep the good half of the S7
             half = img_shape[1] // 2
-            img = img[:, half:]
-            ood = ood[:, half:]
-            sky = sky[:, half:]
-            blob = blob[:, half:]
+            img = img[:, :half]
+            ood = ood[:, :half]
+            sky = sky[:, :half]
+            blob = blob[:, :half]
 
         # # Remove median sky
         # sky = np.median(img[blob].flatten())
@@ -331,7 +341,7 @@ def template_fitting(expnum, diagnostic_touch=True):
         slope, intercept, r_value, p_value, std_err = stats.linregress(sky_flat, img1_flat)
         result.add_row((hdu_index, ccdname, slope, 0))
 
-        if plot_q and (skyrun_index in skyrun_idx_plot):
+        if plot_q and (expnum in expnum_list_plot):
 
             if (slope < scale_min) and (ccdname!='S7'):
                 scale_min = slope
@@ -350,7 +360,7 @@ def template_fitting(expnum, diagnostic_touch=True):
                 # Add back the other half
                 tmp = np.zeros(img_shape)
                 half = img_shape[1] // 2
-                tmp[:, half:] = img
+                tmp[:, :half] = img
                 img = tmp
 
             ################ downsize image ################
@@ -390,7 +400,7 @@ def template_fitting(expnum, diagnostic_touch=True):
     if diagnostic_touch:
         os.remove('/global/u2/r/rongpu/temp/sky_scale_being_written/expnum_{}'.format(expnum))
 
-    if plot_q and (skyrun_index in skyrun_idx_plot) & (len(result)>0):
+    if plot_q and (expnum in expnum_list_plot) and (len(result)>0):
 
         print('making plots')
 

@@ -86,7 +86,7 @@ image_dir = '/global/project/projectdirs/cosmo/staging'
 blob_dir = '/global/cfs/cdirs/desi/users/rongpu/dr9/decam_ccd_blob_mask'
 surveyccd_path = '/global/project/projectdirs/cosmo/work/legacysurvey/dr9/survey-ccds-decam-dr9.fits.gz'
 # template_dir = '/global/cscratch1/sd/rongpu/dr9dev/sky_pattern/sky_templates_v1/'
-template_dir = '/global/cscratch1/sd/rongpu/dr9dev/sky_pattern/sky_templates_v2_patched/'
+template_dir = '/global/cscratch1/sd/rongpu/dr9dev/sky_pattern/sky_templates_final/'
 
 max_exposure = 50
 
@@ -104,7 +104,7 @@ sky_path_list = glob.glob(os.path.join(template_dir, '*.fits.fz'))
 # ccd = Table(fitsio.read(surveyccd_path, columns=ccd_columns))
 
 # plot_dir = '/global/cfs/cdirs/desi/www/users/rongpu/plots/dr9dev/sky_pattern/sky_templates_v1/templates'
-plot_dir = '/global/cfs/cdirs/desi/www/users/rongpu/plots/dr9dev/sky_pattern/sky_templates_v2/templates_s7_patched'
+plot_dir = '/global/cfs/cdirs/desi/www/users/rongpu/plots/dr9dev/sky_pattern/sky_templates_v2/templates_final'
 
 vrange = 2
 binsize = 2
