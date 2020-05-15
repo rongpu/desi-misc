@@ -1,3 +1,5 @@
+# Rerun template fitting for a subset of the runs
+
 from __future__ import division, print_function
 import sys, os, glob, time, warnings, gc
 import matplotlib
