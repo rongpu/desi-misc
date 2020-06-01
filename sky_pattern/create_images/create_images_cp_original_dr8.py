@@ -147,6 +147,7 @@ def make_plots(expnum):
     if np.sum(mask)>0:
         ccd_index = np.where(mask)[0][0]
     else:
+        print('Exposure {} does not exist in CCDs file'.format(expnum))
         return None
         
     image_filename = ccd['image_filename'][ccd_index].strip()
@@ -164,7 +165,7 @@ def make_plots(expnum):
     if not os.path.exists(os.path.dirname(plot_path)):
         os.makedirs(os.path.dirname(plot_path))
 
-    print(plot_path)
+    # print(plot_path)
     # Path(plot_path).touch()
 
     plt.figure(figsize=(13.7, 13.075))
@@ -177,7 +178,8 @@ def make_plots(expnum):
         try:
             img = fits.getdata(image_path, extname=ccdname)
         except:
-            print(ccdname+' does not exist in image!')
+            if ccdname!='S30':
+                print(ccdname+' does not exist in image!')
             continue
 
         if (ccdname=='S7') or ((run in halfed_n10_run_list) and (ccdname=='N10')):

@@ -1,4 +1,8 @@
 # Replace the bad S30 templates with the previous run's template
+################################################################
+# This script did not correct for the noramlization offsets as 
+# in nreplace_n15.py, but it should
+################################################################
 
 from __future__ import division, print_function
 import sys, os, glob, time, warnings, gc

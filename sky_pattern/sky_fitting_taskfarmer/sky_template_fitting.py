@@ -402,7 +402,7 @@ def template_fitting(expnum, diagnostic_touch=True):
 
     if plot_q and (expnum in expnum_list_plot) and (len(result)>0):
 
-        print('making plots')
+        # print('making plots')
 
         text = 'run {}, {} band\n'.format(run, band)
         text += 'expnum = {}\n'.format(expnum)

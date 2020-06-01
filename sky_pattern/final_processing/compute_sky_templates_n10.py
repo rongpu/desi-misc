@@ -1,3 +1,5 @@
+# Remove the bad half CCD from N10
+
 from __future__ import division, print_function
 import sys, os, glob, time, warnings, gc
 import matplotlib
