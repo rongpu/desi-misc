@@ -1,3 +1,6 @@
+# Recompute the sky templates for edge glowing r-band exposures by using 
+# a much smaller smoothing scale
+
 from __future__ import division, print_function
 import sys, os, glob, time, warnings, gc
 import matplotlib
@@ -64,6 +67,8 @@ img_shape = (4094, 2046)
 
 max_exposure = 50
 
+smoothing_scale = 5 # in pixels
+
 expnum_blacklist = [243224, 243233, 243250, 243261, 247512, 247519, 247524, 247535,
        247536, 247543, 247544, 247546, 251698, 261222, 261236, 261245,
        261264, 261289, 263153, 263682, 269550, 269553, 269556, 269573,
@@ -82,7 +87,7 @@ blob_dir = '/global/cfs/cdirs/desi/users/rongpu/dr9/decam_ccd_blob_mask'
 
 image_dir = '/global/project/projectdirs/cosmo/staging'
 surveyccd_path = '/global/project/projectdirs/cosmo/work/legacysurvey/dr9/survey-ccds-decam-dr9.fits.gz'
-output_dir = '/global/cscratch1/sd/rongpu/dr9dev/sky_pattern/sky_templates'
+output_dir = '/global/cscratch1/sd/rongpu/dr9dev/sky_pattern/sky_templates_final_edge_glow'
 
 # ccd_columns = ['image_filename', 'image_hdu', 'expnum', 'ccdname', 'filter', 'ccd_cuts', 'ccdskycounts', 'plver']
 ccd_columns = ['image_hdu', 'expnum', 'ccdname', 'ccdskycounts']
@@ -97,22 +102,18 @@ mask = skyrun['ok']==True
 skyrun = skyrun[mask]
 print(len(skyrun))
 
-# Exclude templates already created
-fn_list = glob.glob(os.path.join(output_dir, '*.fits.fz'))
-run_list_done = [int(fn[len(os.path.join(output_dir, 'sky_templates_'))+1:-8]) for fn in fn_list]
-mask = ~np.in1d(skyrun['run'], run_list_done)
-skyrun = skyrun[mask]
-print(len(skyrun), len(run_list_done))
-
-# ########################## Exclude z band ##########################
-# band = 'z'
-# mask = skyrun['filter']!=band
+# # Exclude templates already created
+# fn_list = glob.glob(os.path.join(output_dir, '*.fits.fz'))
+# run_list_done = [int(fn[len(os.path.join(output_dir, 'sky_templates_'))+1:-8]) for fn in fn_list]
+# mask = ~np.in1d(skyrun['run'], run_list_done)
 # skyrun = skyrun[mask]
-# print(len(skyrun))
-# ####################################################################
+# print(len(skyrun), len(run_list_done))
 
-run_list = np.unique(skyrun['run'])
-print(len(run_list))
+# run_list = np.unique(skyrun['run'])
+# print(len(run_list))
+
+# Runs affected by the edge glow
+run_list = [436, 437, 438, 439, 445, 446, 447, 455, 456, 469, 471]
 
 # shuffle
 np.random.seed(123)
@@ -129,7 +130,7 @@ time.sleep(60)
 
 #######################################################################################################################
 
-def compute_smooth_sky(run, diagnostic_touch=True):
+def compute_raw_sky(run, diagnostic_touch=True):
 
     skyrun_idx = np.where(skyrun['run']==run)[0]
     band = skyrun['filter'][skyrun_idx[0]]
@@ -142,17 +143,19 @@ def compute_smooth_sky(run, diagnostic_touch=True):
         skyrun_idx = skyrun_idx[:max_exposure]
     #############################################
 
-    output_path = os.path.join(output_dir, 'sky_template_{}_{}.fits.fz'.format(band, run))
-    if os.path.isfile(output_path):
-        print(output_path+' already exists!')
+    raw_path = os.path.join(output_dir, 'sky_raw_{}_{}.fits.fz'.format(band, run))
+
+    if os.path.isfile(raw_path):
+        print(raw_path+' already exists!')
         return None
         
     if diagnostic_touch:
-        Path('/global/u2/r/rongpu/temp/sky_template_status/'+os.path.basename(output_path)).touch()
-        Path('/global/u2/r/rongpu/temp/sky_template_being_written/'+os.path.basename(output_path)).touch()
+        Path('/global/u2/r/rongpu/temp/sky_template_status/'+os.path.basename(raw_path)).touch()
+        Path('/global/u2/r/rongpu/temp/sky_template_being_written/'+os.path.basename(raw_path)).touch()
 
-    hdul_w = fitsio.FITS(output_path, mode='rw', clobber=True)
-    hdul_w.write(data=None) # first HDU is empty
+
+    hdul_raw_stacked = fitsio.FITS(raw_path, mode='rw', clobber=True)
+    hdul_raw_stacked.write(data=None) # first HDU is empty
 
     for ccdnum in ccdnum_list:
 
@@ -176,11 +179,18 @@ def compute_smooth_sky(run, diagnostic_touch=True):
 
             # Load CCD image
             img_fn = os.path.join(image_dir, skyrun['image_filename'][skyrun_index]).strip()
+            ood_fn = img_fn.replace('_ooi_', '_ood_')
             
             try:
                 img = fitsio.read(img_fn, ext=ccdname)
             except:
                 print(ccdname+' '+img_fn+' does not exist!')
+                continue
+
+            try:
+                ood = fitsio.read(ood_fn, ext=ccdname)
+            except:
+                print(ccdname+' '+ood_fn+' does not exist!')
                 continue
 
             # Get HDU index
@@ -210,6 +220,7 @@ def compute_smooth_sky(run, diagnostic_touch=True):
                 # Only keep the good half of the S7
                 half = img_shape[1] // 2
                 img = img[:, :half]
+                ood = ood[:, :half]
                 blob = blob[:, :half]
 
             # Remove median sky
@@ -228,8 +239,9 @@ def compute_smooth_sky(run, diagnostic_touch=True):
             # Normalize by ccdskycounts
             img = img/ccdskycounts_median
             
-            # Apply blob mask
-            img[~blob] = np.nan
+            # Apply blob and ood mask
+            img_mask = (blob==True) & (ood==0)
+            img[~img_mask] = np.nan
 
             img_list.append(img)
 
@@ -239,110 +251,42 @@ def compute_smooth_sky(run, diagnostic_touch=True):
             print('There is no available {} CCD'.format(ccdname))
             continue
 
+        if len(img_list)<15:
+            print('There are only {} images available for {} CCD; skip'.format(len(img_list), ccdname))
+            continue
+
         img_median = np.nanmedian(img_list, axis=0)
+
+        if (ccdname=='S7') or ((run in halfed_n10_run_list) and (ccdname=='N10')):
+            # Add back the other half
+            tmp = np.zeros(img_shape)
+            half = img_shape[1] // 2
+            tmp[:, :half] = img_median
+            img_median = tmp
 
         # Fill in NAN values
         mask = ~np.isfinite(img_median)
         # print('number of NAN pixels:', np.sum(mask))
         img_median[mask] = 0
 
-        img_median1 = img_median.copy()
-
-        # 3-sigma clipping
-        sky_nmad = nmad(img_median[np.isfinite(img_median)]) # sky level
-        # mask = (img_median<-3*sky_nmad) | (img_median>3*sky_nmad)
-        # img_median1[mask] = 0
-        mask = (img_median<-3*sky_nmad)
-        img_median1[mask] = -3*sky_nmad
-        mask = (img_median>3*sky_nmad)
-        img_median1[mask] = 3*sky_nmad
-
-        if (ccdname=='S7') or ((run in halfed_n10_run_list) and (ccdname=='N10')):
-
-            # trim three of edges
-            trim_size = 20
-            trim_size_bottom = 1
-            img_median1 = img_median1[trim_size:(img_median1.shape[0]-trim_size), trim_size:(img_median1.shape[1]-trim_size_bottom)]
-
-            # downsize the image to speed up gaussian filter
-            binsize = 2
-            img_median1 = np.nanmean(np.nanmean(img_median1.reshape((img_median1.shape[0]//binsize, binsize, img_median1.shape[1]//binsize,-1)), axis=3), axis=1)
-            x_small_grid = trim_size + binsize/2 + binsize*np.arange(img_median1.shape[1])
-            y_small_grid = trim_size + binsize/2 + binsize*np.arange(img_median1.shape[0])
-
-        elif (band=='r' and skyrun['expnum'][skyrun_index]<298251):
-
-            ################### r band edge glow exposures ###################
-
-            # r-band edge glow
-            # trim edges
-            trim_size = 10
-            extra_trim_size = 50
-            img_median1 = img_median1[trim_size:(img_median1.shape[0]-trim_size), trim_size:(img_median1.shape[1]-trim_size)]
-
-            # The edge glow only appears on one edge and are at opposite edges for top CCDs and bottom CCDs
-            if ccdnum<=31:
-                img_median1 = img_median1[:-extra_trim_size]
-            else:
-                img_median1 = img_median1[extra_trim_size:]
-
-            # downsize the image to speed up gaussian filter
-            binsize = 2
-            img_median1 = np.nanmean(np.nanmean(img_median1.reshape((img_median1.shape[0]//binsize, binsize, img_median1.shape[1]//binsize,-1)), axis=3), axis=1)
-
-            x_small_grid = trim_size + binsize/2 + binsize*np.arange(img_median1.shape[1])
-            if ccdnum<=31:
-                y_small_grid = trim_size + binsize/2 + binsize*np.arange(img_median1.shape[0])
-            else:
-                y_small_grid = trim_size + extra_trim_size + binsize/2 + binsize*np.arange(img_median1.shape[0])
-
-        else:
-
-            ################### Normal exposures ####################
-
-            # trim edges
-            trim_size = 10            
-            img_median1 = img_median1[trim_size:(img_median1.shape[0]-trim_size), trim_size:(img_median1.shape[1]-trim_size)]
-
-            # downsize the image to speed up gaussian filter
-            binsize = 2
-            img_median1 = np.nanmean(np.nanmean(img_median1.reshape((img_median1.shape[0]//binsize, binsize, img_median1.shape[1]//binsize,-1)), axis=3), axis=1)
-            x_small_grid = trim_size + binsize/2 + binsize*np.arange(img_median1.shape[1])
-            y_small_grid = trim_size + binsize/2 + binsize*np.arange(img_median1.shape[0])
-
-        # Gaussian filtering
-        img_median1_smooth = gaussian_filter(img_median1, 60, mode='reflect')
-
-        # Convert the downsized smooth image to full size
-        interp_func = interp2d(x_small_grid, y_small_grid, img_median1_smooth, kind='linear')
-        x_grid, y_grid = np.arange(img_median.shape[1]), np.arange(img_median.shape[0])
-        img_median_smooth = interp_func(x_grid, y_grid).reshape(img_median.shape)
-
-        if (ccdname=='S7') or ((run in halfed_n10_run_list) and (ccdname=='N10')):
-            # Add back the other half
-            tmp = np.zeros(img_shape)
-            half = img_shape[1] // 2
-            tmp[:, :half] = img_median_smooth
-            img_median_smooth = tmp
-
         ################################ Save sky template ###############################
 
-        hdul_w.write(data=img_median_smooth, extname=ccdname, compress='rice')
+        hdul_raw_stacked.write(data=img_median, extname=ccdname, compress='rice')
 
         # ##################
         # end = time.time()
         # print('Took {:.1f} seconds'.format(end - start))
         # ##################
 
-    hdul_w.close()
+    hdul_raw_stacked.close()
     
     if diagnostic_touch:
-        os.remove('/global/u2/r/rongpu/temp/sky_template_being_written/'+os.path.basename(output_path))
+        os.remove('/global/u2/r/rongpu/temp/sky_template_being_written/'+os.path.basename(raw_path))
 
 def main():
 
     with Pool(processes=n_processes) as pool:
-        res = pool.map(compute_smooth_sky, run_list)
+        res = pool.map(compute_raw_sky, run_list)
 
     print('All done!!!!!!!!!!!!!!!')
 

@@ -279,6 +279,10 @@ def template_fitting(expnum, diagnostic_touch=True):
             print(ccdname+' does not exist in template!')
             continue
 
+        if np.all(sky==0):
+            print(ccdname+' template is all zeros!')
+            continue
+
         # Find the entry in survey-ccd
         if len(ccdname)==3:
             ccdname_space_filled = ccdname

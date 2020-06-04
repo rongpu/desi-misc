@@ -12,9 +12,11 @@ from multiprocessing import Pool
 
 n_processes = 32
 
+image_dir = '/global/project/projectdirs/cosmo/staging'
+surveyccd_path = '/global/project/projectdirs/cosmo/work/legacysurvey/dr9/survey-ccds-decam-dr9.fits.gz'
+
 skyrun = Table.read('/global/cscratch1/sd/rongpu/temp/skyrunsgoodcountexpnumv48dr8.fits')
 
-surveyccd_path = '/global/project/projectdirs/cosmo/work/legacysurvey/dr9/survey-ccds-decam-dr9.fits.gz'
 ccd_columns = ['image_hdu', 'expnum', 'ccdname', 'filter', 'ccdskycounts']
 ccd = Table(fitsio.read(surveyccd_path, columns=ccd_columns))
 
@@ -52,10 +54,12 @@ def get_ccds(expnum):
     ccd_exp = (ccd_new[mask_exp]).copy()
 
     if not expnum in skyrun['expnum']:
+        ccd_exp['PLPROCID'] = ''
         return ccd_exp
 
     skyrun_index = np.where(skyrun['expnum']==expnum)[0][0]
     run = skyrun['run'][skyrun_index]
+    image_filename = skyrun['image_filename'][skyrun_index].strip()
 
     # CCDs with valid skyscales measured
     mask_has_skyscale = (ccd_exp['run']>=0)
@@ -67,6 +71,12 @@ def get_ccds(expnum):
 
     # Fill in the run numbers last
     ccd_exp['run'] = run
+
+    # Add PLPROCID
+    img_path = os.path.join(image_dir, image_filename)
+    with fits.open(img_path) as f:
+        ccd_exp['PLPROCID'] = f[0].header['PLPROCID']
+
 
     return ccd_exp
 
@@ -91,6 +101,8 @@ def main():
 
     # Remove the skyscale values that won't be used
     ccd_new1.remove_columns(['ccdskyscale', 'medianskyscale', 'ccdskycounts', 'ccd_id'])
+
+    ccd_new1['SKYTMPLV'] = 1
 
     ccd_new1.write('/global/cscratch1/sd/rongpu/dr9dev/sky_pattern/sky_scales/skyscales_ccds.fits')
 

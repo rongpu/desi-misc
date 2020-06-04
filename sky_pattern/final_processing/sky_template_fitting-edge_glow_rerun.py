@@ -1,3 +1,5 @@
+# Rerun template fitting for a subset of the runs
+
 from __future__ import division, print_function
 import sys, os, glob, time, warnings, gc
 import matplotlib
@@ -81,11 +83,13 @@ ccd_dec = [0.90299039, 0.90274404, 0.90285652, 0.73894001, 0.73933177, 0.7391944
 
 img_shape = (4094, 2046)
 
+run_list = [436, 437, 438, 439, 445, 446, 447, 455, 456, 469, 471]
+
+overwrite = True
+
 ################################################################################
 
 n_processes = 32
-
-overwrite = False
 
 parser = argparse.ArgumentParser()
 parser.add_argument('n_task')
@@ -98,7 +102,8 @@ image_dir = '/global/project/projectdirs/cosmo/staging'
 blob_dir = '/global/cfs/cdirs/desi/users/rongpu/dr9/decam_ccd_blob_mask'
 surveyccd_path = '/global/project/projectdirs/cosmo/work/legacysurvey/dr9/survey-ccds-decam-dr9.fits.gz'
 ########################!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!########################!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-template_dir = '/global/cscratch1/sd/rongpu/dr9dev/sky_pattern/sky_templates/'
+# template_dir = '/global/cscratch1/sd/rongpu/dr9dev/sky_pattern/sky_templates/'
+template_dir = '/global/cscratch1/sd/rongpu/dr9dev/sky_pattern/sky_templates_final_edge_glow'
 ########################!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!########################!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 skyscale_dir = '/global/cscratch1/sd/rongpu/dr9dev/sky_pattern/sky_scales/'
 
@@ -126,12 +131,16 @@ skyrun_all = skyrun.copy()
 # run_list = np.array([int(fn[len(os.path.join(template_dir, 'sky_templates_'))+1:-8]) for fn in sky_path_list])
 # print('run_list', len(run_list))
 
-# Remove completed runs from list
-expnum_status = Table.read('/global/cscratch1/sd/rongpu/dr9dev/sky_pattern/fitting_status.fits')
-expnum_status = expnum_status[expnum_status['done']==False]
-mask = np.in1d(skyrun['expnum'], expnum_status['expnum'])
+mask = np.in1d(skyrun['run'], run_list)
 skyrun = skyrun[mask]
 print('skyrun', len(skyrun))
+
+# # Remove completed runs from list
+# expnum_status = Table.read('/global/cscratch1/sd/rongpu/dr9dev/sky_pattern/fitting_status.fits')
+# expnum_status = expnum_status[expnum_status['done']==False]
+# mask = np.in1d(skyrun['expnum'], expnum_status['expnum'])
+# skyrun = skyrun[mask]
+# print('skyrun', len(skyrun))
 
 expnum_list = skyrun['expnum'].copy()
 
@@ -247,7 +256,7 @@ def template_fitting(expnum, diagnostic_touch=True):
         scale_min, scale_max = np.inf, -np.inf
         scale_list = []
 
-        plt.figure(figsize=(13.7, 13.075))
+        plt.figure(figsize=(13.7*2, 13.075*2))
 
     for ii, ccdnum in enumerate(ccdnum_list):
 
@@ -406,7 +415,7 @@ def template_fitting(expnum, diagnostic_touch=True):
 
     if plot_q and (expnum in expnum_list_plot) and (len(result)>0):
 
-        # print('making plots')
+        print('making plots')
 
         text = 'run {}, {} band\n'.format(run, band)
         text += 'expnum = {}\n'.format(expnum)

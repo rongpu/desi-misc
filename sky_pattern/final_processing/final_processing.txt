@@ -1,0 +1,7 @@
+cp sky_templates_final_n15_patched/* sky_templates_final_final/
+cp sky_templates_final_edge_glow/sky_template_* sky_templates_final_final/
+
+desiconda_version=20190311-1.2.7-img                                                                                                                                                                  module use /global/common/software/desi/cori/desiconda/$desiconda_version/modulefiles                                                                                      
+module load desiconda                                                                                                                                                                                  
+
+for f in *; do modhead $f SKYTMPL 1; done

@@ -98,7 +98,8 @@ mask = skyrun['ok']==True
 skyrun = skyrun[mask]
 print(len(skyrun))
 
-sky_path_list = glob.glob(os.path.join(template_dir, '*.fits.fz'))
+fn_list = glob.glob(os.path.join(output_dir, '*.fits.fz'))
+run_list = [int(fn[len(os.path.join(output_dir, 'sky_templates_'))+1:-8]) for fn in fn_list]
 
 # ccd_columns = ['image_hdu', 'expnum', 'ccdname', 'ccdskycounts']
 # ccd = Table(fitsio.read(surveyccd_path, columns=ccd_columns))
@@ -112,22 +113,21 @@ pix_size = 0.262/3600*binsize
 
 overwrite = False
 
-def make_plots(sky_path):
+def make_plots(run):
     
     # # The file should be at least 5 hours old to ensure it's not being written
     # time_modified = os.path.getmtime(sky_path)
     # if (time.time() - time_modified)/3600 < 5:
     #     # continue
     #     return None
-
-    str_loc1, str_loc2 = sky_path.find('sky_template_'), sky_path.find('.fits.fz')
-    run = int(sky_path[str_loc1+15:str_loc2])
     
     # Get run info
     mask = skyrun['run']==run
     n_exposure = np.minimum(max_exposure, np.sum(mask))
     band = skyrun['filter'][mask][0]
     mjd_span = skyrun['mjd_obs'][mask].max() - skyrun['mjd_obs'][mask].min()
+
+    sky_path = os.path.join(template_dir, 'sky_template_{}_{}.fits.fz'.format(band, run))
 
     plot_path = os.path.join(plot_dir, band, '{}_{}_sky_template.png'.format(band, run))
 
@@ -193,7 +193,7 @@ def make_plots(sky_path):
 def main():
 
     with Pool(processes=n_processes) as pool:
-        res = pool.map(make_plots, sky_path_list)
+        res = pool.map(make_plots, run_list)
 
     print('Done!!!!!!!!!!!!!!!!!!!!!')
 
