@@ -2,24 +2,30 @@
 # Print desi_coadd_spectra commands for coadds of single or multiple exposures
 # Print redrock commands
 
+# Andes tag: 
+# source /project/projectdirs/desi/software/desi_environment.sh 20.4
+# export REDUXDIR=/global/cfs/cdirs/desi/spectro/redux/andes
+# export OUTDIR=$SCRATCH/desi/sv0/single_exp_coadd
+
 from __future__ import division, print_function
 import sys, os, glob, time, warnings
 import numpy as np
 from astropy.table import Table, vstack, hstack
 import fitsio
 
-# redux_dir = '/global/cfs/cdirs/desi/spectro/redux/daily'
-# output_dir = '/global/cscratch1/sd/rongpu/desi/minisv2/2_exp_coadd'
+# redux_dir = '/global/cfs/cdirs/desi/spectro/redux/andes'
+# output_dir = '/global/cscratch1/sd/rongpu/desi/sv0/single_exp_coadd'
 redux_dir = os.getenv('REDUXDIR')
 output_dir = os.getenv('OUTDIR')
 
-obsdate_list = ['20200219']
-n_exp = 2 # number of exposures in a coadded; 1 for single-exposure coadd
+obsdate_list = ['20200315']
+n_exp = 1 # number of exposures in a coadded; 1 for single-exposure coadd;
+          # use np.inf to coadd all exposures
 
 overwrite = False
 
 # tileid_list = None  # no restriction on tiles
-tileid_list = [70003]
+tileid_list = [68002]
 # tileid_list = [70003, 70004, 70005]
 
 ################################## Get list of exposures ##################################
@@ -85,16 +91,19 @@ for tileid in np.unique(cframes['tileid']):
         mask = (cframes['tileid']==tileid) & (cframes['petal_loc']==petal_loc)
         mask &= (cframes['camera']=='b') # choose one camera for simplicity
 
-        if (np.sum(mask)<n_exp):
+        if (np.sum(mask)<n_exp) and (n_exp!=np.inf):
             # print('\n# Not enough exposures in TILEID {} PETAL_LOD {} for one coadd\n'.format(tileid, petal_loc))
             continue
 
         cframe1 = cframes[mask]
 
         # Skip the exposures that are that do not make the split
-        cframe1 = cframe1[:len(cframe1)-len(cframe1)%(n_exp)]
-        nsplit = len(cframe1)//(n_exp)
-        subset_split = np.split(np.arange(len(cframe1)), nsplit)
+        if n_exp!=np.inf:
+            cframe1 = cframe1[:len(cframe1)-len(cframe1)%(n_exp)]
+            nsplit = len(cframe1)//(n_exp)
+            subset_split = np.split(np.arange(len(cframe1)), nsplit)
+        else:
+            subset_split = [np.arange(len(cframe1))]
 
         for subset_index in range(len(subset_split)):
 
@@ -107,7 +116,13 @@ for tileid in np.unique(cframes['tileid']):
 
             # print(input_argument)
 
-            if n_exp==1:
+            if n_exp==np.inf:
+                if len(obsdate_list)==1:
+                    # same filename format as andes
+                    output_argument = os.path.join('$OUTDIR', str(tileid), 'coadd-{}-{}-{}.fits'.format(petal_loc, tileid, obsdate_list[0]))
+                else:
+                    output_argument = os.path.join('$OUTDIR', str(tileid), 'coadd-{}-{}.fits'.format(petal_loc, tileid))
+            elif n_exp==1:
                 exposure = os.path.basename(exposure_dir)
                 output_argument = os.path.join('$OUTDIR', str(tileid), 'coadd-{}-{}.fits'.format(petal_loc, exposure))
             else:
