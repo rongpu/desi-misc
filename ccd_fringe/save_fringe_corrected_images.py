@@ -233,7 +233,7 @@ def save_image(expnum):
                 fringe_old = fringe_old_dict[ccdnum]
                 img += fringe_old * frgscale_old
             else: # for some CCD(s) (S7?) no FRGSCALE exist in the original header, and no correct is done here
-                hdul_w.write(data=img, header=hdr, extname=ccdname)
+                hdul_w.write(data=img, header=hdr, extname=ccdname, compress='rice')
                 continue
 
             if not ccdnum==2: # Normal CCDs
