@@ -1,0 +1,74 @@
+source /project/projectdirs/desi/software/desi_environment.sh 20.4
+export REDUXDIR=/global/cfs/cdirs/desi/spectro/redux/andes
+export OUTDIR=$SCRATCH/desi/sv0/single_exp_coadd
+
+# Previously I had mistakenly used the "daily" directory for REDUXDIR, the output of which are in single_exp_coadd_daily
+
+################# desi_coadd_spectra commands: #################
+
+time desi_coadd_spectra --coadd-cameras -i $REDUXDIR/exposures/20200315/00055626/cframe-[brz]0-*.fits  -o $OUTDIR/68002/coadd-0-00055626.fits
+time desi_coadd_spectra --coadd-cameras -i $REDUXDIR/exposures/20200315/00055627/cframe-[brz]0-*.fits  -o $OUTDIR/68002/coadd-0-00055627.fits
+time desi_coadd_spectra --coadd-cameras -i $REDUXDIR/exposures/20200315/00055628/cframe-[brz]0-*.fits  -o $OUTDIR/68002/coadd-0-00055628.fits
+time desi_coadd_spectra --coadd-cameras -i $REDUXDIR/exposures/20200315/00055626/cframe-[brz]1-*.fits  -o $OUTDIR/68002/coadd-1-00055626.fits
+time desi_coadd_spectra --coadd-cameras -i $REDUXDIR/exposures/20200315/00055627/cframe-[brz]1-*.fits  -o $OUTDIR/68002/coadd-1-00055627.fits
+time desi_coadd_spectra --coadd-cameras -i $REDUXDIR/exposures/20200315/00055628/cframe-[brz]1-*.fits  -o $OUTDIR/68002/coadd-1-00055628.fits
+time desi_coadd_spectra --coadd-cameras -i $REDUXDIR/exposures/20200315/00055626/cframe-[brz]2-*.fits  -o $OUTDIR/68002/coadd-2-00055626.fits
+time desi_coadd_spectra --coadd-cameras -i $REDUXDIR/exposures/20200315/00055627/cframe-[brz]2-*.fits  -o $OUTDIR/68002/coadd-2-00055627.fits
+time desi_coadd_spectra --coadd-cameras -i $REDUXDIR/exposures/20200315/00055628/cframe-[brz]2-*.fits  -o $OUTDIR/68002/coadd-2-00055628.fits
+time desi_coadd_spectra --coadd-cameras -i $REDUXDIR/exposures/20200315/00055626/cframe-[brz]3-*.fits  -o $OUTDIR/68002/coadd-3-00055626.fits
+time desi_coadd_spectra --coadd-cameras -i $REDUXDIR/exposures/20200315/00055627/cframe-[brz]3-*.fits  -o $OUTDIR/68002/coadd-3-00055627.fits
+time desi_coadd_spectra --coadd-cameras -i $REDUXDIR/exposures/20200315/00055628/cframe-[brz]3-*.fits  -o $OUTDIR/68002/coadd-3-00055628.fits
+time desi_coadd_spectra --coadd-cameras -i $REDUXDIR/exposures/20200315/00055626/cframe-[brz]4-*.fits  -o $OUTDIR/68002/coadd-4-00055626.fits
+time desi_coadd_spectra --coadd-cameras -i $REDUXDIR/exposures/20200315/00055627/cframe-[brz]4-*.fits  -o $OUTDIR/68002/coadd-4-00055627.fits
+time desi_coadd_spectra --coadd-cameras -i $REDUXDIR/exposures/20200315/00055628/cframe-[brz]4-*.fits  -o $OUTDIR/68002/coadd-4-00055628.fits
+time desi_coadd_spectra --coadd-cameras -i $REDUXDIR/exposures/20200315/00055626/cframe-[brz]5-*.fits  -o $OUTDIR/68002/coadd-5-00055626.fits
+time desi_coadd_spectra --coadd-cameras -i $REDUXDIR/exposures/20200315/00055627/cframe-[brz]5-*.fits  -o $OUTDIR/68002/coadd-5-00055627.fits
+time desi_coadd_spectra --coadd-cameras -i $REDUXDIR/exposures/20200315/00055628/cframe-[brz]5-*.fits  -o $OUTDIR/68002/coadd-5-00055628.fits
+time desi_coadd_spectra --coadd-cameras -i $REDUXDIR/exposures/20200315/00055626/cframe-[brz]6-*.fits  -o $OUTDIR/68002/coadd-6-00055626.fits
+time desi_coadd_spectra --coadd-cameras -i $REDUXDIR/exposures/20200315/00055627/cframe-[brz]6-*.fits  -o $OUTDIR/68002/coadd-6-00055627.fits
+time desi_coadd_spectra --coadd-cameras -i $REDUXDIR/exposures/20200315/00055628/cframe-[brz]6-*.fits  -o $OUTDIR/68002/coadd-6-00055628.fits
+time desi_coadd_spectra --coadd-cameras -i $REDUXDIR/exposures/20200315/00055626/cframe-[brz]7-*.fits  -o $OUTDIR/68002/coadd-7-00055626.fits
+time desi_coadd_spectra --coadd-cameras -i $REDUXDIR/exposures/20200315/00055627/cframe-[brz]7-*.fits  -o $OUTDIR/68002/coadd-7-00055627.fits
+time desi_coadd_spectra --coadd-cameras -i $REDUXDIR/exposures/20200315/00055628/cframe-[brz]7-*.fits  -o $OUTDIR/68002/coadd-7-00055628.fits
+time desi_coadd_spectra --coadd-cameras -i $REDUXDIR/exposures/20200315/00055626/cframe-[brz]8-*.fits  -o $OUTDIR/68002/coadd-8-00055626.fits
+time desi_coadd_spectra --coadd-cameras -i $REDUXDIR/exposures/20200315/00055627/cframe-[brz]8-*.fits  -o $OUTDIR/68002/coadd-8-00055627.fits
+time desi_coadd_spectra --coadd-cameras -i $REDUXDIR/exposures/20200315/00055628/cframe-[brz]8-*.fits  -o $OUTDIR/68002/coadd-8-00055628.fits
+time desi_coadd_spectra --coadd-cameras -i $REDUXDIR/exposures/20200315/00055626/cframe-[brz]9-*.fits  -o $OUTDIR/68002/coadd-9-00055626.fits
+time desi_coadd_spectra --coadd-cameras -i $REDUXDIR/exposures/20200315/00055627/cframe-[brz]9-*.fits  -o $OUTDIR/68002/coadd-9-00055627.fits
+time desi_coadd_spectra --coadd-cameras -i $REDUXDIR/exposures/20200315/00055628/cframe-[brz]9-*.fits  -o $OUTDIR/68002/coadd-9-00055628.fits
+
+################# redrock commands: #################
+
+# salloc -N 1 -C haswell -q interactive -t 04:00:00
+
+srun -N 1 -n 32 -c 2 rrdesi_mpi -o $OUTDIR/68002/redrock-0-00055626.h5 -z $OUTDIR/68002/zbest-0-00055626.fits $OUTDIR/68002/coadd-0-00055626.fits
+srun -N 1 -n 32 -c 2 rrdesi_mpi -o $OUTDIR/68002/redrock-0-00055627.h5 -z $OUTDIR/68002/zbest-0-00055627.fits $OUTDIR/68002/coadd-0-00055627.fits
+srun -N 1 -n 32 -c 2 rrdesi_mpi -o $OUTDIR/68002/redrock-0-00055628.h5 -z $OUTDIR/68002/zbest-0-00055628.fits $OUTDIR/68002/coadd-0-00055628.fits
+srun -N 1 -n 32 -c 2 rrdesi_mpi -o $OUTDIR/68002/redrock-1-00055626.h5 -z $OUTDIR/68002/zbest-1-00055626.fits $OUTDIR/68002/coadd-1-00055626.fits
+srun -N 1 -n 32 -c 2 rrdesi_mpi -o $OUTDIR/68002/redrock-1-00055627.h5 -z $OUTDIR/68002/zbest-1-00055627.fits $OUTDIR/68002/coadd-1-00055627.fits
+srun -N 1 -n 32 -c 2 rrdesi_mpi -o $OUTDIR/68002/redrock-1-00055628.h5 -z $OUTDIR/68002/zbest-1-00055628.fits $OUTDIR/68002/coadd-1-00055628.fits
+srun -N 1 -n 32 -c 2 rrdesi_mpi -o $OUTDIR/68002/redrock-2-00055626.h5 -z $OUTDIR/68002/zbest-2-00055626.fits $OUTDIR/68002/coadd-2-00055626.fits
+srun -N 1 -n 32 -c 2 rrdesi_mpi -o $OUTDIR/68002/redrock-2-00055627.h5 -z $OUTDIR/68002/zbest-2-00055627.fits $OUTDIR/68002/coadd-2-00055627.fits
+srun -N 1 -n 32 -c 2 rrdesi_mpi -o $OUTDIR/68002/redrock-2-00055628.h5 -z $OUTDIR/68002/zbest-2-00055628.fits $OUTDIR/68002/coadd-2-00055628.fits
+srun -N 1 -n 32 -c 2 rrdesi_mpi -o $OUTDIR/68002/redrock-3-00055626.h5 -z $OUTDIR/68002/zbest-3-00055626.fits $OUTDIR/68002/coadd-3-00055626.fits
+srun -N 1 -n 32 -c 2 rrdesi_mpi -o $OUTDIR/68002/redrock-3-00055627.h5 -z $OUTDIR/68002/zbest-3-00055627.fits $OUTDIR/68002/coadd-3-00055627.fits
+srun -N 1 -n 32 -c 2 rrdesi_mpi -o $OUTDIR/68002/redrock-3-00055628.h5 -z $OUTDIR/68002/zbest-3-00055628.fits $OUTDIR/68002/coadd-3-00055628.fits
+srun -N 1 -n 32 -c 2 rrdesi_mpi -o $OUTDIR/68002/redrock-4-00055626.h5 -z $OUTDIR/68002/zbest-4-00055626.fits $OUTDIR/68002/coadd-4-00055626.fits
+srun -N 1 -n 32 -c 2 rrdesi_mpi -o $OUTDIR/68002/redrock-4-00055627.h5 -z $OUTDIR/68002/zbest-4-00055627.fits $OUTDIR/68002/coadd-4-00055627.fits
+srun -N 1 -n 32 -c 2 rrdesi_mpi -o $OUTDIR/68002/redrock-4-00055628.h5 -z $OUTDIR/68002/zbest-4-00055628.fits $OUTDIR/68002/coadd-4-00055628.fits
+srun -N 1 -n 32 -c 2 rrdesi_mpi -o $OUTDIR/68002/redrock-5-00055626.h5 -z $OUTDIR/68002/zbest-5-00055626.fits $OUTDIR/68002/coadd-5-00055626.fits
+srun -N 1 -n 32 -c 2 rrdesi_mpi -o $OUTDIR/68002/redrock-5-00055627.h5 -z $OUTDIR/68002/zbest-5-00055627.fits $OUTDIR/68002/coadd-5-00055627.fits
+srun -N 1 -n 32 -c 2 rrdesi_mpi -o $OUTDIR/68002/redrock-5-00055628.h5 -z $OUTDIR/68002/zbest-5-00055628.fits $OUTDIR/68002/coadd-5-00055628.fits
+srun -N 1 -n 32 -c 2 rrdesi_mpi -o $OUTDIR/68002/redrock-6-00055626.h5 -z $OUTDIR/68002/zbest-6-00055626.fits $OUTDIR/68002/coadd-6-00055626.fits
+srun -N 1 -n 32 -c 2 rrdesi_mpi -o $OUTDIR/68002/redrock-6-00055627.h5 -z $OUTDIR/68002/zbest-6-00055627.fits $OUTDIR/68002/coadd-6-00055627.fits
+srun -N 1 -n 32 -c 2 rrdesi_mpi -o $OUTDIR/68002/redrock-6-00055628.h5 -z $OUTDIR/68002/zbest-6-00055628.fits $OUTDIR/68002/coadd-6-00055628.fits
+srun -N 1 -n 32 -c 2 rrdesi_mpi -o $OUTDIR/68002/redrock-7-00055626.h5 -z $OUTDIR/68002/zbest-7-00055626.fits $OUTDIR/68002/coadd-7-00055626.fits
+srun -N 1 -n 32 -c 2 rrdesi_mpi -o $OUTDIR/68002/redrock-7-00055627.h5 -z $OUTDIR/68002/zbest-7-00055627.fits $OUTDIR/68002/coadd-7-00055627.fits
+srun -N 1 -n 32 -c 2 rrdesi_mpi -o $OUTDIR/68002/redrock-7-00055628.h5 -z $OUTDIR/68002/zbest-7-00055628.fits $OUTDIR/68002/coadd-7-00055628.fits
+srun -N 1 -n 32 -c 2 rrdesi_mpi -o $OUTDIR/68002/redrock-8-00055626.h5 -z $OUTDIR/68002/zbest-8-00055626.fits $OUTDIR/68002/coadd-8-00055626.fits
+srun -N 1 -n 32 -c 2 rrdesi_mpi -o $OUTDIR/68002/redrock-8-00055627.h5 -z $OUTDIR/68002/zbest-8-00055627.fits $OUTDIR/68002/coadd-8-00055627.fits
+srun -N 1 -n 32 -c 2 rrdesi_mpi -o $OUTDIR/68002/redrock-8-00055628.h5 -z $OUTDIR/68002/zbest-8-00055628.fits $OUTDIR/68002/coadd-8-00055628.fits
+srun -N 1 -n 32 -c 2 rrdesi_mpi -o $OUTDIR/68002/redrock-9-00055626.h5 -z $OUTDIR/68002/zbest-9-00055626.fits $OUTDIR/68002/coadd-9-00055626.fits
+srun -N 1 -n 32 -c 2 rrdesi_mpi -o $OUTDIR/68002/redrock-9-00055627.h5 -z $OUTDIR/68002/zbest-9-00055627.fits $OUTDIR/68002/coadd-9-00055627.fits
+srun -N 1 -n 32 -c 2 rrdesi_mpi -o $OUTDIR/68002/redrock-9-00055628.h5 -z $OUTDIR/68002/zbest-9-00055628.fits $OUTDIR/68002/coadd-9-00055628.fits
+
