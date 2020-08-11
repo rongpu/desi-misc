@@ -86,12 +86,12 @@ ccdnum_edge_list = [1, 3, 4, 7, 8, 12, 13, 18, 19, 24, 25, 32, 38, 39, 44, 45, 5
 n_processes = 32
 
 cp_image_dir = '/global/project/projectdirs/cosmo/staging'
-lg_image_dir = '/global/cfs/cdirs/cosmo/staging/decam/CP-LG9'
+lg_image_dir = '/global/cfs/cdirs/cosmo/staging/decam/CP-LG9-attic'
 blob_dir = '/global/cfs/cdirs/desi/users/rongpu/dr9/decam_ccd_blob_mask'
 surveyccd_path = '/global/project/projectdirs/cosmo/work/legacysurvey/dr9/survey-ccds-decam-dr9.fits.gz'
 
 template_dir = '/global/cscratch1/sd/rongpu/dr9dev/pupil_pattern/pupil_templates/'
-output_dir = '/global/cscratch1/sd/rongpu/dr9dev/pupil_pattern/pupil_corrected_images/'
+output_dir = '/global/cscratch1/sd/rongpu/dr9dev/pupil_pattern/pupil_corrected_images-new/'
 
 pix_size = 0.262/3600
 
@@ -121,6 +121,8 @@ def fit_pupil(image_fn_lg):
         print(output_path+' already exists!')
         return None
 
+    print(output_path)
+
     ######################################## Get the scaling factor ########################################
 
     median_image_list = []
@@ -148,10 +150,7 @@ def fit_pupil(image_fn_lg):
         bestfit_intercept = ccd['gradient_intercept'][ccd_index]
         bestfit_unit_x, bestfit_unit_y = np.cos(bestfit_angle/180.*np.pi), np.sin(bestfit_angle/180.*np.pi)
                     
-        # print(ccdnum, ccdname, index, '/', len(ccd_idx))
-
-        # Load CCD image
-        lg_image_path = os.path.join(lg_image_dir, ccd['image_filename_lg'][ccd_index]).strip()
+        print(ccdnum, ccdname)
         
         try:
             pupil = fitsio.read(pupil_path, ext=ccdname)
@@ -222,11 +221,14 @@ def fit_pupil(image_fn_lg):
     ######################################## Apply pupil correction ########################################
 
     hdul = fitsio.FITS(output_path, mode='rw', clobber=True)
-    hdul.write(data=None) # first HDU is empty
+    hdr = fitsio.read_header(lg_image_path, ext=0)
+    hdul.write(data=None, header=hdr) # first HDU is empty
 
     for ii, ccdnum in enumerate(ccdnum_list):
 
         ccdname = ccdnamenumdict_inv[ccdnum]
+
+        print(ccdnum, ccdname)
 
         ccd_index = np.where((ccd['image_filename_lg']==image_fn_lg) & (ccd['ccdname']==ccdname))[0]
         if len(ccd_index)==1:
@@ -245,9 +247,6 @@ def fit_pupil(image_fn_lg):
                     
         # print(ccdnum, ccdname, index, '/', len(ccd_idx))
 
-        # Load CCD image
-        lg_image_path = os.path.join(lg_image_dir, ccd['image_filename_lg'][ccd_index]).strip()
-        
         try:
             pupil = fitsio.read(pupil_path, ext=ccdname)
         except:
@@ -256,6 +255,7 @@ def fit_pupil(image_fn_lg):
 
         try:
             img = fitsio.read(lg_image_path, ext=ccdname)
+            hdr = fitsio.read_header(lg_image_path, ext=ccdname)
         except:
             print(ccdname+' '+lg_image_path+' does not exist!')
             continue
@@ -271,7 +271,7 @@ def fit_pupil(image_fn_lg):
 
         img -= pupil_slope * pupil
 
-        hdul.write(data=img, extname=ccdname, compress='rice')
+        hdul.write(data=img, header=hdr, extname=ccdname, compress='rice')
 
     hdul.close()
     

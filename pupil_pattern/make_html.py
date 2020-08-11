@@ -1,5 +1,12 @@
 from __future__ import division, print_function
 import sys, os, glob, time, warnings, gc
+# import matplotlib
+# matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+import numpy as np
+from astropy.table import Table, vstack, hstack
+import fitsio
+from astropy.io import fits
 
 ##########################################################################################
 
