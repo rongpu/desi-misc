@@ -1,4 +1,4 @@
-# Rerun template fitting for a subset of the runs
+# Refit the new V4.9 images
 
 from __future__ import division, print_function
 import sys, os, glob, time, warnings, gc
@@ -81,86 +81,64 @@ ccd_dec = [0.90299039, 0.90274404, 0.90285652, 0.73894001, 0.73933177, 0.7391944
 
 img_shape = (4094, 2046)
 
-# run_list = [426, 431, 518, 553, 592, 703, 706, 736, 791]
-run_list = [249, 839, 879]
-
-overwrite = True
-
 ################################################################################
 
 n_processes = 32
 
-parser = argparse.ArgumentParser()
-parser.add_argument('n_task')
-parser.add_argument('task_id')
-args = parser.parse_args()
-n_task = int(args.n_task)
-task_id = int(args.task_id)
+overwrite = False
+
+# parser = argparse.ArgumentParser()
+# parser.add_argument('n_task')
+# parser.add_argument('task_id')
+# args = parser.parse_args()
+# n_task = int(args.n_task)
+# task_id = int(args.task_id)
 
 image_dir = '/global/project/projectdirs/cosmo/staging'
 blob_dir = '/global/cfs/cdirs/desi/users/rongpu/dr9/decam_ccd_blob_mask'
-surveyccd_path = '/global/project/projectdirs/cosmo/work/legacysurvey/dr9/survey-ccds-decam-dr9.fits.gz'
-########################!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!########################!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-template_dir = '/global/cscratch1/sd/rongpu/dr9dev/sky_pattern/sky_templates/'
-########################!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!########################!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-skyscale_dir = '/global/cscratch1/sd/rongpu/dr9dev/sky_pattern/sky_scales/'
+surveyccd_path = '/global/project/projectdirs/cosmo/work/legacysurvey/dr9m/survey-ccds-decam-dr9.fits.gz'
+template_dir = '/global/project/projectdirs/cosmo/work/legacysurvey/dr9m/calib/sky_pattern/sky_templates/'
 
-skyrun = Table.read('/global/cscratch1/sd/rongpu/temp/skyrunsgoodcountexpnumv48dr8.fits')
+skyscale_dir = '/global/cscratch1/sd/rongpu/dr9dev/sky_pattern/sky_scales_cp_v4.9/'
+
+skyrun = Table.read('/global/cfs/cdirs/desi/users/rongpu/dr9/sky_pattern/skyrunsgoodcountexpnumv48dr8.fits')
 print('skyrun', len(skyrun))
 
-skyrun_all = skyrun.copy()
-
-# sky_path_list = glob.glob(os.path.join(template_dir, '*.fits.fz'))
-
-# ####################################################################################
-# # The file should be at least 5 hours old to ensure it's not being written
-# for sky_path in sky_path_list:
-#     time_modified = os.path.getmtime(sky_path)
-#     if (time.time() - time_modified)/3600 < 5:
-#         sky_path_list.remove(sky_path)
-# print('sky_path_list', len(sky_path_list))
-# ####################################################################################
-
-# #################################### Exclude z band ####################################
-# mask = np.array(['_z_' in sky_path for sky_path in sky_path_list])
-# sky_path_list = np.array(sky_path_list)[~mask]
-# ########################################################################################
-
-# run_list = np.array([int(fn[len(os.path.join(template_dir, 'sky_templates_'))+1:-8]) for fn in sky_path_list])
-# print('run_list', len(run_list))
-
-mask = np.in1d(skyrun['run'], run_list)
-skyrun = skyrun[mask]
-print('skyrun', len(skyrun))
-
-# # Remove completed runs from list
-# expnum_status = Table.read('/global/cscratch1/sd/rongpu/dr9dev/sky_pattern/fitting_status.fits')
-# expnum_status = expnum_status[expnum_status['done']==False]
-# mask = np.in1d(skyrun['expnum'], expnum_status['expnum'])
-# skyrun = skyrun[mask]
-# print('skyrun', len(skyrun))
-
-expnum_list = skyrun['expnum'].copy()
-
-# shuffle
-np.random.seed(123)
-# DO NOT USE NP.RANDOM.SHUFFLE
-expnum_list = np.random.choice(expnum_list, size=len(expnum_list), replace=False)
-
-# split among the Cori nodes
-expnum_list_split = np.array_split(expnum_list, n_task)
-expnum_list = expnum_list_split[task_id]
-print('Number of exposures in this node:', len(expnum_list))
-
-ccd_columns = ['image_hdu', 'expnum', 'ccdname', 'ccdskycounts']
+ccd_columns = ['image_filename', 'image_hdu', 'expnum', 'ccdname', 'ccdskycounts', 'plver']
 ccd = Table(fitsio.read(surveyccd_path, columns=ccd_columns))
+print(len(ccd))
 
-plot_dir = '/global/cfs/cdirs/desi/www/users/rongpu/plots/dr9dev/sky_pattern/sky_templates_v2/fit_scale'
+# Strip spaces
+ccd['plver'] = np.char.strip(ccd['plver'])
+ccd['ccdname'] = np.char.strip(ccd['ccdname'])
+
+mask = ccd['plver']=='V4.9'
+print(np.sum(mask))
+ccd = ccd[mask]
+
+expnum_list = np.unique(ccd['expnum'])
+
+# make plots for all exposures
+expnum_list_plot = expnum_list.copy()
+
+# # shuffle
+# np.random.seed(123)
+# # DO NOT USE NP.RANDOM.SHUFFLE
+# expnum_list = np.random.choice(expnum_list, size=len(expnum_list), replace=False)
+
+# # split among the Cori nodes
+# expnum_list_split = np.array_split(expnum_list, n_task)
+# expnum_list = expnum_list_split[task_id]
+# print('Number of exposures in this node:', len(expnum_list))
+
+print(len(expnum_list))
+
+plot_dir = '/global/cfs/cdirs/desi/users/rongpu/plots/dr9dev/sky_pattern/sky_templates_v2/fit_scale_cp_v4.9'
 
 binsize = 2
 pix_size = 0.262/3600*binsize
 
-plot_q = True
+plot_q = False
 plots_per_run = 3
 
 image_vrange = {'g':5, 'r':6, 'z':30}
@@ -188,21 +166,23 @@ def template_fitting(expnum, diagnostic_touch=True):
     skyrun_idx = np.where(mask)[0]
     # print('\nrun {}, {} exposures'.format(run, len(skyrun_idx)))
 
-    mask = skyrun_all['run']==run
-    expnum_list_plot = skyrun_all['expnum']
-    
-    np.random.seed(123+run)
-    expnum_list_plot = np.random.choice(expnum_list_plot, size=plots_per_run, replace=False)
+    # mask = skyrun['run']==run
+    # expnum_list_plot = skyrun['expnum']
+    # np.random.seed(123+run)
+    # expnum_list_plot = np.random.choice(expnum_list_plot, size=plots_per_run, replace=False)
 
     ####################
     start = time.time()
     ####################
 
-    image_filename = skyrun['image_filename'][skyrun_index].strip()
+    # Get image_filename from the updated CCD table
+    ccd_index = np.where((ccd['expnum']==expnum))[0][0]
+    image_filename = ccd['image_filename'][ccd_index].strip()
+    image_filename_for_blob = skyrun['image_filename'][skyrun_index].strip()
     image_path = os.path.join(image_dir, image_filename)
     ood_path = image_path.replace('_ooi_', '_ood_')
 
-    blob_path = os.path.join(blob_dir, 'blob_mask', image_filename.replace('.fits.fz', '-blobmask.npz'))
+    blob_path = os.path.join(blob_dir, 'blob_mask', image_filename_for_blob.replace('.fits.fz', '-blobmask.npz'))
     skyscale_path = os.path.join(skyscale_dir, image_filename.replace('.fits.fz', '-skyscale.txt'))
 
     if not os.path.exists(os.path.dirname(skyscale_path)):
@@ -212,7 +192,7 @@ def template_fitting(expnum, diagnostic_touch=True):
             pass
 
     if (overwrite==False) and os.path.isfile(skyscale_path):
-        # print(skyscale_path+' already exists!!')
+        print(skyscale_path+' already exists!!')
         return None
 
     result = Table(names=('image_hdu', 'ccdname', 'ccdskyscale', 'medianskyscale'), dtype=('i4', 'S3', 'f4', 'f4'))
@@ -281,12 +261,7 @@ def template_fitting(expnum, diagnostic_touch=True):
             print(ccdname+' template is all zeros!')
             continue
 
-        # Find the entry in survey-ccd
-        if len(ccdname)==3:
-            ccdname_space_filled = ccdname
-        else:
-            ccdname_space_filled = ccdname+' '
-        ccd_index = np.where((ccd['expnum']==expnum) & (ccd['ccdname']==ccdname_space_filled))[0][0]
+        ccd_index = np.where((ccd['expnum']==expnum) & (ccd['ccdname']==ccdname))[0][0]
 
         # Get HDU index
         # with fitsio.FITS(img_fn) as f:
@@ -413,7 +388,7 @@ def template_fitting(expnum, diagnostic_touch=True):
 
     if plot_q and (expnum in expnum_list_plot) and (len(result)>0):
 
-        print('making plots')
+        # print('making plots')
 
         text = 'run {}, {} band\n'.format(run, band)
         text += 'expnum = {}\n'.format(expnum)

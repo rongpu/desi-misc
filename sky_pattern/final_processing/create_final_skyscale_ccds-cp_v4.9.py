@@ -13,19 +13,25 @@ from multiprocessing import Pool
 n_processes = 32
 
 image_dir = '/global/project/projectdirs/cosmo/staging'
-surveyccd_path = '/global/project/projectdirs/cosmo/work/legacysurvey/dr9/survey-ccds-decam-dr9.fits.gz'
+surveyccd_path = '/global/project/projectdirs/cosmo/work/legacysurvey/dr9m/survey-ccds-decam-dr9.fits.gz'
 
 skyrun = Table.read('/global/cscratch1/sd/rongpu/temp/skyrunsgoodcountexpnumv48dr8.fits')
 
-ccd_columns = ['image_hdu', 'expnum', 'ccdname', 'filter', 'ccdskycounts']
+ccd_columns = ['image_filename', 'expnum', 'ccdname', 'filter', 'ccdskycounts', 'plver']
 ccd = Table(fitsio.read(surveyccd_path, columns=ccd_columns))
+ccd['ccdname'] = np.char.strip(ccd['ccdname']) # strip spaces
+ccd['plver'] = np.char.strip(ccd['plver']) # strip spaces
 
-ccd['ccd_id'] = 100*ccd['expnum'] + ccd['image_hdu']
+mask = ccd['plver']=='V4.9'
+print(np.sum(mask))
+ccd = ccd[mask]
 
-skyscale = Table.read('/global/cscratch1/sd/rongpu/dr9dev/sky_pattern/sky_scales/skyscales_ccds_raw.fits')
-skyscale.remove_column('ccdname')
+# ccd['ccd_id'] = 100*ccd['expnum'] + ccd['image_hdu']
 
-ccd_new = join(ccd, skyscale, keys=['image_hdu', 'expnum'], join_type='left')
+skyscale = Table.read('/global/cscratch1/sd/rongpu/dr9dev/sky_pattern/sky_scales/skyscales_ccds_raw_cp_v4.9.fits')
+skyscale.remove_column('image_hdu')
+
+ccd_new = join(ccd, skyscale, keys=['ccdname', 'expnum'], join_type='left')
 print(len(ccd))
 print(len(ccd_new))
 
@@ -39,10 +45,10 @@ ccd_new['skyscale'] = 0.
 
 expnum_list = np.unique(ccd_new['expnum'])
 
-# shuffle
-np.random.seed(123)
-# DO NOT USE NP.RANDOM.SHUFFLE
-expnum_list = np.random.choice(expnum_list, size=len(expnum_list), replace=False)
+# # shuffle
+# np.random.seed(123)
+# # DO NOT USE NP.RANDOM.SHUFFLE
+# expnum_list = np.random.choice(expnum_list, size=len(expnum_list), replace=False)
 
 def get_ccds(expnum):
 
@@ -59,7 +65,7 @@ def get_ccds(expnum):
 
     skyrun_index = np.where(skyrun['expnum']==expnum)[0][0]
     run = skyrun['run'][skyrun_index]
-    image_filename = skyrun['image_filename'][skyrun_index].strip()
+    image_filename = ccd_exp['image_filename'][0].strip()
 
     # CCDs with valid skyscales measured
     mask_has_skyscale = (ccd_exp['run']>=0)
@@ -91,19 +97,19 @@ def main():
     ccd_new1 = vstack(res)
     print(len(ccd_new1))
 
-    # Line match to survey-ccds
-    ccd_reverse_sort = np.array(ccd['ccd_id']).argsort().argsort()
-    ccd_new1.sort('ccd_id')
-    ccd_new1 = ccd_new1[ccd_reverse_sort]
+    # # Line match to survey-ccds
+    # ccd_reverse_sort = np.array(ccd['ccd_id']).argsort().argsort()
+    # ccd_new1.sort('ccd_id')
+    # ccd_new1 = ccd_new1[ccd_reverse_sort]
 
-    ccd_new1.write('/global/cscratch1/sd/rongpu/dr9dev/sky_pattern/sky_scales/skyscales_ccds_debug.fits')
+    ccd_new1.write('/global/cscratch1/sd/rongpu/dr9dev/sky_pattern/sky_scales/skyscales_ccds_debug_cp_v4.9.fits')
 
     # Remove the skyscale values that won't be used
-    ccd_new1.remove_columns(['ccdskyscale', 'medianskyscale', 'ccdskycounts', 'ccd_id'])
+    ccd_new1.remove_columns(['image_filename', 'plver', 'ccdskyscale', 'medianskyscale', 'ccdskycounts'])
 
-    ccd_new1['SKYTMPLV'] = 1
+    ccd_new1['SKYTMPLV'] = 2
 
-    ccd_new1.write('/global/cscratch1/sd/rongpu/dr9dev/sky_pattern/sky_scales/skyscales_ccds.fits')
+    ccd_new1.write('/global/cscratch1/sd/rongpu/dr9dev/sky_pattern/sky_scales/skyscales_ccds_cp_v4.9.fits')
 
     print('All done!!!!!!!!!!!!!!!!!!!!!')
 

@@ -1,9 +1,7 @@
 from __future__ import division, print_function
 import sys, os, glob, time, warnings, gc
 import matplotlib
-# matplotlib.use('Agg')
-# Use the same backend as Jupyter notebook
-matplotlib.use('module://ipykernel.pylab.backend_inline')
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
 from astropy.table import Table, vstack, hstack
@@ -89,41 +87,53 @@ plots_per_run = 3
 
 image_dir = '/global/project/projectdirs/cosmo/staging'
 blob_dir = '/global/cfs/cdirs/desi/users/rongpu/dr9/decam_ccd_blob_mask'
-surveyccd_path = '/global/project/projectdirs/cosmo/work/legacysurvey/dr9/survey-ccds-decam-dr9.fits.gz'
-template_dir = '/global/cscratch1/sd/rongpu/dr9dev/sky_pattern/sky_templates_final/'
-skyscale_dir = '/global/cscratch1/sd/rongpu/dr9dev/sky_pattern/sky_scales/'
+surveyccd_path = '/global/project/projectdirs/cosmo/work/legacysurvey/dr9m/survey-ccds-decam-dr9.fits.gz'
+template_dir = template_dir = '/global/project/projectdirs/cosmo/work/legacysurvey/dr9m/calib/sky_pattern/sky_templates/'
+# skyscale_dir = '/global/cscratch1/sd/rongpu/dr9dev/sky_pattern/sky_scales/'
+skyscale_dir = '/global/cscratch1/sd/rongpu/dr9dev/sky_pattern/sky_scales_cp_v4.9/'
 
-plot_dir = '/global/cfs/cdirs/desi/www/users/rongpu/plots/dr9dev/sky_pattern/sky_templates_v2/median_fit_scale'
+# plot_dir = '/global/cfs/cdirs/desi/www/users/rongpu/plots/dr9dev/sky_pattern/sky_templates_v2/median_fit_scale'
+plot_dir = '/global/cfs/cdirs/desi/users/rongpu/plots/dr9dev/sky_pattern/sky_templates_v2/median_fit_scale_cp_v4.9'
 
-skyrun = Table.read('/global/cscratch1/sd/rongpu/temp/skyrunsgoodcountexpnumv48dr8.fits')
+skyrun = Table.read('/global/cfs/cdirs/desi/users/rongpu/dr9/sky_pattern/skyrunsgoodcountexpnumv48dr8.fits')
 print(len(skyrun))
 
-ccd_columns = ['image_hdu', 'expnum', 'ccdname', 'ccdskycounts', 'ccd_cuts']
+ccd_columns = ['image_filename', 'expnum', 'ccdname', 'ccdskycounts', 'ccd_cuts', 'plver']
 ccd = Table(fitsio.read(surveyccd_path, columns=ccd_columns))
+ccd['plver'] = np.char.strip(ccd['plver'])
 print(len(ccd))
 
-# Only plot runs that are OK
-mask = skyrun['ok']==True
-skyrun = skyrun[mask]
-print(len(skyrun))
+###############################
+# Plot the new V4.9 images
+mask = ccd['plver']=='V4.9'
+print(np.sum(mask))
+ccd = ccd[mask]
+expnum_list = np.unique(ccd['expnum'])
+np.random.seed(341)
+expnum_list = np.random.choice(expnum_list, size=100, replace=False)
+###############################
 
-expnum_list = []
+# # Only plot runs that are OK
+# mask = skyrun['ok']==True
+# skyrun = skyrun[mask]
+# print(len(skyrun))
 
-expnum_list.append(np.array([582826, 630819, 648470, 771792, 771793]))
+# expnum_list = []
+# expnum_list.append(np.array([582826, 630819, 648470, 771792, 771793]))
 
-# Select the exposures to plot
-for run in np.unique(skyrun['run']):
-    mask = skyrun['run']==run
-    np.random.seed(123+run)
-    tmp = np.random.choice(skyrun['expnum'][mask], size=plots_per_run, replace=False)
-    expnum_list.append(tmp)
-expnum_list = np.concatenate(expnum_list)
-print(len(expnum_list))
+# # Select the exposures to plot
+# for run in np.unique(skyrun['run']):
+#     mask = skyrun['run']==run
+#     np.random.seed(123+run)
+#     tmp = np.random.choice(skyrun['expnum'][mask], size=plots_per_run, replace=False)
+#     expnum_list.append(tmp)
+# expnum_list = np.concatenate(expnum_list)
+# print(len(expnum_list))
 
-# shuffle
-np.random.seed(123)
-# DO NOT USE NP.RANDOM.SHUFFLE
-expnum_list = np.random.choice(expnum_list, size=len(expnum_list), replace=False)
+# # shuffle
+# np.random.seed(123)
+# # DO NOT USE NP.RANDOM.SHUFFLE
+# expnum_list = np.random.choice(expnum_list, size=len(expnum_list), replace=False)
 
 binsize = 2
 pix_size = 0.262/3600*binsize
@@ -145,7 +155,8 @@ def make_plots(expnum):
     band = skyrun['filter'][skyrun_index]
     run = skyrun['run'][skyrun_index]
 
-    image_filename = skyrun['image_filename'][skyrun_index].strip()
+    ccd_index = np.where((ccd['expnum']==expnum))[0][0]
+    image_filename = ccd['image_filename'][ccd_index].strip()
     image_path = os.path.join(image_dir, image_filename)
 
     vrange = image_vrange[band]
@@ -265,6 +276,8 @@ def make_plots(expnum):
     plt.close()
 
 def main():
+
+    print(len(expnum_list))
 
     with Pool(processes=n_processes) as pool:
         res = pool.map(make_plots, expnum_list)
