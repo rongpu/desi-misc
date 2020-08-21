@@ -18,8 +18,8 @@ Note: the actual sky subtraction uses the median of the coefficients of all CCDs
 
 **QA images**
 
-[Templates](https://https://data.desi.lbl.gov/desi/users/rongpu/plots/dr9dev/sky_pattern/sky_templates_v2/templates_final/) ([code](https://github.com/rongpu/desi-misc/blob/master/sky_pattern/create_images/create_images_templates.py))  
-[Original CP images](https://https://data.desi.lbl.gov/desi/users/rongpu/plots/dr9dev/sky_pattern/sky_templates_v2/original_CP_images/) ([code](https://github.com/rongpu/desi-misc/blob/master/sky_pattern/create_images/create_images_cp_original.py))  
-[Original CP images (DR8 version)](https://https://data.desi.lbl.gov/desi/users/rongpu/plots/dr9dev/sky_pattern/sky_templates_v2/original_CP_images_dr8/) ([code](https://github.com/rongpu/desi-misc/blob/master/sky_pattern/create_images/create_images_cp_original_dr8.py))  
-[Sky-corrected images](https://https://data.desi.lbl.gov/desi/users/rongpu/plots/dr9dev/sky_pattern/sky_templates_v2/median_fit_scale/) ([code](https://github.com/rongpu/desi-misc/blob/master/sky_pattern/create_images/create_images_median_fitscale.py))  
+[Templates](https://data.desi.lbl.gov/desi/users/rongpu/plots/dr9dev/sky_pattern/sky_templates_v2/templates_final/) ([code](https://github.com/rongpu/desi-misc/blob/master/sky_pattern/create_images/create_images_templates.py))  
+[Original CP images](https://data.desi.lbl.gov/desi/users/rongpu/plots/dr9dev/sky_pattern/sky_templates_v2/original_CP_images/) ([code](https://github.com/rongpu/desi-misc/blob/master/sky_pattern/create_images/create_images_cp_original.py))  
+[Original CP images (DR8 version)](https://data.desi.lbl.gov/desi/users/rongpu/plots/dr9dev/sky_pattern/sky_templates_v2/original_CP_images_dr8/) ([code](https://github.com/rongpu/desi-misc/blob/master/sky_pattern/create_images/create_images_cp_original_dr8.py))  
+[Sky-corrected images](https://data.desi.lbl.gov/desi/users/rongpu/plots/dr9dev/sky_pattern/sky_templates_v2/median_fit_scale/) ([code](https://github.com/rongpu/desi-misc/blob/master/sky_pattern/create_images/create_images_median_fitscale.py))  
 
