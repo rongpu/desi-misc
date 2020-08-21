@@ -1,6 +1,9 @@
 # salloc -N 1 -C haswell -q interactive -t 04:00:00
 # shifter --image docker:legacysurvey/legacypipe:DR9.5.5 bash
 
+# Next: 1. require a minimum of 20 sources to qualify
+#       2. change threshold2 to 3.0
+
 from __future__ import division, print_function
 import sys, os, glob, time, warnings, gc
 import matplotlib
@@ -15,25 +18,33 @@ from astropy import units as u
 from astropy.coordinates import SkyCoord
 
 from multiprocessing import Pool
+from pathlib import Path
 
 ##################################################################################################################
+
+n_node = 4
+task_id = 3
 
 cleanup = True
 
 plot_q = True
-plot_dir = '/global/cscratch1/sd/rongpu/temp/double_vision_plots'
+plot_dir = '/global/cscratch1/sd/rongpu/temp/double_vision_plots_round_2'
 
 image_dir = '/global/project/projectdirs/cosmo/staging'
 tmp_dir = '/global/cscratch1/sd/rongpu/temp/double_vision'
 
 # Include spaces for DR9 CCDs, e.g. 'N9 '
-ccds = ['S23', 'N13', 'N21']
+ccds = ['S1', 'S2', 'S3', 'S4', 'S5', 'S6', 'S8', 'S9', 'S10', 'S11', 'S12', 'S13', 'S14', 'S15', 
+        'S16', 'S17', 'S18', 'S19', 'S20', 'S21', 'S22', 'S23', 'S24', 'S25', 'S26', 'S27', 'S28', 'S29', 
+        'S31', 'N1', 'N2', 'N3', 'N4', 'N5', 'N6', 'N7', 'N8', 'N9', 'N11', 'N12', 'N14', 'N16', 'N17', 
+        'N18', 'N19', 'N20', 'N21', 'N22', 'N23', 'N24', 'N25', 'N26', 'N27', 'N28', 'N29', 'N31']
 # ccds_more = []
-n_ccd = 2
+n_ccd = 3
+n_ccd_threshold = 2 # require at least this many CCDs to meet the cut for visual inspection
 search_radius = 30. # arcsec
 
-threshold1 = 2.5
-threshold2 = 4.5
+threshold1 = 2.
+threshold2 = 4.
 
 n_processes = 32
 
@@ -41,14 +52,11 @@ image_vrange = {'g':15, 'r':20, 'z':50}
 
 ##################################################################################################################
 
-surveyccd_path_dr8 = '/global/cfs/cdirs/cosmo/work/legacysurvey/dr9-garage/reorg/decam/survey-ccds-decam-dr8-newlocs2.fits.gz'
 surveyccd_path_dr9 = '/global/project/projectdirs/cosmo/work/legacysurvey/dr9/survey-ccds-decam-dr9.fits.gz'
 
 ccd_columns = ['expnum', 'image_filename', 'ccdname', 'filter', 'ccd_cuts']
-ccd_dr8 = Table(fitsio.read(surveyccd_path_dr8, columns=ccd_columns))
-print(len(ccd_dr8))
-ccd_dr9 = Table(fitsio.read(surveyccd_path_dr9, columns=ccd_columns))
-print(len(ccd_dr9))
+ccd = Table(fitsio.read(surveyccd_path_dr9, columns=ccd_columns))
+print(len(ccd))
 
 def search_around(ra1, dec1, ra2, dec2, search_radius=1., verbose=True):
     '''
@@ -96,30 +104,23 @@ def search_around(ra1, dec1, ra2, dec2, search_radius=1., verbose=True):
 
 def find_candidates(expnum):
 
-    is_candidate = False
-    is_dr9 = False
-    
-    idx = np.where(ccd_dr8['expnum']==expnum)[0]
-    idx = idx[np.in1d(ccd_dr8['ccdname'][idx], ccds)]
-    if len(idx)>0:
-        ccd = ccd_dr8
-    else:
-        idx = np.where(ccd_dr9['expnum']==expnum)[0]
-        idx = idx[np.in1d(ccd_dr9['ccdname'][idx], ccds)]
-        if len(idx)>0:
-            print('Using DR9 CCDs')
-        else:
-            print('No CCD in DR8 or DR9. Skip.')
-            return None
-        ccd = ccd_dr9
-        is_dr9 = True
-    
-    if len(idx)>n_ccd:
-        idx = idx[:n_ccd]
+    ccd_threshold_counter = 0
+        
+    idx = np.where(ccd['expnum']==expnum)[0]
+    idx = idx[np.in1d(ccd['ccdname'][idx], ccds)]
+        
+    if len(idx)<n_ccd_threshold:
+        print('Not enough CCDs; skip')
+        return None
+    elif len(idx)>n_ccd:
+        np.random.seed(expnum)
+        ccds1 = np.random.choice(np.unique(ccd['ccdname'][idx]), size=n_ccd, replace=False)
+        idx = idx[np.in1d(ccd['ccdname'][idx], ccds1)]
 
     for ccd_index in idx:
 
-        expnum = ccd['expnum'][ccd_index]
+        meet_criteria = False
+
         ccdname = ccd['ccdname'][ccd_index].strip()
         band = ccd['filter'][ccd_index]
 
@@ -135,10 +136,9 @@ def find_candidates(expnum):
         img = fitsio.read(image_path, ext=ccdname)
 
         # Apply masks for DR9 images
-        if is_dr9:
-            ood_path = image_path.replace('_ooi_', '_ood_')
-            ood = fitsio.read(ood_path, ext=ccdname)
-            img[ood!=0] = np.nan
+        ood_path = image_path.replace('_ooi_', '_ood_')
+        ood = fitsio.read(ood_path, ext=ccdname)
+        img[ood!=0] = np.nan
             
         # downsize image
         binsize = 8
@@ -180,7 +180,7 @@ def find_candidates(expnum):
         counts, _, _, = np.histogram2d(d_ra, d_dec, bins=[xbins, ybins])
         mask = counts>threshold1 * (np.percentile(counts.flatten(), 99)) # candidate criteria
         if np.sum(mask)>=2:
-            is_candidate = True
+            meet_criteria = True
             if plot_q:
                 fig, ax = plt.subplots(1, 2, figsize=(14, 5.5))
                 counts, _, _, im, = ax[1].hist2d(d_ra, d_dec, bins=[xbins, ybins])
@@ -200,7 +200,7 @@ def find_candidates(expnum):
         counts, _, _, = np.histogram2d(d_ra, d_dec, bins=[xbins, ybins])
         mask = counts > threshold2 * (np.percentile(counts.flatten(), 99)) # candidate criteria
         if np.sum(mask)>=2:
-            is_candidate = True
+            meet_criteria = True
             if plot_q:
                 fig, ax = plt.subplots(1, 2, figsize=(14, 5.5))
                 counts, _, _, im, = ax[1].hist2d(d_ra, d_dec, bins=[xbins, ybins])
@@ -215,7 +215,10 @@ def find_candidates(expnum):
                 plt.savefig(os.path.join(plot_dir, 'image_decam_{}_{}_{}_hist2d_2.jpeg'.format(expnum, ccdname, band)))
                 plt.close()
 
-        if is_candidate and plot_q:
+        if meet_criteria:
+            ccd_threshold_counter += 1
+
+        if meet_criteria and plot_q:
             vrange = image_vrange[band]
             # naive sky estimation
             mask = (img<np.percentile(img.flatten(), 95))
@@ -234,15 +237,19 @@ def find_candidates(expnum):
             plt.savefig(os.path.join(plot_dir, 'image_decam_{}_{}_{}_sources.jpeg'.format(expnum, ccdname, band)))
             plt.close()
 
-        # if cleanup and (is_candidate==False):
+        # if cleanup and (meet_criteria==False):
         if cleanup:
             os.remove(cat_path)
 
-        if is_candidate:
+        if ccd_threshold_counter>=n_ccd_threshold:
             break
 
-    if is_candidate:
+    if ccd_threshold_counter>=n_ccd_threshold:
         print('Found a candidate: expnum {}'.format(expnum))
+        if expnum in known_bad_expnum_list:
+            Path(os.path.join(tmp_dir, 'known_decam_{}'.format(expnum))).touch()
+        else:
+            Path(os.path.join(tmp_dir, 'decam_{}'.format(expnum))).touch()
 
     return None
 
@@ -253,30 +260,35 @@ def find_candidates(expnum):
 #     find_candidates(expnum)
 
 # np.random.seed(623)
-# expnum_list = np.concatenate([expnum_list, np.random.choice(ccd_dr9['expnum'], 100, replace=False)])
+# expnum_list = np.concatenate([expnum_list, np.random.choice(ccd['expnum'], 100, replace=False)])
 
 # np.random.seed(623)
-# expnum_list = np.random.choice(ccd_dr9['expnum'], 100, replace=False)
+# expnum_list = np.random.choice(ccd['expnum'], 100, replace=False)
 # # expnum_list = np.unique(expnum_list)
 
 # for expnum in expnum_list:
 #     find_candidates(expnum)
 
-# expnum_list = np.unique(ccd_dr9['expnum'])
+expnum_list = np.unique(ccd['expnum'])
 
-mask = ccd_dr9['ccd_cuts']==0
-expnum_list = np.unique(ccd_dr9['expnum'][mask])
-print(len(expnum_list))
+# mask = ccd['ccd_cuts']==0
+# expnum_list = np.unique(ccd['expnum'][mask])
+# print(len(expnum_list))
 
 # ###############
 # np.random.seed(623)
 # expnum_list = np.random.choice(expnum_list, 640, replace=False)
 # ###############
 
-n_node = 2
-task_id = 0
 expnum_list_split = np.array_split(expnum_list, n_node)
 expnum_list = np.sort(expnum_list_split[task_id])
+
+with open('decam-bad_expid_20200814.txt') as f:
+    texts = list(map(str.strip, f.readlines()))
+known_bad_expnum_list = []
+for text in texts:
+    if len(text)>0 and (text[0]!='#'):
+        known_bad_expnum_list.append(int(text.replace('-', ' ').split()[0]))
 
 start = time.time()
 with Pool(processes=n_processes) as pool:

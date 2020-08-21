@@ -15,13 +15,14 @@ from astropy import units as u
 from astropy.coordinates import SkyCoord
 
 from multiprocessing import Pool
+from pathlib import Path
 
 ##################################################################################################################
 
 cleanup = True
 
 plot_q = True
-plot_dir = '/global/cscratch1/sd/rongpu/temp/double_vision_plots_90prime'
+plot_dir = '/global/cscratch1/sd/rongpu/temp/double_vision_plots_90prime_round_2'
 
 image_dir = '/global/project/projectdirs/cosmo/staging'
 tmp_dir = '/global/cscratch1/sd/rongpu/temp/double_vision'
@@ -31,8 +32,8 @@ ccds = ['CCD1', 'CCD2', 'CCD3', 'CCD4']
 n_ccd = 1
 search_radius = 30. # arcsec
 
-threshold1 = 2.5
-threshold2 = 4.5
+threshold1 = 2.
+threshold2 = 4.
 
 n_processes = 32
 
@@ -224,6 +225,11 @@ def find_candidates(expnum):
             os.remove(cat_path)
 
         if is_candidate:
+            print('Found a candidate: expnum {}'.format(expnum))
+            if expnum in known_bad_expnum_list:
+                Path(os.path.join(tmp_dir, 'known_90prime_{}'.format(expnum))).touch()
+            else:
+                Path(os.path.join(tmp_dir, '90prime_{}'.format(expnum))).touch()
             break
 
     if is_candidate:
@@ -241,11 +247,11 @@ def find_candidates(expnum):
 # expnum_list = np.random.choice(ccd['expnum'], 100, replace=False)
 # # expnum_list = np.unique(expnum_list)
 
-# expnum_list = np.unique(ccd['expnum'])
+expnum_list = np.unique(ccd['expnum'])
 
-mask = ccd['ccd_cuts']==0
-expnum_list = np.unique(ccd['expnum'][mask])
-print(len(expnum_list))
+# mask = ccd['ccd_cuts']==0
+# expnum_list = np.unique(ccd['expnum'][mask])
+# print(len(expnum_list))
 
 # ###############
 # np.random.seed(623)
@@ -262,6 +268,13 @@ print(len(expnum_list))
 # task_id = 0
 # expnum_list_split = np.array_split(expnum_list, n_node)
 # expnum_list = np.sort(expnum_list_split[task_id])
+
+with open('90prime-bad_expid_20200814.txt') as f:
+    texts = list(map(str.strip, f.readlines()))
+known_bad_expnum_list = []
+for text in texts:
+    if len(text)>0 and (text[0]!='#'):
+        known_bad_expnum_list.append(int(text.replace('-', ' ').split()[0]))
 
 start = time.time()
 with Pool(processes=n_processes) as pool:
