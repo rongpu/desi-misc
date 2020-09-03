@@ -170,7 +170,7 @@ def modify_psfex(exp_index):
             try:
                 popt, pcov = curve_fit(get_sb_moffat, radius[mask], psfi_flat[mask]/(pixscale**2), bounds=((0, 1.8), np.inf))
                 alpha, beta = popt
-            except:
+            except RuntimeError:
                 print("Error: "+image_filename+", "+ccdname+".")
                 print("Error: fit failed to converge.")
                 alpha, beta = 0.8, 2.2 # using default values
