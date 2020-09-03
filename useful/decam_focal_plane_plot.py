@@ -100,7 +100,7 @@ image_vrange = {'g':5, 'r':6, 'z':30}
 
 ################################################################################
 
-def decam_plot(exposure, plot_path, figsize=(13, 12), vrange=None, dr8=False, binsize=20, median=False,
+def decam_plot(exposure, plot_path, figsize=(13, 12), vrange=None, dr8=False, binsize=20, median=True,
     blob_mask=False, ood_mask=False, gaussian_sigma=None, show=False):
     '''
     Example:
