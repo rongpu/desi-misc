@@ -10,6 +10,14 @@ from astropy.table import Table, vstack, hstack
 import fitsio
 # from astropy.io import fits
 
+surveyccd_path = '/global/project/projectdirs/cosmo/work/legacysurvey/dr9/survey-ccds-decam-dr9.fits.gz'
+ccd = Table(fitsio.read(surveyccd_path, columns=['expnum', 'image_filename']))
+print(len(ccd))
+_, idx = np.unique(ccd['expnum'], return_index=True)
+ccd = ccd[idx]
+print(len(ccd))
+ccd.write('/global/cfs/cdirs/desi/users/rongpu/useful/survey-ccds-decam-dr9-old-trim.fits')
+
 surveyccd_path = '/global/project/projectdirs/cosmo/work/legacysurvey/dr9m/survey-ccds-decam-dr9.fits.gz'
 ccd = Table(fitsio.read(surveyccd_path, columns=['expnum', 'image_filename']))
 print(len(ccd))
