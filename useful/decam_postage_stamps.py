@@ -114,7 +114,7 @@ def decam_plot(exposure, plot_path, figsize=(13, 12), vrange=None, dr8=False, bi
         else:
             ccd = Table.read(surveyccd_path_dr8)
         ccd_index = np.where(ccd['expnum']==exposure)[0][0]
-        band = ccd['image_filename'][ccd_index][ccd['image_filename'][ccd_index].find('_ooi_')+5]
+        # band = ccd['image_filename'][ccd_index][ccd['image_filename'][ccd_index].find('_ooi_')+5]
         image_path = os.path.join(image_dir, ccd['image_filename'][ccd_index].strip())
 
     print(image_path)
@@ -124,6 +124,7 @@ def decam_plot(exposure, plot_path, figsize=(13, 12), vrange=None, dr8=False, bi
         return None
 
     if vrange is None:
+        band = image_path[image_path.find('_ooi_')+5]
         vrange = image_vrange[band]
 
     if blob_mask:
@@ -144,7 +145,8 @@ def decam_plot(exposure, plot_path, figsize=(13, 12), vrange=None, dr8=False, bi
         try:
             img = fitsio.read(image_path, ext=ccdname)
         except OSError:
-            print(ccdname+' does not exist in image!')
+            if ccdname!='S30': # mute S30
+                print('{} does not exist in image ({})!'.format(ccdname, expnum))
             continue
 
         if ood_mask:
@@ -271,11 +273,11 @@ def decam_postage_stamp(exposure, binsize=120, plot_path=None, save_path=None, v
         raise ValueError('exposure can either be string or integer!')
 
     print(image_path)
+    band = image_path[image_path.find('_ooi_')+5]
 
     if save_path is not None and os.path.isfile(save_path):
 
         fullimg = np.load(save_path)['data']
-        fullimg[~np.isfinite(fullimg)] = 0
 
     else:
 
@@ -359,12 +361,18 @@ def decam_postage_stamp(exposure, binsize=120, plot_path=None, save_path=None, v
             trim_size_x = img.shape[1] % binsize
             trim_size_y = img.shape[0] % binsize
             img = img[:(img.shape[0]-trim_size_y), :(img.shape[1]-trim_size_x)]
+            nanmask = np.isfinite(img)
 
             # to ignore NAN values, use np.nanmean or np.nanmedian
-            if not median:
-                img = np.nanmean(np.nanmean(img.reshape((img.shape[0]//binsize, binsize, img.shape[1]//binsize,-1)), axis=3), axis=1)
-            else:
-                img = np.nanmedian(np.nanmedian(img.reshape((img.shape[0]//binsize, binsize, img.shape[1]//binsize,-1)), axis=3), axis=1)
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                if not median:
+                    img = np.nanmean(np.nanmean(img.reshape((img.shape[0]//binsize, binsize, img.shape[1]//binsize,-1)), axis=3), axis=1)
+                else:
+                    img = np.nanmedian(np.nanmedian(img.reshape((img.shape[0]//binsize, binsize, img.shape[1]//binsize,-1)), axis=3), axis=1)
+                nanmask = np.mean(np.mean(nanmask.reshape((nanmask.shape[0]//binsize, binsize, nanmask.shape[1]//binsize,-1)), axis=3), axis=1)
+            mask = nanmask<0.01 # require at least 1% of the pixels to be unmasked
+            img[mask] = np.nan
 
             ################################################
             img = img.T
@@ -376,12 +384,11 @@ def decam_postage_stamp(exposure, binsize=120, plot_path=None, save_path=None, v
         if save_path is not None:
             np.savez_compressed(save_path, data=fullimg)
 
-        fullimg[~np.isfinite(fullimg)] = 0
+    fullimg[~np.isfinite(fullimg)] = 0
 
     if plot_path is not None:
 
         if vrange is None:
-            band = image_path[image_path.find('_ooi_')+5]
             vrange = image_vrange[band]
 
         ax = create_image(fullimg, cmap='seismic', vmin=-vrange, vmax=vrange)
