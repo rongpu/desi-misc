@@ -10,6 +10,7 @@ import fitsio
 
 from pathlib import Path
 from multiprocessing import Pool
+import argparse
 
 params = {'legend.fontsize': 'large',
          'axes.labelsize': 'large',
@@ -89,24 +90,32 @@ plot_dir = '/global/cscratch1/sd/rongpu/dr10dev/decam_postage/postage_image'
 touch_dir = '/global/cscratch1/sd/rongpu/dr10dev/decam_postage/postage_being_written'
 
 
-############################################################
+parser = argparse.ArgumentParser()
+parser.add_argument('args')
+args = parser.parse_args()
+n_task, task_id = [int(tmp) for tmp in args.args.split()]
 
 ccd = Table.read(surveyccd_path)
 skyscales = Table.read(sky_scales_path)
 
-############################################################
-
-mask_ccd = ccd['ccd_cuts_ok']==True
-expnum_list = []
+expnum_list = np.sort(np.unique(ccd['expnum']))
 np.random.seed(261)
-for band in ['g', 'r', 'z']:
-    ccd_idx = np.where(mask_ccd & (ccd['filter']==band))[0]
-    ccd_idx = np.random.choice(ccd_idx, size=50, replace=False)
-    expnum_list += list(ccd['expnum'][ccd_idx])
-print(len(expnum_list))
-############################################################
+expnum_list = np.random.choice(expnum_list, size=len(expnum_list), replace=False)
 
-def create_image(data, cmap='gray', dpi=80, vmin=None, vmax=None, origin=None, norm=None):    
+# ############################################################
+# mask_ccd = ccd['ccd_cuts_ok']==True
+# expnum_list = np.unique(ccd['expnum'][mask_ccd])
+# np.random.seed(261)
+# expnum_list = np.random.choice(expnum_list, size=1024, replace=False)
+# ############################################################
+
+# split among the Cori nodes
+expnum_list_split = np.array_split(expnum_list, n_task)
+expnum_list = expnum_list_split[task_id]
+print('Number of expousres (task_id {}): {}'.format(task_id, len(expnum_list)))
+
+
+def create_image(data, cmap='gray', dpi=80, vmin=None, vmax=None, origin=None, norm=None):
     '''
     Create an image with exactly the same pixel dimension as the data.
     Example:
@@ -134,7 +143,7 @@ def decam_postage_stamp(expnum, binsize=120, save_path=None, dr8=False, median=T
     '''
     ccd_index = np.where(ccd['expnum']==expnum)[0][0]
     image_filename = ccd['image_filename'][ccd_index].strip()
-    
+
     image_path = os.path.join(image_dir, image_filename)
     # print(image_path)
     band = image_path[image_path.find('_ooi_')+5]
@@ -191,7 +200,7 @@ def decam_postage_stamp(expnum, binsize=120, save_path=None, dr8=False, median=T
             try:
                 img = fitsio.read(image_path, ext=ccdname)
             except OSError:
-                if ccdname!='S30': # mute S30
+                if ccdname!='S30':  # mute S30
                     print('{} does not exist in image ({})!'.format(ccdname, expnum))
                 continue
 
@@ -268,7 +277,7 @@ def decam_postage_stamp(expnum, binsize=120, save_path=None, dr8=False, median=T
                 else:
                     img = np.nanmedian(np.nanmedian(img.reshape((img.shape[0]//binsize, binsize, img.shape[1]//binsize,-1)), axis=3), axis=1)
                 nanmask = np.mean(np.mean(nanmask.reshape((nanmask.shape[0]//binsize, binsize, nanmask.shape[1]//binsize,-1)), axis=3), axis=1)
-            mask = nanmask<0.01 # require at least 1% of the pixels to be unmasked
+            mask = nanmask<0.01  # require at least 1% of the pixels to be unmasked
             img[mask] = np.nan
 
             ################################################
@@ -303,15 +312,14 @@ def decam_postage_stamp(expnum, binsize=120, save_path=None, dr8=False, median=T
 
 
 def main():
-    
+
     with Pool(processes=n_processes) as pool:
         res = pool.map(decam_postage_stamp, expnum_list)
 
     # make_plots(expnum_list[0])
 
-    print('Done!!!!!!!!!!!!!!!!!!!!!')
+    print('task_id {} done!!!!!!!!!!!!!!!!!!!!!'.format(task_id))
 
 
 if __name__=="__main__":
     main()
-

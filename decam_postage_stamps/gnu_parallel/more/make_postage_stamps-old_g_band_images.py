@@ -1,3 +1,5 @@
+# Postage stamps for the old version of g-band images that have ringing pupil artifacts
+
 from __future__ import division, print_function
 import sys, os, glob, time, warnings, gc
 import matplotlib
@@ -10,6 +12,7 @@ import fitsio
 
 from pathlib import Path
 from multiprocessing import Pool
+import argparse
 
 params = {'legend.fontsize': 'large',
          'axes.labelsize': 'large',
@@ -79,6 +82,7 @@ blob_dir = '/global/cfs/cdirs/desi/users/rongpu/dr9/decam_ccd_blob_mask'
 # surveyccd_path = '/global/project/projectdirs/cosmo/work/legacysurvey/dr9m/survey-ccds-decam-dr9.fits.gz'
 # surveyccd_path = '/global/cfs/cdirs/desi/users/rongpu/useful/survey-ccds-decam-dr9-trim.fits'
 surveyccd_path = '/global/cfs/cdirs/desi/users/rongpu/useful/survey-ccds-decam-dr9-trim-less.fits'
+surveyccd_path_old = '/global/cfs/cdirs/desi/users/rongpu/useful/survey-ccds-decam-dr9-old-trim.fits'
 # surveyccd_path = '/global/cfs/cdirs/cosmo/work/legacysurvey/dr9-garage/reorg/decam/survey-ccds-decam-dr8-newlocs2.fits.gz'
 # surveyccd_path = '/global/cfs/cdirs/desi/users/rongpu/useful/survey-ccds-decam-dr8-trim.fits'
 sky_scales_path = '/global/cfs/cdirs/cosmo/work/legacysurvey/dr9m/calib/sky_pattern/sky-scales.fits'
@@ -91,19 +95,28 @@ touch_dir = '/global/cscratch1/sd/rongpu/dr10dev/decam_postage/postage_being_wri
 
 ############################################################
 
+parser = argparse.ArgumentParser()
+parser.add_argument('n_task')
+parser.add_argument('task_id')
+args = parser.parse_args()
+n_task = int(args.n_task)
+task_id = int(args.task_id)
+
 ccd = Table.read(surveyccd_path)
+ccd_old = Table.read(surveyccd_path_old)
 skyscales = Table.read(sky_scales_path)
 
 ############################################################
 
-mask_ccd = ccd['ccd_cuts_ok']==True
-expnum_list = []
-np.random.seed(261)
-for band in ['g', 'r', 'z']:
-    ccd_idx = np.where(mask_ccd & (ccd['filter']==band))[0]
-    ccd_idx = np.random.choice(ccd_idx, size=50, replace=False)
-    expnum_list += list(ccd['expnum'][ccd_idx])
-print(len(expnum_list))
+# mask_ccd = ccd['ccd_cuts_ok']==True
+mask_ccd = ccd['plver']=='V4.9'
+expnum_list = np.unique(ccd['expnum'][mask_ccd])
+
+# split among the Cori nodes
+expnum_list_split = np.array_split(expnum_list, n_task)
+expnum_list = expnum_list_split[task_id]
+print('Number of expousres (task_id {}): {}'.format(task_id, len(expnum_list)))
+
 ############################################################
 
 def create_image(data, cmap='gray', dpi=80, vmin=None, vmax=None, origin=None, norm=None):    
@@ -132,6 +145,10 @@ def decam_postage_stamp(expnum, binsize=120, save_path=None, dr8=False, median=T
     Examples:
     decam_postage_stamp(781475, save_path='stamp.npz')
     '''
+    ccd_index = np.where(ccd['expnum']==expnum)[0][0]
+    
+    # ccd_index_old = np.where(ccd_old['expnum']==expnum)[0][0]
+    # image_filename = ccd_old['image_filename'][ccd_index_old].strip()
     ccd_index = np.where(ccd['expnum']==expnum)[0][0]
     image_filename = ccd['image_filename'][ccd_index].strip()
     
@@ -191,7 +208,7 @@ def decam_postage_stamp(expnum, binsize=120, save_path=None, dr8=False, median=T
             try:
                 img = fitsio.read(image_path, ext=ccdname)
             except OSError:
-                if ccdname!='S30': # mute S30
+                if ccdname!='S30':  # mute S30
                     print('{} does not exist in image ({})!'.format(ccdname, expnum))
                 continue
 
@@ -268,7 +285,7 @@ def decam_postage_stamp(expnum, binsize=120, save_path=None, dr8=False, median=T
                 else:
                     img = np.nanmedian(np.nanmedian(img.reshape((img.shape[0]//binsize, binsize, img.shape[1]//binsize,-1)), axis=3), axis=1)
                 nanmask = np.mean(np.mean(nanmask.reshape((nanmask.shape[0]//binsize, binsize, nanmask.shape[1]//binsize,-1)), axis=3), axis=1)
-            mask = nanmask<0.01 # require at least 1% of the pixels to be unmasked
+            mask = nanmask<0.01  # require at least 1% of the pixels to be unmasked
             img[mask] = np.nan
 
             ################################################
@@ -309,7 +326,7 @@ def main():
 
     # make_plots(expnum_list[0])
 
-    print('Done!!!!!!!!!!!!!!!!!!!!!')
+    print('task_id {} done!!!!!!!!!!!!!!!!!!!!!'.format(task_id))
 
 
 if __name__=="__main__":
