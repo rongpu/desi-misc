@@ -244,12 +244,14 @@ def decam_postage_stamp(expnum, binsize=120, save_path=None, dr8=False, median=T
                 img = img[:, :half]
 
             # Remove constant background
-            if not blob_mask:
-                # naive sky estimation
-                mask = (img<np.nanpercentile(img.flatten(), 95))
-                median_sky = np.nanmedian(img[mask].flatten())
-            else:
-                median_sky = np.nanmedian(img)
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                if not blob_mask:
+                    # naive sky estimation
+                    mask = (img<np.nanpercentile(img.flatten(), 95))
+                    median_sky = np.nanmedian(img[mask].flatten())
+                else:
+                    median_sky = np.nanmedian(img)
             img = img - median_sky
 
             # Add back the other half
@@ -267,7 +269,7 @@ def decam_postage_stamp(expnum, binsize=120, save_path=None, dr8=False, median=T
             trim_size_x = img.shape[1] % binsize
             trim_size_y = img.shape[0] % binsize
             img = img[:(img.shape[0]-trim_size_y), :(img.shape[1]-trim_size_x)]
-            nanmask = np.isfinite(img)
+            nanmask = np.isfinite(img).astype(float)
 
             # to ignore NAN values, use np.nanmean or np.nanmedian
             with warnings.catch_warnings():
@@ -297,8 +299,8 @@ def decam_postage_stamp(expnum, binsize=120, save_path=None, dr8=False, median=T
     fullimg[~np.isfinite(fullimg)] = 0
 
     # convert to nanomaggie per sq. arcsec
-    if ccd['median_ccdzpt'][ccd_index]!=0:
-        fullimg = fullimg / 10**((ccd['median_ccdzpt'][ccd_index]-22.5)/2.5) / ccd['exptime'][ccd_index] / (0.262**2)
+    if ccd['zpt'][ccd_index]!=0:
+        fullimg = fullimg / 10**((ccd['zpt'][ccd_index]-22.5)/2.5) / ccd['exptime'][ccd_index] / (0.262**2)
         vrange = image_vrange[band]
     else:
         vrange = image_vrange_raw[band]
