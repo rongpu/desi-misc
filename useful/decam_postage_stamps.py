@@ -103,6 +103,7 @@ image_vrange = {'g':5, 'r':6, 'z':30}
 def decam_plot(exposure, plot_path, figsize=(13, 12), vrange=None, dr8=False, binsize=20, median=True,
     blob_mask=False, ood_mask=False, gaussian_sigma=None, show=False):
     '''
+    Create high-resolution DECam images.
     Example:
     decam_plot(781475, 'tmp_mask_median.jpeg', binsize=20, blob_mask=True, ood_mask=True, median=True) 
     '''
@@ -233,7 +234,7 @@ def decam_plot(exposure, plot_path, figsize=(13, 12), vrange=None, dr8=False, bi
         plt.close()
 
 
-def create_image(data, cmap='gray', dpi=80, vmin=None, vmax=None, origin=None, norm=None):    
+def create_image(data, cmap='gray', dpi=80, vmin=None, vmax=None, origin=None, norm=None):
     '''
     Create an image with exactly the same pixel dimension as the data.
     Example:
@@ -256,6 +257,7 @@ def create_image(data, cmap='gray', dpi=80, vmin=None, vmax=None, origin=None, n
 def decam_postage_stamp(exposure, binsize=120, plot_path=None, save_path=None, vrange=None, dr8=False, median=True,
     blob_mask=True, ood_mask=True, show=False):
     '''
+    Create low-resolution postage stamps.
     Examples:
     decam_postage_stamp(781475, plot_path='tmp_stamp.png', save_path='stamp.npz')
     decam_postage_stamp('/global/cfs/cdirs/cosmo/staging/decam/CP/V4.8.2a/CP20181006/c4d_181007_074137_ooi_g_ls9.fits.fz', plot_path='tmp_stamp.png', save_path='stamp.npz')
