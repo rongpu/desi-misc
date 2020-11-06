@@ -1,3 +1,5 @@
+# This code is too slow to finish running in 4 hours on an interactive node
+
 from __future__ import division, print_function
 import sys, os, glob, time, warnings, gc
 # import matplotlib
