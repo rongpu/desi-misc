@@ -8,7 +8,7 @@ from astropy.table import Table, vstack, hstack
 import fitsio
 from multiprocessing import Pool
 
-n_processess = 32
+n_processes = 32
 field = 'south'
 # field = 'north'
 
@@ -71,7 +71,7 @@ if __name__ == '__main__':
     time_start = time.time()
 
     # start multiple worker processes
-    with Pool(processes=n_processess) as pool:
+    with Pool(processes=n_processes) as pool:
         res = pool.map(compute_sky_residual, range(len(sweep_fn_all)))
 
     # Remove None elements from the list

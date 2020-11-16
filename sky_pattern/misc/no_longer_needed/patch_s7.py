@@ -37,7 +37,7 @@ ccdnamenumdict = {'S1': 25, 'S2': 26, 'S3': 27, 'S4':28,
 ccdnamenumdict_inv = {aa: bb for bb, aa in ccdnamenumdict.items()}
 
 
-n_processess = 32
+n_processes = 32
 
 skyrun = Table.read('/global/cscratch1/sd/rongpu/temp/skyrunsgoodcountexpnumv48dr8.fits')
 run_list = np.unique(skyrun['run'])
@@ -91,7 +91,7 @@ def patch_s7(run):
 
 def main():
 
-    with Pool(processes=n_processess) as pool:
+    with Pool(processes=n_processes) as pool:
         res = pool.map(patch_s7, run_list)
 
     print('Done!!!!!!!!!!!!!!!!!!!!!')

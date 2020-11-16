@@ -36,7 +36,7 @@ ccdnamenumdict = {'S1': 25, 'S2': 26, 'S3': 27, 'S4':28,
                   }
 ccdnamenumdict_inv = {aa: bb for bb, aa in ccdnamenumdict.items()}
 
-n_processess = 32
+n_processes = 32
 
 run_list = [376, 377, 378, 384, 385, 386, 798, 799, 800, 806, 807, 808, 1197, 1198, 1199, 1200, 1206, 1207]
 
@@ -87,7 +87,7 @@ def patch_n10(run):
 
 def main():
 
-    with Pool(processes=n_processess) as pool:
+    with Pool(processes=n_processes) as pool:
         res = pool.map(patch_n10, run_list)
 
     print('Done!!!!!!!!!!!!!!!!!!!!!')

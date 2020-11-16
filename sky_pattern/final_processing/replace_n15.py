@@ -42,7 +42,7 @@ ccdnamenumdict = {'S1': 25, 'S2': 26, 'S3': 27, 'S4':28,
 ccdnamenumdict_inv = {aa: bb for bb, aa in ccdnamenumdict.items()}
 
 
-n_processess = 20
+n_processes = 20
 
 # List of runs that have the hot spot
 run_list = [320, 321, 323, 324, 325, 326, 327, 328, 329, 330, 331, 741, 742, 744, 745, 746, 747, 748, 749, 750, 751, 752, 753, 1150, 1151, 1154, 1155, 1156, 1158, 1159, 1160, 1161, 1162, 1163]
@@ -110,7 +110,7 @@ def patch_n15(run):
 
 def main():
 
-    with Pool(processes=n_processess) as pool:
+    with Pool(processes=n_processes) as pool:
         res = pool.map(patch_n15, run_list)
 
     print('Done!!!!!!!!!!!!!!!!!!!!!')

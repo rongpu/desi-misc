@@ -16,7 +16,7 @@ from multiprocessing import Pool
 def nmad(x): return 1.4826 * np.median(np.abs(x-np.median(x)))
 
 
-n_processess = 32
+n_processes = 32
 
 field = 'north'
 # field = 'south'
@@ -34,7 +34,7 @@ np.random.seed(123)
 brickid_all = np.random.choice(brickid_all, size=len(brickid_all), replace=False)
 
 # split among the processes
-brickid_split = np.array_split(brickid_all, n_processess)
+brickid_split = np.array_split(brickid_all, n_processes)
 
 
 def get_optical_sky_residuals(brickid_list):
@@ -136,7 +136,7 @@ def get_optical_sky_residuals(brickid_list):
 
 def main():
 
-    with Pool(processes=n_processess) as pool:
+    with Pool(processes=n_processes) as pool:
         res = pool.map(get_optical_sky_residuals, brickid_split)
 
     print('All done!!!!!!!!!!!!!!!')

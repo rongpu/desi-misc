@@ -26,7 +26,7 @@ params = {'legend.fontsize': 'large',
 plt.rcParams.update(params)
 
 n_node = 2 # Haswell
-n_processess = 31
+n_processes = 31
 
 parser = argparse.ArgumentParser()
 parser.add_argument('task_id')
@@ -353,7 +353,7 @@ def compute_fringe_scale(expnum):
 
 def main():
 
-    with Pool(processes=n_processess) as pool:
+    with Pool(processes=n_processes) as pool:
         res = pool.map(compute_fringe_scale, expnum_list)
 
     print('Done!!!!!!!!!!!!!!!!!!!!!')

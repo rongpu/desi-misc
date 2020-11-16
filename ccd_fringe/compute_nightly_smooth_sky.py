@@ -50,7 +50,7 @@ ccdnamenumdict = {'S1': 25, 'S2': 26, 'S3': 27, 'S4':28,
                   }
 
 
-n_processess = 3
+n_processes = 3
 
 fringe_dir = '/global/homes/d/djschleg/cosmo/staging/decam/DECam_CP-Fringe'
 image_dir = '/global/project/projectdirs/cosmo/staging/'
@@ -292,9 +292,9 @@ def main():
     hdu_index_list = np.arange(1, 32)
     # hdu_index_list = np.arange(32, 62)
 
-    hdu_index_list_split = np.array_split(hdu_index_list, n_processess)
+    hdu_index_list_split = np.array_split(hdu_index_list, n_processes)
 
-    with Pool(processes=n_processess) as pool:
+    with Pool(processes=n_processes) as pool:
         res = pool.map(pool_wrapper, hdu_index_list_split)
 
     print('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ DONE @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@')

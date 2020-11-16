@@ -21,7 +21,7 @@ params = {'legend.fontsize': 'large',
 plt.rcParams.update(params)
 
 n_node = 4 # Haswell
-n_processess = 32
+n_processes = 32
 
 keep_status = True
 
@@ -284,7 +284,7 @@ def save_image(expnum):
 
 def main():
 
-    with Pool(processes=n_processess) as pool:
+    with Pool(processes=n_processes) as pool:
         res = pool.map(save_image, expnum_list)
 
     # for expnum in expnum_list:

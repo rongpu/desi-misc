@@ -43,7 +43,7 @@ ccdnamenumdict = {'S1': 25, 'S2': 26, 'S3': 27, 'S4':28,
 ccdnamenumdict_inv = {aa: bb for bb, aa in ccdnamenumdict.items()}
 
 
-# n_processess = 32
+# n_processes = 32
 
 skyrun = Table.read('/global/cscratch1/sd/rongpu/temp/skyrunsgoodcountexpnumv48dr8.fits')
 

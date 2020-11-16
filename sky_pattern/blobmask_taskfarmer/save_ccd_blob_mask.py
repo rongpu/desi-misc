@@ -1,5 +1,5 @@
 # Run using TaskFarmer
-# Setting n_processess to 32 might cuase out-of-memory error
+# Setting n_processes to 32 might cuase out-of-memory error
 
 from __future__ import division, print_function
 import sys, os, glob, time, warnings, gc
@@ -27,7 +27,7 @@ params = {'legend.fontsize': 'large',
          'figure.facecolor':'w'}
 plt.rcParams.update(params)
 
-n_processess = 32
+n_processes = 32
 diagnostic_plot = False
 diagnostic_touch = True
 
@@ -248,7 +248,7 @@ def save_ccd_blob_mask(expnum):
 
 def main():
 
-    with Pool(processes=n_processess) as pool:
+    with Pool(processes=n_processes) as pool:
         res = pool.map(save_ccd_blob_mask, expnum_list)
 
     print('All done!!!!!!!!!!!!!!!')

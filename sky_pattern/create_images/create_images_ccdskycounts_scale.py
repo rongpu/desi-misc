@@ -80,7 +80,7 @@ ccd_dec = [ 0.90299039, 0.90274404, 0.90285652, 0.73894001, 0.73933177, 0.739194
 
 ################################################################################
 
-n_processess = 32
+n_processes = 32
 
 image_dir = '/global/project/projectdirs/cosmo/staging'
 blob_dir = '/global/cfs/cdirs/desi/users/rongpu/dr9/decam_ccd_blob_mask'
@@ -220,7 +220,7 @@ def make_plots(sky_path):
 
 def main():
 
-    with Pool(processes=n_processess) as pool:
+    with Pool(processes=n_processes) as pool:
         res = pool.map(make_plots, sky_path_list)
 
     print('Done!!!!!!!!!!!!!!!!!!!!!')

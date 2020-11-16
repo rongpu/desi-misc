@@ -23,7 +23,7 @@ params = {'legend.fontsize': 'large',
          'figure.facecolor':'w'}
 plt.rcParams.update(params)
 
-n_processess = 32
+n_processes = 32
 
 pixel_size = 0.454
 
@@ -97,7 +97,7 @@ def find_overlapping_bricks(ccd_info):
 
 def main():
 
-    with Pool(processes=n_processess) as pool:
+    with Pool(processes=n_processes) as pool:
         res = pool.map(find_overlapping_bricks, ccd_info_list)
 
     print('All done!!!!!!!!!!!!!!!')

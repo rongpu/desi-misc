@@ -23,7 +23,7 @@ params = {'legend.fontsize': 'large',
          'figure.facecolor':'w'}
 plt.rcParams.update(params)
 
-n_processess = 60
+n_processes = 60
 diagnostic_plot = True
 
 image_dir = '/global/project/projectdirs/cosmo/staging/'
@@ -253,16 +253,16 @@ def main():
     # save_ccd_blob_mask(expnum_list[0])
 
     # # parralism via multiprocessing
-    # expnum_list_split = np.array_split(expnum_list, n_processess)
+    # expnum_list_split = np.array_split(expnum_list, n_processes)
     # idx = np.arange(len(expnum_list))
     # expnum_list_split = []
-    # for index in range(n_processess):
-    #     indices = idx[::n_processess]+index
+    # for index in range(n_processes):
+    #     indices = idx[::n_processes]+index
     #     indices = indices[indices<len(expnum_list)]
     #     expnum_list_split.append(expnum_list[indices])
     # print()
 
-    with Pool(processes=n_processess) as pool:
+    with Pool(processes=n_processes) as pool:
         res = pool.map(save_ccd_blob_mask, expnum_list)
 
 if __name__=="__main__":

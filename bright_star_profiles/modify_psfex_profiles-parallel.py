@@ -12,7 +12,7 @@ from multiprocessing import Pool
 from scipy.optimize import curve_fit
 
 
-n_processess = 32
+n_processes = 32
 test_q = False  # only process a small number of exposures
 
 output_dir = '/global/cfs/projectdirs/cosmo/work/legacysurvey/dr9/calib/patched-psfex'
@@ -258,7 +258,7 @@ def modify_psfex(exp_index):
 
 def main():
     
-    with Pool(processes=n_processess) as pool:
+    with Pool(processes=n_processes) as pool:
         res = pool.map(modify_psfex, exp_index_list)
 
 if __name__=="__main__":

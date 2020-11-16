@@ -27,7 +27,7 @@ params = {'legend.fontsize': 'large',
 plt.rcParams.update(params)
 
 n_node = 3 # Haswell
-n_processess = 31
+n_processes = 31
 diagnostic_plot = False
 
 image_dir = '/global/project/projectdirs/cosmo/staging/'
@@ -215,7 +215,7 @@ def save_ccd_blob_mask(expnum):
 
 def main():
 
-    with Pool(processes=n_processess) as pool:
+    with Pool(processes=n_processes) as pool:
         res = pool.map(save_ccd_blob_mask, expnum_list)
 
 if __name__=="__main__":

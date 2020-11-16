@@ -21,7 +21,7 @@ params = {'legend.fontsize': 'large',
 plt.rcParams.update(params)
 
 n_node = 1 # Haswell
-n_processess = 16
+n_processes = 16
 
 # parser = argparse.ArgumentParser()
 # parser.add_argument('task_id')
@@ -235,7 +235,7 @@ def save_image(expnum):
 
 def main():
 
-    with Pool(processes=n_processess) as pool:
+    with Pool(processes=n_processes) as pool:
         res = pool.map(save_image, expnum_list)
 
     # for expnum in expnum_list:
