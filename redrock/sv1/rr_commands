@@ -1,3 +1,5 @@
+################# desi_coadd_spectra commands: #################
+
 time desi_coadd_spectra --coadd-cameras -i $REDUXDIR/exposures/20201215/00067972/cframe-[brz]0-*.fits $REDUXDIR/exposures/20201215/00067973/cframe-[brz]0-*.fits $REDUXDIR/exposures/20201215/00067974/cframe-[brz]0-*.fits $REDUXDIR/exposures/20201215/00067975/cframe-[brz]0-*.fits $REDUXDIR/exposures/20201215/00067987/cframe-[brz]0-*.fits $REDUXDIR/exposures/20201216/00068290/cframe-[brz]0-*.fits $REDUXDIR/exposures/20201216/00068291/cframe-[brz]0-*.fits $REDUXDIR/exposures/20201216/00068292/cframe-[brz]0-*.fits  -o $OUTDIR/80605/coadd-0-80605.fits
 
 time desi_coadd_spectra --coadd-cameras -i $REDUXDIR/exposures/20201215/00067972/cframe-[brz]1-*.fits $REDUXDIR/exposures/20201215/00067973/cframe-[brz]1-*.fits $REDUXDIR/exposures/20201215/00067974/cframe-[brz]1-*.fits $REDUXDIR/exposures/20201215/00067975/cframe-[brz]1-*.fits $REDUXDIR/exposures/20201215/00067987/cframe-[brz]1-*.fits $REDUXDIR/exposures/20201216/00068290/cframe-[brz]1-*.fits $REDUXDIR/exposures/20201216/00068291/cframe-[brz]1-*.fits $REDUXDIR/exposures/20201216/00068292/cframe-[brz]1-*.fits  -o $OUTDIR/80605/coadd-1-80605.fits
@@ -97,3 +99,59 @@ time desi_coadd_spectra --coadd-cameras -i $REDUXDIR/exposures/20201219/00068858
 time desi_coadd_spectra --coadd-cameras -i $REDUXDIR/exposures/20201219/00068858/cframe-[brz]8-*.fits $REDUXDIR/exposures/20201219/00068859/cframe-[brz]8-*.fits $REDUXDIR/exposures/20201219/00068879/cframe-[brz]8-*.fits $REDUXDIR/exposures/20201221/00069267/cframe-[brz]8-*.fits $REDUXDIR/exposures/20201221/00069268/cframe-[brz]8-*.fits $REDUXDIR/exposures/20201221/00069269/cframe-[brz]8-*.fits  -o $OUTDIR/80622/coadd-8-80622.fits
 
 time desi_coadd_spectra --coadd-cameras -i $REDUXDIR/exposures/20201219/00068858/cframe-[brz]9-*.fits $REDUXDIR/exposures/20201219/00068859/cframe-[brz]9-*.fits $REDUXDIR/exposures/20201219/00068879/cframe-[brz]9-*.fits $REDUXDIR/exposures/20201221/00069267/cframe-[brz]9-*.fits $REDUXDIR/exposures/20201221/00069268/cframe-[brz]9-*.fits $REDUXDIR/exposures/20201221/00069269/cframe-[brz]9-*.fits  -o $OUTDIR/80622/coadd-9-80622.fits
+
+
+
+################# redrock commands: #################
+
+srun -N 1 -n 32 -c 2 rrdesi_mpi $OUTDIR/80605/coadd-0-80605.fits -o $OUTDIR/80605/redrock-0-80605.fits -z $OUTDIR/80605/zbest-0-80605.fits
+srun -N 1 -n 32 -c 2 rrdesi_mpi $OUTDIR/80605/coadd-1-80605.fits -o $OUTDIR/80605/redrock-1-80605.fits -z $OUTDIR/80605/zbest-1-80605.fits
+srun -N 1 -n 32 -c 2 rrdesi_mpi $OUTDIR/80605/coadd-2-80605.fits -o $OUTDIR/80605/redrock-2-80605.fits -z $OUTDIR/80605/zbest-2-80605.fits
+srun -N 1 -n 32 -c 2 rrdesi_mpi $OUTDIR/80605/coadd-3-80605.fits -o $OUTDIR/80605/redrock-3-80605.fits -z $OUTDIR/80605/zbest-3-80605.fits
+srun -N 1 -n 32 -c 2 rrdesi_mpi $OUTDIR/80605/coadd-4-80605.fits -o $OUTDIR/80605/redrock-4-80605.fits -z $OUTDIR/80605/zbest-4-80605.fits
+srun -N 1 -n 32 -c 2 rrdesi_mpi $OUTDIR/80605/coadd-5-80605.fits -o $OUTDIR/80605/redrock-5-80605.fits -z $OUTDIR/80605/zbest-5-80605.fits
+srun -N 1 -n 32 -c 2 rrdesi_mpi $OUTDIR/80605/coadd-6-80605.fits -o $OUTDIR/80605/redrock-6-80605.fits -z $OUTDIR/80605/zbest-6-80605.fits
+srun -N 1 -n 32 -c 2 rrdesi_mpi $OUTDIR/80605/coadd-7-80605.fits -o $OUTDIR/80605/redrock-7-80605.fits -z $OUTDIR/80605/zbest-7-80605.fits
+srun -N 1 -n 32 -c 2 rrdesi_mpi $OUTDIR/80605/coadd-8-80605.fits -o $OUTDIR/80605/redrock-8-80605.fits -z $OUTDIR/80605/zbest-8-80605.fits
+srun -N 1 -n 32 -c 2 rrdesi_mpi $OUTDIR/80605/coadd-9-80605.fits -o $OUTDIR/80605/redrock-9-80605.fits -z $OUTDIR/80605/zbest-9-80605.fits
+srun -N 1 -n 32 -c 2 rrdesi_mpi $OUTDIR/80607/coadd-0-80607.fits -o $OUTDIR/80607/redrock-0-80607.fits -z $OUTDIR/80607/zbest-0-80607.fits
+srun -N 1 -n 32 -c 2 rrdesi_mpi $OUTDIR/80607/coadd-1-80607.fits -o $OUTDIR/80607/redrock-1-80607.fits -z $OUTDIR/80607/zbest-1-80607.fits
+srun -N 1 -n 32 -c 2 rrdesi_mpi $OUTDIR/80607/coadd-2-80607.fits -o $OUTDIR/80607/redrock-2-80607.fits -z $OUTDIR/80607/zbest-2-80607.fits
+srun -N 1 -n 32 -c 2 rrdesi_mpi $OUTDIR/80607/coadd-3-80607.fits -o $OUTDIR/80607/redrock-3-80607.fits -z $OUTDIR/80607/zbest-3-80607.fits
+srun -N 1 -n 32 -c 2 rrdesi_mpi $OUTDIR/80607/coadd-4-80607.fits -o $OUTDIR/80607/redrock-4-80607.fits -z $OUTDIR/80607/zbest-4-80607.fits
+srun -N 1 -n 32 -c 2 rrdesi_mpi $OUTDIR/80607/coadd-5-80607.fits -o $OUTDIR/80607/redrock-5-80607.fits -z $OUTDIR/80607/zbest-5-80607.fits
+srun -N 1 -n 32 -c 2 rrdesi_mpi $OUTDIR/80607/coadd-6-80607.fits -o $OUTDIR/80607/redrock-6-80607.fits -z $OUTDIR/80607/zbest-6-80607.fits
+srun -N 1 -n 32 -c 2 rrdesi_mpi $OUTDIR/80607/coadd-7-80607.fits -o $OUTDIR/80607/redrock-7-80607.fits -z $OUTDIR/80607/zbest-7-80607.fits
+srun -N 1 -n 32 -c 2 rrdesi_mpi $OUTDIR/80607/coadd-8-80607.fits -o $OUTDIR/80607/redrock-8-80607.fits -z $OUTDIR/80607/zbest-8-80607.fits
+srun -N 1 -n 32 -c 2 rrdesi_mpi $OUTDIR/80607/coadd-9-80607.fits -o $OUTDIR/80607/redrock-9-80607.fits -z $OUTDIR/80607/zbest-9-80607.fits
+srun -N 1 -n 32 -c 2 rrdesi_mpi $OUTDIR/80609/coadd-0-80609.fits -o $OUTDIR/80609/redrock-0-80609.fits -z $OUTDIR/80609/zbest-0-80609.fits
+srun -N 1 -n 32 -c 2 rrdesi_mpi $OUTDIR/80609/coadd-1-80609.fits -o $OUTDIR/80609/redrock-1-80609.fits -z $OUTDIR/80609/zbest-1-80609.fits
+srun -N 1 -n 32 -c 2 rrdesi_mpi $OUTDIR/80609/coadd-2-80609.fits -o $OUTDIR/80609/redrock-2-80609.fits -z $OUTDIR/80609/zbest-2-80609.fits
+srun -N 1 -n 32 -c 2 rrdesi_mpi $OUTDIR/80609/coadd-3-80609.fits -o $OUTDIR/80609/redrock-3-80609.fits -z $OUTDIR/80609/zbest-3-80609.fits
+srun -N 1 -n 32 -c 2 rrdesi_mpi $OUTDIR/80609/coadd-4-80609.fits -o $OUTDIR/80609/redrock-4-80609.fits -z $OUTDIR/80609/zbest-4-80609.fits
+
+srun -N 1 -n 32 -c 2 rrdesi_mpi $OUTDIR/80609/coadd-5-80609.fits -o $OUTDIR/80609/redrock-5-80609.fits -z $OUTDIR/80609/zbest-5-80609.fits
+srun -N 1 -n 32 -c 2 rrdesi_mpi $OUTDIR/80609/coadd-6-80609.fits -o $OUTDIR/80609/redrock-6-80609.fits -z $OUTDIR/80609/zbest-6-80609.fits
+srun -N 1 -n 32 -c 2 rrdesi_mpi $OUTDIR/80609/coadd-7-80609.fits -o $OUTDIR/80609/redrock-7-80609.fits -z $OUTDIR/80609/zbest-7-80609.fits
+srun -N 1 -n 32 -c 2 rrdesi_mpi $OUTDIR/80609/coadd-8-80609.fits -o $OUTDIR/80609/redrock-8-80609.fits -z $OUTDIR/80609/zbest-8-80609.fits
+srun -N 1 -n 32 -c 2 rrdesi_mpi $OUTDIR/80609/coadd-9-80609.fits -o $OUTDIR/80609/redrock-9-80609.fits -z $OUTDIR/80609/zbest-9-80609.fits
+srun -N 1 -n 32 -c 2 rrdesi_mpi $OUTDIR/80620/coadd-0-80620.fits -o $OUTDIR/80620/redrock-0-80620.fits -z $OUTDIR/80620/zbest-0-80620.fits
+srun -N 1 -n 32 -c 2 rrdesi_mpi $OUTDIR/80620/coadd-1-80620.fits -o $OUTDIR/80620/redrock-1-80620.fits -z $OUTDIR/80620/zbest-1-80620.fits
+srun -N 1 -n 32 -c 2 rrdesi_mpi $OUTDIR/80620/coadd-2-80620.fits -o $OUTDIR/80620/redrock-2-80620.fits -z $OUTDIR/80620/zbest-2-80620.fits
+srun -N 1 -n 32 -c 2 rrdesi_mpi $OUTDIR/80620/coadd-3-80620.fits -o $OUTDIR/80620/redrock-3-80620.fits -z $OUTDIR/80620/zbest-3-80620.fits
+srun -N 1 -n 32 -c 2 rrdesi_mpi $OUTDIR/80620/coadd-4-80620.fits -o $OUTDIR/80620/redrock-4-80620.fits -z $OUTDIR/80620/zbest-4-80620.fits
+srun -N 1 -n 32 -c 2 rrdesi_mpi $OUTDIR/80620/coadd-5-80620.fits -o $OUTDIR/80620/redrock-5-80620.fits -z $OUTDIR/80620/zbest-5-80620.fits
+srun -N 1 -n 32 -c 2 rrdesi_mpi $OUTDIR/80620/coadd-6-80620.fits -o $OUTDIR/80620/redrock-6-80620.fits -z $OUTDIR/80620/zbest-6-80620.fits
+srun -N 1 -n 32 -c 2 rrdesi_mpi $OUTDIR/80620/coadd-7-80620.fits -o $OUTDIR/80620/redrock-7-80620.fits -z $OUTDIR/80620/zbest-7-80620.fits
+srun -N 1 -n 32 -c 2 rrdesi_mpi $OUTDIR/80620/coadd-8-80620.fits -o $OUTDIR/80620/redrock-8-80620.fits -z $OUTDIR/80620/zbest-8-80620.fits
+srun -N 1 -n 32 -c 2 rrdesi_mpi $OUTDIR/80620/coadd-9-80620.fits -o $OUTDIR/80620/redrock-9-80620.fits -z $OUTDIR/80620/zbest-9-80620.fits
+srun -N 1 -n 32 -c 2 rrdesi_mpi $OUTDIR/80622/coadd-0-80622.fits -o $OUTDIR/80622/redrock-0-80622.fits -z $OUTDIR/80622/zbest-0-80622.fits
+srun -N 1 -n 32 -c 2 rrdesi_mpi $OUTDIR/80622/coadd-1-80622.fits -o $OUTDIR/80622/redrock-1-80622.fits -z $OUTDIR/80622/zbest-1-80622.fits
+srun -N 1 -n 32 -c 2 rrdesi_mpi $OUTDIR/80622/coadd-2-80622.fits -o $OUTDIR/80622/redrock-2-80622.fits -z $OUTDIR/80622/zbest-2-80622.fits
+srun -N 1 -n 32 -c 2 rrdesi_mpi $OUTDIR/80622/coadd-3-80622.fits -o $OUTDIR/80622/redrock-3-80622.fits -z $OUTDIR/80622/zbest-3-80622.fits
+srun -N 1 -n 32 -c 2 rrdesi_mpi $OUTDIR/80622/coadd-4-80622.fits -o $OUTDIR/80622/redrock-4-80622.fits -z $OUTDIR/80622/zbest-4-80622.fits
+srun -N 1 -n 32 -c 2 rrdesi_mpi $OUTDIR/80622/coadd-5-80622.fits -o $OUTDIR/80622/redrock-5-80622.fits -z $OUTDIR/80622/zbest-5-80622.fits
+srun -N 1 -n 32 -c 2 rrdesi_mpi $OUTDIR/80622/coadd-6-80622.fits -o $OUTDIR/80622/redrock-6-80622.fits -z $OUTDIR/80622/zbest-6-80622.fits
+srun -N 1 -n 32 -c 2 rrdesi_mpi $OUTDIR/80622/coadd-7-80622.fits -o $OUTDIR/80622/redrock-7-80622.fits -z $OUTDIR/80622/zbest-7-80622.fits
+srun -N 1 -n 32 -c 2 rrdesi_mpi $OUTDIR/80622/coadd-8-80622.fits -o $OUTDIR/80622/redrock-8-80622.fits -z $OUTDIR/80622/zbest-8-80622.fits
+srun -N 1 -n 32 -c 2 rrdesi_mpi $OUTDIR/80622/coadd-9-80622.fits -o $OUTDIR/80622/redrock-9-80622.fits -z $OUTDIR/80622/zbest-9-80622.fits

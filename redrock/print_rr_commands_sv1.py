@@ -14,18 +14,20 @@ from astropy.table import Table, vstack, hstack
 import fitsio
 
 redux_dir = '/global/cfs/cdirs/desi/spectro/redux/daily'
-output_dir = '/global/cscratch1/sd/rongpu/desi/sv1/deep_coadd'
 # redux_dir = os.getenv('REDUXDIR')
-# output_dir = os.getenv('OUTDIR')
 
-obsdate_list = ['20201214', '20201215', '20201216', '20201217', '20201218', '20201219', '20201220', '20201221']
+obsdate_list = ['20201214', '20201215', '20201216', '20201217', '20201218', '20201219', '20201220', '20201221', '20201222', '20201223']
 n_exp = np.inf        # number of exposures in a coadded; 1 for single-exposure coadd;
                       # use np.inf to coadd all exposures
+
+whitelist = Table.read('/global/cfs/cdirs/desi/users/rongpu/spectro/sv1/bestexp_sort.dat', format='ascii')
+whitelist.rename_columns(('col1', 'col2', 'col3'), ('tileid', 'date', 'expid'))
+expid_whitelist = list(whitelist['expid'])
 
 overwrite = False
 
 # tileid_list = None  # no restriction on tiles
-tileid_list = [80605, 80607, 80609, 80620, 80622]
+tileid_list = [80605, 80607, 80609, 80620, 80622]  # LRG+QSO tiles
 
 ################################## Get list of exposures ##################################
 

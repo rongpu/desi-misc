@@ -17,18 +17,20 @@ from astropy.table import Table, vstack, hstack
 import fitsio
 
 redux_dir = '/global/cfs/cdirs/desi/spectro/redux/daily'
-output_dir = '/global/cscratch1/sd/rongpu/desi/sv1/deep_coadd'
 # redux_dir = os.getenv('REDUXDIR')
-# output_dir = os.getenv('OUTDIR')
 
-obsdate_list = ['20201214', '20201215', '20201216', '20201217', '20201218', '20201219', '20201220', '20201221']
+obsdate_list = ['20201214', '20201215', '20201216', '20201217', '20201218', '20201219', '20201220', '20201221', '20201222', '20201223']
 n_exp = np.inf        # number of exposures in a coadded; 1 for single-exposure coadd;
                       # use np.inf to coadd all exposures
+
+whitelist = Table.read('/Users/rongpu/Documents/Data/desi_lrg_selection/sv1/bestexp_sort.dat', format='ascii')
+whitelist.rename_columns(('col1', 'col2', 'col3'), ('tileid', 'date', 'expid'))
+expid_whitelist = list(whitelist['expid'])
 
 overwrite = False
 
 # tileid_list = None  # no restriction on tiles
-tileid_list = [80605, 80607, 80609, 80620, 80622]
+tileid_list = [80605, 80607, 80609, 80620, 80622]  # LRG+QSO tiles
 
 ################################## Get list of exposures ##################################
 
@@ -79,6 +81,13 @@ for expid in np.unique(cframes['expid']):
         mask = mask_expid & (cframes['petal_loc']==petal_loc)
         if (np.sum(mask)>0) & (np.sum(mask)!=3):
             raise ValueError('EXPID {} PETAL_LOC {} has only {} cframes files'.format(expid, petal_loc, np.sum(mask)))
+
+################################## Select white-listed exposures ##################################
+
+print(len(cframes))
+mask = np.in1d(list(cframes['expid']), expid_whitelist)
+cframes = cframes[mask]
+print(len(cframes))
 
 ################################## Print desi_coadd_spectra commands ##################################
 
