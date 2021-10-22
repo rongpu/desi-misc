@@ -96,7 +96,7 @@ blob_dir = '/global/cfs/cdirs/desi/users/rongpu/dr9/decam_ccd_blob_mask'
 surveyccd_path = '/global/cfs/cdirs/desi/users/rongpu/useful/survey-ccds-decam-dr9-trim.fits'
 surveyccd_path_dr8 = '/global/cfs/cdirs/desi/users/rongpu/useful/survey-ccds-decam-dr8-trim.fits'
 
-image_vrange = {'g':5, 'r':6, 'z':30}
+image_vrange = {'u':5, 'g':5, 'r':6, 'i':10, 'z':30, 'Y':30}
 
 ################################################################################
 
@@ -107,7 +107,7 @@ def decam_plot(exposure, plot_path, figsize=(13, 12), vrange=None, dr8=False, bi
     Example:
     decam_plot(781475, 'tmp_mask_median.jpeg', binsize=20, blob_mask=True, ood_mask=True, median=True) 
     '''
-    if type(exposure)==str:
+    if (type(exposure)==str) or (type(exposure)==np.str_):
         image_path = os.path.join(image_dir, exposure.strip())
     elif isinstance(exposure, int) or isinstance(exposure, np.integer):
         if not dr8:
@@ -147,7 +147,7 @@ def decam_plot(exposure, plot_path, figsize=(13, 12), vrange=None, dr8=False, bi
             img = fitsio.read(image_path, ext=ccdname)
         except OSError:
             if ccdname!='S30': # mute S30
-                print('{} does not exist in image ({})!'.format(ccdname, expnum))
+                print('{} does not exist in image ({})!'.format(ccdname, exposure))
             continue
 
         if ood_mask:

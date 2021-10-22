@@ -1,15 +1,51 @@
 # srun -N 1 -C haswell -t 04:00:00 -q interactive python modify_psfex_profiles-parallel.py
 
 from __future__ import division, print_function
-import sys, os, glob, time, warnings, gc
-import matplotlib.pyplot as plt
+import os, warnings
 import numpy as np
-from astropy.table import Table, vstack, hstack
+from astropy.table import Table
 import fitsio
 from astropy.io import fits
 from multiprocessing import Pool
 
 from scipy.optimize import curve_fit
+
+
+def get_frac_moffat(r, alpha, beta):
+    """
+    Calculate the fraction of light within radius r of a Moffat profile.
+    """
+    frac = 1 - alpha**(2*(beta-1))*(alpha**2 + r**2)**(1-beta)
+    return(frac)
+
+
+def get_sb_moffat(r, alpha, beta):
+    """
+    Calculate the surface brightness of light at radius r of a Moffat profile.
+    The integral (i.e., total flux) is unity by definition.
+    """
+    i = (beta-1)/(np.pi * alpha**2)*(1 + (r/alpha)**2)**(-beta)
+    return i
+
+
+def get_sb_moffat_plus_power_law(r, alpha1, beta1, plexp2, weight2):
+    """
+    Calculate the surface brightness of light at radius r of the sum of two Moffat profiles.
+    The integral (i.e., total flux) is NOT unity.
+    """
+    i = (beta1-1)/(np.pi * alpha1**2)*(1 + (r/alpha1)**2)**(-beta1) \
+        + weight2 *r**(plexp2)
+    return i
+
+
+def get_sb_double_moffat(r, alpha1, beta1, alpha2, beta2, weight2):
+    """
+    Calculate the surface brightness of light at radius r of the sum of two Moffat profiles.
+    The integral (i.e., total flux) is NOT unity.
+    """
+    i = (beta1-1)/(np.pi * alpha1**2)*(1 + (r/alpha1)**2)**(-beta1) \
+        + weight2 * (beta2-1)/(np.pi * alpha2**2)*(1 + (r/alpha2)**2)**(-beta2)
+    return i
 
 
 n_processes = 32
@@ -24,47 +60,13 @@ radius_lim3, radius_lim4 = 7., 8.
 params = {
 'g_weight2': 0.00045, 'g_plexp2': -2.,
 'r_weight2': 0.00033, 'r_plexp2': -2.,
+'i_weight2': 0.00033, 'i_plexp2': -2.,
 'z_alpha2': 17.650, 'z_beta2': 1.7, 'z_weight2': 0.0145,
 }
 
 outlier_ccd_list = ['N20', 'S8', 'S10', 'S18', 'S21', 'S27']
 params_outlier = {'z_alpha2': 16, 'z_beta2': 2.3, 'z_weight2': 0.0095}
 pixscale = 0.262
-
-
-def get_frac_moffat(r, alpha, beta):
-    """
-    Calculate the fraction of light within radius r of a Moffat profile.
-    """    
-    frac = 1 - alpha**(2*(beta-1))*(alpha**2 + r**2)**(1-beta)
-    return(frac)
-
-def get_sb_moffat(r, alpha, beta):
-    """
-    Calculate the surface brightness of light at radius r of a Moffat profile.
-    The integral (i.e., total flux) is unity by definition.
-    """
-    i = (beta-1)/(np.pi * alpha**2)*(1 + (r/alpha)**2)**(-beta)
-    return i
-
-def get_sb_moffat_plus_power_law(r, alpha1, beta1, plexp2, weight2):
-    """
-    Calculate the surface brightness of light at radius r of the sum of two Moffat profiles.
-    The integral (i.e., total flux) is NOT unity.
-    """
-    i = (beta1-1)/(np.pi * alpha1**2)*(1 + (r/alpha1)**2)**(-beta1) \
-        + weight2 *r**(plexp2)
-    return i
-
-def get_sb_double_moffat(r, alpha1, beta1, alpha2, beta2, weight2):
-    """
-    Calculate the surface brightness of light at radius r of the sum of two Moffat profiles.
-    The integral (i.e., total flux) is NOT unity.
-    """
-    i = (beta1-1)/(np.pi * alpha1**2)*(1 + (r/alpha1)**2)**(-beta1) \
-        + weight2 * (beta2-1)/(np.pi * alpha2**2)*(1 + (r/alpha2)**2)**(-beta2)
-    return i
-
 
 ccd = fitsio.read(surveyccd_path)
 ccd = Table(ccd)
@@ -85,9 +87,6 @@ if test_q:
 else:
     exp_index_list = np.arange(len(unique_expnum))
 
-# loop over the unique exposures
-# for exp_index in [0]:
-# for exp_index in exp_index_list:
 
 def modify_psfex(exp_index):
 
@@ -102,8 +101,6 @@ def modify_psfex(exp_index):
 
     output_path = os.path.join(output_dir, psfex_filename_new)
     if os.path.isfile(output_path):
-        #raise ValueError
-        # continue
         return None
 
     hdu = fits.open(psfex_path)
@@ -173,9 +170,9 @@ def modify_psfex(exp_index):
             except RuntimeError:
                 print("Error: "+image_filename+", "+ccdname+".")
                 print("Error: fit failed to converge.")
-                alpha, beta = 0.8, 2.2 # using default values
+                alpha, beta = 0.8, 2.2  # using default values
                 data['failure'][ccd_index] = True
-                
+
         #print('{} {} alpha, beta = {:.3f}, {:.3f}'.format(ccdname, band, alpha, beta))
 
         # save the Moffat parameters
