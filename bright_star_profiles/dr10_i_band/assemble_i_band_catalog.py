@@ -8,6 +8,9 @@ from astropy.table import Table, vstack, hstack, join
 import fitsio
 # from astropy.io import fits
 
+import healpy as hp
+
+
 exp = Table(fitsio.read('/global/cscratch1/sd/rongpu/temp/dr10_i_band_exposures.fits'))
 
 file_list = glob.glob('/global/cscratch1/sd/dstn/dr10pre/zpt/decam/DECam_CP-DR10c/*/*_ooi_i*-photom.fits')
@@ -94,7 +97,7 @@ print((cat_better['psfdepth']-cat_bad['psfdepth']).min())
 cat = cat[idx_keep]
 print(len(cat), len(np.unique(cat['gaia_sourceid'])))
 
-columns = ['dpsfmag',  'psfmag',  'phot_g_mean_mag',  'phot_bp_mean_mag',  'phot_rp_mean_mag',  'ra_gaia',  'dec_gaia',  'gaia_sourceid',  'legacy_survey_mag',  'ra',  'dec',  'ebv']
+columns = ['dpsfmag', 'psfmag', 'phot_g_mean_mag', 'phot_bp_mean_mag', 'phot_rp_mean_mag', 'ra_gaia', 'dec_gaia', 'gaia_sourceid', 'legacy_survey_mag', 'ra', 'dec', 'ebv']
 cat = cat[columns]
 
 # Add accurate per-object (not per-expopsure) EBV
@@ -102,4 +105,31 @@ import get_ebv_from_map
 cat['ebv'] = get_ebv_from_map.get_ebv_from_map([cat['ra'], cat['dec']])
 
 cat.write('/global/cscratch1/sd/rongpu/temp/dr10_i_band_photom-trim.fits', overwrite=True)
+
+############################################################################
+
+# Add parallel catalog with GAIA EDR3 photometry
+
+cat = Table(fitsio.read('/global/cscratch1/sd/rongpu/temp/dr10_i_band_photom-trim.fits'))
+print(len(cat))
+# gaia = Table(fitsio.read('/global/cfs/cdirs/desi/users/rongpu/desi_mask/gaia_edr3_g_18_dr9.fits'))
+gaia = Table(fitsio.read('/global/cfs/cdirs/desi/users/rongpu/useful/gaia_edr3_g_18.fits'))
+
+nside = 128
+cat_idx = hp.ang2pix(nside, cat['ra_gaia'], cat['dec_gaia'], lonlat=True)
+gaia_idx = hp.ang2pix(nside, gaia['RA'], gaia['DEC'], lonlat=True)
+mask = np.in1d(gaia_idx, cat_idx)
+
+sys.path.append(os.path.expanduser('~/git/Python/user_modules/'))
+from match_coord import match_coord
+
+idx1, idx2, d2d, d_ra, d_dec = match_coord(cat['ra_gaia'], cat['dec_gaia'], gaia['RA'], gaia['DEC'], search_radius=0.1, plot_q=False)
+cat = cat[idx1]
+gaia = gaia[idx2]
+
+cat.remove_columns(['phot_g_mean_mag', 'phot_bp_mean_mag', 'phot_rp_mean_mag', 'ra_gaia', 'dec_gaia', 'gaia_sourceid'])
+gaia.rename_columns(['RA', 'DEC'], ['RA_GAIA', 'DEC_GAIA'])
+cat = hstack([cat, gaia])
+
+cat.write('/global/cscratch1/sd/rongpu/temp/dr10_i_band_photom_gaia_edr3-trim.fits', overwrite=False)
 
