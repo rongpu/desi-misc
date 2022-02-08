@@ -217,8 +217,11 @@ def compute_raw_sky(run, diagnostic_touch=True):
                 ood = ood[:, :half]
                 blob = blob[:, :half]
 
+            # Apply blob and ood mask
+            img_mask = (blob==True) & (ood==0)
+
             # Remove median sky
-            sky = np.median(img[blob].flatten())
+            sky = np.median(img[img_mask].flatten())
             img = img - sky
 
             # # Find the entry in survey-ccd
@@ -233,8 +236,6 @@ def compute_raw_sky(run, diagnostic_touch=True):
             # Normalize by ccdskycounts
             img = img/ccdskycounts_median
             
-            # Apply blob and ood mask
-            img_mask = (blob==True) & (ood==0)
             img[~img_mask] = np.nan
 
             img_list.append(img)

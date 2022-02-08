@@ -1,3 +1,6 @@
+# This is the preferred script for creating postage stamp plots, unless the sky correction
+# is needed (in which case see make_postage_stamps.py)
+
 from __future__ import division, print_function
 import sys, os, glob, time, warnings, gc
 import matplotlib
@@ -6,7 +9,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from astropy.table import Table, vstack, hstack
 import fitsio
-# from astropy.io import fits
+from astropy.io import fits
 
 from scipy.ndimage.filters import gaussian_filter
 
@@ -107,6 +110,10 @@ def decam_plot(exposure, plot_path, figsize=(13, 12), vrange=None, dr8=False, bi
     Example:
     decam_plot(781475, 'tmp_mask_median.jpeg', binsize=20, blob_mask=True, ood_mask=True, median=True) 
     '''
+
+    if os.path.isfile(plot_path):
+        return None
+
     if (type(exposure)==str) or (type(exposure)==np.str_):
         image_path = os.path.join(image_dir, exposure.strip())
     elif isinstance(exposure, int) or isinstance(exposure, np.integer):
@@ -139,20 +146,25 @@ def decam_plot(exposure, plot_path, figsize=(13, 12), vrange=None, dr8=False, bi
 
     plt.figure(figsize=figsize)
 
+    hdu = fits.open(image_path)
+
     for ii, ccdnum in enumerate(ccdnum_list):
 
         ccdname = ccdnamenumdict_inv[ccdnum]
 
         try:
-            img = fitsio.read(image_path, ext=ccdname)
-        except OSError:
+            # img = fitsio.read(image_path, ext=ccdname)
+            img = hdu[ccdname].data
+        except (KeyError, OSError):
             if ccdname!='S30': # mute S30
                 print('{} does not exist in image ({})!'.format(ccdname, exposure))
             continue
 
         if ood_mask:
             ood_path = image_path.replace('_ooi_', '_ood_')
-            ood = fitsio.read(ood_path, ext=ccdname)
+            ood_hdu = fits.open(ood_path)
+            # ood = fitsio.read(ood_path, ext=ccdname)
+            ood = ood_hdu[ccdname].data
 
         if blob_mask:
             try:
@@ -262,6 +274,10 @@ def decam_postage_stamp(exposure, binsize=120, plot_path=None, save_path=None, v
     decam_postage_stamp(781475, plot_path='tmp_stamp.png', save_path='stamp.npz')
     decam_postage_stamp('/global/cfs/cdirs/cosmo/staging/decam/CP/V4.8.2a/CP20181006/c4d_181007_074137_ooi_g_ls9.fits.fz', plot_path='tmp_stamp.png', save_path='stamp.npz')
     '''
+
+    if plot_path is not None and os.path.isfile(plot_path):
+        return None
+
     if type(exposure)==str:
         image_path = exposure
     elif isinstance(exposure, int) or isinstance(exposure, np.integer):
@@ -302,19 +318,24 @@ def decam_postage_stamp(exposure, binsize=120, plot_path=None, save_path=None, v
         fullimg = np.zeros((y_size_small, x_size_small))
         fullimg[:] = np.nan
 
+        hdu = fits.open(image_path)
+
         for ii, ccdnum in enumerate(ccdnum_list):
 
             ccdname = ccdnamenumdict_inv[ccdnum]
 
             try:
-                img = fitsio.read(image_path, ext=ccdname)
-            except OSError:
+                # img = fitsio.read(image_path, ext=ccdname)
+                img = hdu[ccdname].data
+            except (KeyError, OSError):
                 print(ccdname+' does not exist in image!')
                 continue
 
             if ood_mask:
                 ood_path = image_path.replace('_ooi_', '_ood_')
-                ood = fitsio.read(ood_path, ext=ccdname)
+                ood_hdu = fits.open(ood_path)
+                # ood = fitsio.read(ood_path, ext=ccdname)
+                ood = ood_hdu[ccdname].data
 
             if blob_mask:
                 try:

@@ -106,7 +106,7 @@ for band in ['g', 'r', 'z']:
 print(len(expnum_list))
 ############################################################
 
-def create_image(data, cmap='gray', dpi=80, vmin=None, vmax=None, origin=None, norm=None):    
+def create_image(data, cmap='gray', dpi=80, vmin=None, vmax=None, origin=None, norm=None):
     '''
     Create an image with exactly the same pixel dimension as the data.
     Example:

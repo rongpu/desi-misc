@@ -112,7 +112,7 @@ def save_ccd_blob_mask(expnum):
     data = {} # output data
 
     # Find bricks that cover the CCDs in this exposure
-    search_radius = 1.414*((0.263*4096/2)+(0.26*3600/2)) # CCD size + brick size
+    search_radius = 1.414*((0.263*4096/2)+(0.26*3600/2))  # CCD size + brick size
     idx1, idx2, d2d, d_ra, d_dec = search_around(ccd['ra'][ccd_idx], ccd['dec'][ccd_idx], bricks['RA'], bricks['DEC'], search_radius=search_radius, verbose=False)
     mask = np.abs(d_ra)<(0.263*4096/2+0.26*3600/2)
     mask &= np.abs(d_dec)<(0.263*2048/2+0.26*3600/2)
@@ -186,12 +186,12 @@ def save_ccd_blob_mask(expnum):
             except:
                 print('Warning: brick {} does not exist'.format(brickname))
                 continue
-            mask_bad = (blobs!=-1) # -1 means no source detected
-            mask_bad |= (maskbits&2**0>0) # brick_primary
-            mask_bad |= (maskbits&2**1>0) # BRIGHT star
+            mask_bad = (blobs!=-1)  # -1 means no source detected
+            mask_bad |= (maskbits&2**0>0)  # brick_primary
+            mask_bad |= (maskbits&2**1>0)  # BRIGHT star
             mask_bad |= (maskbits&2**2>0) | (maskbits&2**3>0) | (maskbits&2**4>0)  # saturation
             mask_bad |= (maskbits&2**5>0) | (maskbits&2**6>0) | (maskbits&2**7>0)  # allmask
-            mask_bad |= (maskbits&2**11>0) | (maskbits&2**12>0) | (maskbits&2**13>0) # MEDIUM, GALAXY, CLUSTER
+            mask_bad |= (maskbits&2**11>0) | (maskbits&2**12>0) | (maskbits&2**13>0)  # MEDIUM, GALAXY, CLUSTER
             mask_good = ~mask_bad
             blob_hdu = fits.open('/global/project/projectdirs/cosmo/data/legacysurvey/dr8/south/metrics/{}/blobs-{}.fits.gz'.format(brickname[:3], brickname))
             w_blob = wcs.WCS(blob_hdu[0].header)
