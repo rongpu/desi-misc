@@ -1,0 +1,1 @@
+find -type f -name "c4d_171107_055431_ooi_i_ls10-blobmask.npz" -exec rm {} \;

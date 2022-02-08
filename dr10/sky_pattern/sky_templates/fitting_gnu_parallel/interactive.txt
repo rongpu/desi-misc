@@ -1,0 +1,7 @@
+squeue --qos=interactive --account=m3592
+
+salloc -N 4 -C haswell -q interactive -t 04:00:00 --account m3592
+
+srun --wait=0 --ntasks-per-node 1 payload.sh tasks.txt > log.txt ; exit
+
+srun --wait=0 --ntasks-per-node 1 payload.sh tasks.txt > log_test.txt ; exit

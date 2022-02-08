@@ -1,0 +1,5 @@
+squeue --qos=interactive --account=m3592
+
+salloc -N 10 -C haswell -q interactive -t 04:00:00 --account m3592 --mail-type=begin,end,fail --mail-user=rongpuzhou@lbl.gov
+
+srun --wait=0 --ntasks-per-node 1 payload.sh tasks_z.txt > log.txt ; exit
