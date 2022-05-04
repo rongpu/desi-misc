@@ -99,12 +99,13 @@ blob_dir = '/global/cfs/cdirs/desi/users/rongpu/dr9/decam_ccd_blob_mask'
 surveyccd_path = '/global/cfs/cdirs/desi/users/rongpu/useful/survey-ccds-decam-dr9-trim.fits'
 surveyccd_path_dr8 = '/global/cfs/cdirs/desi/users/rongpu/useful/survey-ccds-decam-dr8-trim.fits'
 
-image_vrange = {'u':5, 'g':5, 'r':6, 'i':10, 'z':30, 'Y':30}
+image_vrange = {'u':[-5, 5], 'g':[-5, 5], 'r':[-6, 6], 'i':[-10, 10], 'z':[-30, 30], 'Y':[-30, 30]}
 
 ################################################################################
 
-def decam_plot(exposure, plot_path, figsize=(13, 12), vrange=None, dr8=False, binsize=20, median=True,
-    blob_mask=False, ood_mask=False, gaussian_sigma=None, show=False):
+
+def decam_plot(exposure, plot_path, figsize=(13, 12), vrange=None, cmap='seismic', dr8=False, binsize=20, median=True,
+               blob_mask=False, ood_mask=False, gaussian_sigma=None, show=False):
     '''
     Create high-resolution DECam images.
     Example:
@@ -229,8 +230,8 @@ def decam_plot(exposure, plot_path, figsize=(13, 12), vrange=None, dr8=False, bi
 
         ysize, xsize = img.shape
         ra, dec = ccd_ra[ii], ccd_dec[ii]
-        
-        fig = plt.imshow(img.T, cmap='seismic', vmin=-vrange, vmax=vrange, 
+
+        fig = plt.imshow(img.T, cmap=cmap, vmin=vrange[0], vmax=vrange[1],
                    extent=(ra-ysize*pix_size*binsize/2, ra+ysize*pix_size*binsize/2, dec-xsize*pix_size*binsize/2, dec+xsize*pix_size*binsize/2))
 
     plt.axis([1.07, -1.07, -1.0, 1.0])
@@ -266,8 +267,8 @@ def create_image(data, cmap='gray', dpi=80, vmin=None, vmax=None, origin=None, n
     return ax
 
 
-def decam_postage_stamp(exposure, binsize=120, plot_path=None, save_path=None, vrange=None, dr8=False, median=True,
-    blob_mask=True, ood_mask=True, show=False):
+def decam_postage_stamp(exposure, binsize=120, plot_path=None, save_path=None, vrange=None, cmap='seismic', dr8=False, median=True,
+                        blob_mask=True, ood_mask=True, show=False):
     '''
     Create low-resolution postage stamps.
     Examples:
@@ -409,13 +410,13 @@ def decam_postage_stamp(exposure, binsize=120, plot_path=None, save_path=None, v
 
     fullimg[~np.isfinite(fullimg)] = 0
 
-    if plot_path is not None:
+    if (plot_path is not None) or show:
 
         if vrange is None:
             vrange = image_vrange[band]
-
-        ax = create_image(fullimg, cmap='seismic', vmin=-vrange, vmax=vrange)
+        ax = create_image(fullimg, cmap=cmap, vmin=vrange[0], vmax=vrange[1])
         plt.savefig(plot_path)
+
         if show:
             plt.show()
         else:

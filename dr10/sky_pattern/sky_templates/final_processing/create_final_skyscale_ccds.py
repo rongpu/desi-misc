@@ -9,7 +9,7 @@ import fitsio
 from astropy.io import fits
 
 
-ss = Table(fitsio.read('/global/cfs/cdirs/desi/users/rongpu/dr10dev/sky_pattern/sky_scales/skyscales_ccds_raw.fits'))
+ss = Table(fitsio.read('/global/cfs/cdirs/desi/users/rongpu/dr10dev/sky_scales/skyscales_ccds_raw.fits'))
 print(len(ss))
 
 t = Table()

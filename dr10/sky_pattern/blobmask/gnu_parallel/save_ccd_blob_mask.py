@@ -217,7 +217,7 @@ def save_ccd_blob_mask(expnum):
             blobs_path_dr9 = os.path.join(metrics_dir_dr9, '{}/blobs-{}.fits.gz'.format(brickname[:3], brickname))
             maskbits_path_dr9 = os.path.join(coadd_dir_dr9, '{}/{}/legacysurvey-{}-maskbits.fits.fz'.format(brickname[:3], brickname, brickname))
 
-            if os.path.isfile(blobs_path_dr9):  # Use DR9 blobs in default
+            if os.path.isfile(blobs_path_dr9):  # Use DR9 blobs by default
                 blobs = fits.getdata(blobs_path_dr9)
                 maskbits = fits.getdata(maskbits_path_dr9)
                 blob_hdu = fits.open(blobs_path_dr9)
