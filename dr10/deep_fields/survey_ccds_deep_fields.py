@@ -102,6 +102,16 @@ basic_quality[mask] = (ccd_cuts==0)
 ccd = ccd[basic_quality]
 print('ccd', len(ccd))
 
+# Remove exposures with artifacts
+mask = np.char.startswith(ccd['image_filename'], 'decam/CP/V4.8.2a/CP20131128')  # many of these exposures look bad
+ccd = ccd[~mask]
+print(len(ccd))
+
+# require PLVER>V4.8.1 except for Y band
+mask = (ccd['plver']>='V4.8.1') | (ccd['filter']=='Y')
+ccd = ccd[mask]
+print(len(ccd))
+
 # Add PSFEx FWHM values
 ccd['ccd_id_str'] = np.char.add(np.array(ccd['expnum']).astype(str), ccd['ccdname'])
 psfex['ccd_id_str'] = np.char.add(np.array(psfex['expnum']).astype(str), psfex['ccdname'])
@@ -111,6 +121,11 @@ ccd = join(ccd, psfex, keys='ccd_id_str', join_type='left')
 print('ccd', len(ccd))
 ccd.remove_column('ccd_id_str')
 
+# Remove CCDs with extreme FWHM (e.g., bad PSFEx models)
+mask = (ccd['psf_fwhm']*0.262 > 0.6) & (ccd['psf_fwhm']*0.262 < 2.4)
+ccd = ccd[mask]
+print(len(ccd))
+
 ###################### Get final CCD list ######################
 
 exp = exp[['expnum', 'median_fwhm', 'median_ccdskycounts', 'median_psf_fwhm', 'n_ccds', 'n_good_ccds', 'quality_deep', 'quality_wide']]
@@ -119,4 +134,4 @@ print('ccd', len(ccd))
 
 ccd['efftime'] = 10**(0.4*ccd['ccdzpt']-9) * ccd['exptime'] / (ccd['median_ccdskycounts'] * ccd['psf_fwhm']**2)
 
-ccd.write('/global/cfs/cdirs/desi/users/rongpu/data/dr10dev/deep_fields/survey-ccds-dr10-v4-deep-fields.fits', overwrite=True)
+ccd.write('/global/cfs/cdirs/desi/users/rongpu/data/dr10dev/deep_fields/survey-ccds-dr10-deep-fields-v1.fits', overwrite=True)
