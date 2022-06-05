@@ -1,5 +1,4 @@
 # CCDs with ra, dec within 2.2 deg of the field centers
-# Two components: deep field exposures and wide field exposures with different quality cuts
 
 from __future__ import division, print_function
 import sys, os, glob, time, warnings, gc
