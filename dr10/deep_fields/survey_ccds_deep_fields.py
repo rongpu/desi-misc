@@ -14,6 +14,8 @@ from match_coord import match_coord
 deep_ra = np.array([54.2743, 54.2743, 52.6484, 34.4757, 35.6645, 36.4500, 42.8200, 41.1944, 7.8744, 9.5000, 150.1166])
 deep_dec = np.array([-27.1116, -29.0884, -28.1000, -4.9295, -6.4121, -4.6000, 0.0000, -0.9884, -43.0096, -43.9980, 2.2058])
 
+# bad exposures found in visual inspection
+bad_expids = [938452, 964237, 964238, 964239, 980290, 980291, 986155, 1002854, 1006183, 1006184]
 
 ###################### Select deep exposures ######################
 
@@ -29,6 +31,10 @@ exp = join(exp, tmp, keys='expnum')
 mask = exp['n_good_ccds']>30
 print(np.sum(mask)/len(mask))
 exp = exp[mask]
+print(len(exp))
+
+mask = np.in1d(exp['expnum'], bad_expids)
+exp = exp[~mask]
 print(len(exp))
 
 psfex = Table(fitsio.read('/global/cfs/cdirs/desi/users/rongpu/dr10dev/misc/survey-ccds-dr10-v4-psfex-fwhm.fits'))
@@ -56,9 +62,11 @@ for band in ['g', 'r', 'i', 'z', 'Y']:
     print(np.sum(exp['quality_deep'][mask]))
     exp['quality_deep'][mask] &= exp['zpt'][mask]>zpt_limits[band]
     exp['quality_wide'][mask] &= exp['zpt'][mask]>zpt_limits[band]-0.2
+    # exp['quality_deep'][mask] &= exp['exptime'][mask]>=60
+    # exp['quality_wide'][mask] &= exp['exptime'][mask]>=60
     print(np.sum(exp['quality_deep'][mask]))
 
-# Add i-band off-center exposures in COSMOS
+# Add i-band off-center exposures in COSMOS to fill in the gaps
 exp_search_radius = 4.*3600.  # arcsec
 idx1, idx2, d2d, d_ra, d_dec = match_coord([150.1166], [2.2058], exp['ra_bore'], exp['dec_bore'], search_radius=exp_search_radius, plot_q=False, keep_all_pairs=True)
 exp['off_center'] = False
@@ -106,7 +114,7 @@ mask = np.char.startswith(ccd['image_filename'], 'decam/CP/V4.8.2a/CP20131128') 
 ccd = ccd[~mask]
 print(len(ccd))
 
-# require PLVER>V4.8.1 except for Y band
+# require PLVER>=V4.8.1 except for Y band
 mask = (ccd['plver']>='V4.8.1') | (ccd['filter']=='Y')
 ccd = ccd[mask]
 print(len(ccd))
