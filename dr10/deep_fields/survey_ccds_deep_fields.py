@@ -140,5 +140,9 @@ ccd = join(ccd, exp, keys='expnum', join_type='left')
 print('ccd', len(ccd))
 
 ccd['efftime'] = 10**(0.4*ccd['ccdzpt']-9) * ccd['exptime'] / (ccd['median_ccdskycounts'] * ccd['psf_fwhm']**2)
+# ccd['exposure_efftime'] = 10**(0.4*ccd['zpt']-9) * ccd['exptime'] / (ccd['median_ccdskycounts'] * ccd['median_psf_fwhm']**2)
+
+ccd.rename_column('ccd_cuts', 'ccd_cuts_dr10')
+ccd['ccd_cuts'] = 0
 
 ccd.write('/global/cfs/cdirs/desi/users/rongpu/data/dr10dev/deep_fields/survey-ccds-dr10-deep-fields-v1.fits', overwrite=True)
