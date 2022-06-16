@@ -10,21 +10,29 @@ from astropy.table import Table, vstack, hstack
 import fitsio
 # from astropy.io import fits
 
-surveyccd_path = '/global/project/projectdirs/cosmo/work/legacysurvey/dr9/survey-ccds-decam-dr9.fits.gz'
-ccd = Table(fitsio.read(surveyccd_path, columns=['expnum', 'image_filename']))
-print(len(ccd))
-_, idx = np.unique(ccd['expnum'], return_index=True)
-ccd = ccd[idx]
-print(len(ccd))
-ccd.write('/global/cfs/cdirs/desi/users/rongpu/useful/survey-ccds-decam-dr9-old-trim.fits')
+# surveyccd_path = '/global/cfs/cdirs/cosmo/work/legacysurvey/dr9/survey-ccds-decam-dr9.fits.gz'
+# ccd = Table(fitsio.read(surveyccd_path, columns=['expnum', 'image_filename']))
+# print(len(ccd))
+# _, idx = np.unique(ccd['expnum'], return_index=True)
+# ccd = ccd[idx]
+# print(len(ccd))
+# ccd.write('/global/cfs/cdirs/desi/users/rongpu/useful/survey-ccds-decam-dr9-old-trim.fits')
 
-surveyccd_path = '/global/project/projectdirs/cosmo/work/legacysurvey/dr9m/survey-ccds-decam-dr9.fits.gz'
+# surveyccd_path = '/global/cfs/cdirs/cosmo/work/legacysurvey/dr9m/survey-ccds-decam-dr9.fits.gz'
+# ccd = Table(fitsio.read(surveyccd_path, columns=['expnum', 'image_filename']))
+# print(len(ccd))
+# _, idx = np.unique(ccd['expnum'], return_index=True)
+# ccd = ccd[idx]
+# print(len(ccd))
+# ccd.write('/global/cfs/cdirs/desi/users/rongpu/useful/survey-ccds-decam-dr9-trim.fits')
+
+surveyccd_path = '/global/cfs/cdirs/cosmo/data/legacysurvey/dr9/survey-ccds-decam-dr9.fits.gz'
 ccd = Table(fitsio.read(surveyccd_path, columns=['expnum', 'image_filename']))
 print(len(ccd))
 _, idx = np.unique(ccd['expnum'], return_index=True)
 ccd = ccd[idx]
 print(len(ccd))
-ccd.write('/global/cfs/cdirs/desi/users/rongpu/useful/survey-ccds-decam-dr9-trim.fits')
+ccd.write('/global/cfs/cdirs/desi/users/rongpu/useful/survey-ccds-decam-dr9-final-trim.fits')
 
 surveyccd_path_dr8 = '/global/cfs/cdirs/cosmo/work/legacysurvey/dr9-garage/reorg/decam/survey-ccds-decam-dr8-newlocs2.fits.gz'
 ccd = Table(fitsio.read(surveyccd_path_dr8, columns=['expnum', 'image_filename']))
@@ -38,7 +46,7 @@ ccd.write('/global/cfs/cdirs/desi/users/rongpu/useful/survey-ccds-decam-dr8-trim
 
 camera_list = ['mosaic', '90prime', 'decam']
 for camera in camera_list:
-    surveyccd_path = '/global/project/projectdirs/cosmo/work/legacysurvey/dr9m/survey-ccds-{}-dr9.fits.gz'.format(camera)
+    surveyccd_path = '/global/cfs/cdirs/cosmo/work/legacysurvey/dr9m/survey-ccds-{}-dr9.fits.gz'.format(camera)
     columns = ['image_filename', 'image_hdu', 'expnum', 'plver', 'plprocid', 'ccdname', 'propid', 'filter', 'exptime', 'mjd_obs', 'ra_bore', 'dec_bore', 'zpt', 'ccdskycounts', 'ccdskysb', 'ccdphrms', 'ccdnphotom', 'ccd_cuts']
     ccd = Table(fitsio.read(surveyccd_path, columns=columns))
     print(len(ccd))
