@@ -285,7 +285,7 @@ def compute_fringe_scale(expnum):
         # print('sky nmad:', sky_nmad)
         mask = (img<-3*sky_nmad) | (img>3*sky_nmad)
         img[mask] = 0
-        
+
         ##################################################################################################################
 
         # Spline sky: image

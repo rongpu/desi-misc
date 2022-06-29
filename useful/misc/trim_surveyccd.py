@@ -34,6 +34,14 @@ ccd = ccd[idx]
 print(len(ccd))
 ccd.write('/global/cfs/cdirs/desi/users/rongpu/useful/survey-ccds-decam-dr9-final-trim.fits')
 
+surveyccd_path = '/global/cfs/cdirs/cosmo/data/legacysurvey/dr9/survey-ccds-decam-dr9.fits.gz'
+ccd = Table(fitsio.read(surveyccd_path, columns=['expnum', 'image_filename', 'ccdname', 'image_hdu', 'filter']))
+print(len(ccd))
+mask = ccd['filter']=='z'
+ccd = ccd[mask]
+print(len(ccd))
+ccd.write('/global/cfs/cdirs/desi/users/rongpu/useful/survey-ccds-decam-dr9-final-trim-z.fits')
+
 surveyccd_path_dr8 = '/global/cfs/cdirs/cosmo/work/legacysurvey/dr9-garage/reorg/decam/survey-ccds-decam-dr8-newlocs2.fits.gz'
 ccd = Table(fitsio.read(surveyccd_path_dr8, columns=['expnum', 'image_filename']))
 print(len(ccd))

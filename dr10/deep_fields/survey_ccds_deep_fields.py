@@ -82,6 +82,9 @@ mask |= (des_wide | decals | exp['off_center']) & exp['quality_wide']
 exp = exp[mask]
 print('exp', len(exp))
 
+# Require fringe fitting in DR9 (for normalization)
+
+
 ###################### CCDs covering the deep fields ######################
 
 ccd = Table(fitsio.read('/global/cfs/cdirs/cosmo/work/legacysurvey/dr10/survey-ccds-dr10-v4.fits', columns=['ra', 'dec']))
@@ -145,4 +148,4 @@ ccd['efftime'] = 10**(0.4*ccd['ccdzpt']-9) * ccd['exptime'] / (ccd['median_ccdsk
 ccd.rename_column('ccd_cuts', 'ccd_cuts_dr10')
 ccd['ccd_cuts'] = 0
 
-ccd.write('/global/cfs/cdirs/desi/users/rongpu/data/dr10dev/deep_fields/survey-ccds-dr10-deep-fields-v1.fits', overwrite=True)
+ccd.write('/global/cfs/cdirs/desi/users/rongpu/dr10dev/deep_fields/survey-ccds-dr10-deep-fields-v1.fits', overwrite=True)

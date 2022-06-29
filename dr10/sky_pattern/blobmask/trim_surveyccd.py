@@ -6,20 +6,20 @@ from astropy.table import Table, vstack, hstack, join
 import fitsio
 # from astropy.io import fits
 
-surveyccd_path = '/global/cfs/cdirs/cosmo/work/legacysurvey/dr10/survey-ccds-decam-dr10-v2.fits'
+surveyccd_path = '/global/cfs/cdirs/cosmo/work/legacysurvey/dr10/survey-ccds-decam-dr10-4.fits'
 ccd_columns = ['image_filename', 'image_hdu', 'expnum', 'ccdname', 'filter', 'ccd_cuts', 'ra_bore', 'dec_bore', 'ra', 'dec', 'ccdraoff', 'ccddecoff', 'mjd_obs', 'plver']
 
 ccd = Table(fitsio.read(surveyccd_path, columns=ccd_columns))
-ccd.write('/global/cfs/cdirs/desi/users/rongpu/dr10dev/sky_pattern/survey-ccds-decam-dr10-v2-trim.fits')
+ccd.write('/global/cfs/cdirs/desi/users/rongpu/dr10dev/sky_pattern/survey-ccds-decam-dr10-4-trim.fits')
 
 ccd = Table(fitsio.read(surveyccd_path))
 _, idx = np.unique(ccd['expnum'], return_index=True)
 ccd = ccd[idx]
-ccd.write('/global/cfs/cdirs/desi/users/rongpu/dr10dev/sky_pattern/survey-ccds-decam-dr10-v2-unique_exps.fits', overwrite=True)
+ccd.write('/global/cfs/cdirs/desi/users/rongpu/dr10dev/sky_pattern/survey-ccds-decam-dr10-4-unique_exps.fits', overwrite=True)
 
 ##############################################################################################################
 
-surveyccd_path = '/global/cfs/cdirs/cosmo/work/legacysurvey/dr10/survey-ccds-decam-dr10-v2.fits'
+surveyccd_path = '/global/cfs/cdirs/cosmo/work/legacysurvey/dr10/survey-ccds-decam-dr10-4.fits'
 ccd = Table(fitsio.read(surveyccd_path))
 print(len(ccd))
 
@@ -32,4 +32,4 @@ mask = ccd['filter']=='z'
 ccd = ccd[mask]
 print(len(ccd))
 
-ccd.write('/global/cfs/cdirs/desi/users/rongpu/dr10dev/sky_pattern/survey-ccds-decam-dr10-v2-z_only.fits')
+ccd.write('/global/cfs/cdirs/desi/users/rongpu/dr10dev/sky_pattern/survey-ccds-decam-dr10-4-z_only.fits')
