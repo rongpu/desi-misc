@@ -5,31 +5,33 @@
 # we're not using the burst-buffer, but here's how one would use it, where "DR9" is the name of your BB:
 #if [ "x$DW_PERSISTENT_STRIPED_DR9" == x ]; then
 
-export SCR=/global/cscratch1/sd/dstn
+# export SCR=/global/cscratch1/sd/rongpu
+export SCR=/pscratch/sd/r/rongpu
 
 # Using depth-cut v4 CCDs file, and v3 skies
-export LEGACY_SURVEY_DIR=$SCR/dr10c
+export LEGACY_SURVEY_DIR=$SCR/tractor/deep_fields/cosmos/test_stages/test-1
 outdir=$LEGACY_SURVEY_DIR
 
-export CACHE_DIR=$SCR/dr10-cache
+export CACHE_DIR=$SCR/tractor/deep_fields/cosmos/test_stages/test-1/cache
 
-#export GAIA_CAT_DIR=/global/cfs/cdirs/desi/target/gaia_edr3/healpix
-export GAIA_CAT_DIR=$SCR/gaia-edr3-healpix/healpix
+export GAIA_CAT_DIR=/global/cfs/cdirs/desi/target/gaia_edr3/healpix
+# export GAIA_CAT_DIR=$SCR/gaia-edr3-healpix/healpix
 export GAIA_CAT_PREFIX=healpix
 export GAIA_CAT_SCHEME=nested
 export GAIA_CAT_VER=E
 
-#export DUST_DIR=/global/cfs/cdirs/cosmo/data/dust/v0_1
-export DUST_DIR=$CACHE_DIR/dust-v0_1
+export DUST_DIR=/global/cfs/cdirs/cosmo/data/dust/v0_1
+# export DUST_DIR=$CACHE_DIR/dust-v0_1
 export UNWISE_COADDS_DIR=/global/cfs/cdirs/cosmo/data/unwise/neo7/unwise-coadds/fulldepth:/global/cfs/cdirs/cosmo/data/unwise/allwise/unwise-coadds/fulldepth
 export UNWISE_COADDS_TIMERESOLVED_DIR=/global/cfs/cdirs/cosmo/work/wise/outputs/merge/neo7
 export UNWISE_MODEL_SKY_DIR=/global/cfs/cdirs/cosmo/data/unwise/neo7/unwise-catalog/mod
 
-#export TYCHO2_KD_DIR=/global/cfs/cdirs/cosmo/staging/tycho2
-#export LARGEGALAXIES_CAT=/global/cfs/cdirs/cosmo/staging/largegalaxies/v3.0/SGA-ellipse-v3.0.kd.fits
-export TYCHO2_KD_DIR=$CACHE_DIR/tycho2
-export LARGEGALAXIES_CAT=$CACHE_DIR/SGA-ellipse-v3.0.kd.fits
-export SKY_TEMPLATE_DIR=$CACHE_DIR/calib/sky_pattern
+export TYCHO2_KD_DIR=/global/cfs/cdirs/cosmo/staging/tycho2
+export LARGEGALAXIES_CAT=/global/cfs/cdirs/cosmo/staging/largegalaxies/v3.0/SGA-ellipse-v3.0.kd.fits
+# export TYCHO2_KD_DIR=$CACHE_DIR/tycho2
+# export LARGEGALAXIES_CAT=$CACHE_DIR/SGA-ellipse-v3.0.kd.fits
+export SKY_TEMPLATE_DIR=/global/cfs/cdirs/cosmo/work/legacysurvey/dr10/calib/sky_pattern
+# export SKY_TEMPLATE_DIR=$CACHE_DIR/calib/sky_pattern
 unset BLOB_MASK_DIR
 unset PS1CAT_DIR
 unset GALEX_DIR
@@ -44,9 +46,9 @@ export OMP_NUM_THREADS=1
 export MPICH_GNI_FORK_MODE=FULLCOPY
 export KMP_AFFINITY=disabled
 
-ncores=8
+ncores=128
 
-brick="$1"
+brick=1501p022
 # strip whitespace from front and back
 #brick="${brick#"${brick%%[![:space:]]*}"}"
 #brick="${brick%"${brick##*[![:space:]]}"}"
@@ -83,7 +85,6 @@ echo "--------------------------------------------------------------------------
 python -O $LEGACYPIPE_DIR/legacypipe/runbrick.py \
      --brick "$brick" \
      --skip \
-     --skip-calibs \
      --bands g,r,i,z \
      --rgb-stretch 1.5 \
      --nsatur 2 \
@@ -96,8 +97,10 @@ python -O $LEGACYPIPE_DIR/legacypipe/runbrick.py \
      --write-stage srcs \
      --release 10000 \
      --cache-outliers \
-     --max-memory-gb 20 \
+     --max-memory-gb 100 \
      --threads "${ncores}" \
+     --blob-mask-dir /global/cfs/cdirs/cosmo/data/legacysurvey/dr9/south \
+     --stage srcs \
       >> "$log" 2>&1
 
 # --no-wise-ceres helps for very dense fields.

@@ -12,12 +12,12 @@ sys.path.append(os.path.expanduser('~/git/Python/user_modules/'))
 from match_coord import match_coord
 
 
-n_exposures = 3
+n_exposures = 100
 
 deep_ra = np.array([150.1166])
 deep_dec = np.array([2.2058])
 
-cat = Table(fitsio.read('/global/cfs/cdirs/desi/users/rongpu/dr10dev/deep_fields/survey-ccds-dr10-deep-fields-v1.fits'))
+cat = Table(fitsio.read('/global/cfs/cdirs/desi/users/rongpu/dr10dev/deep_fields/survey-ccds-dr10-deep-fields-v1-defringed.fits'))
 print(len(cat))
 
 _, idx = np.unique(cat['expnum'], return_index=True)
@@ -47,4 +47,4 @@ mask = np.in1d(cat['expnum'], exp['expnum'])
 cat = cat[mask]
 print('ccd', np.sum(mask))
 
-cat.write('/global/cfs/cdirs/desi/users/rongpu/dr10dev/deep_fields/test/survey-ccds-dr10-deep-fields-v1-cosmos-{}.fits'.format(n_exposures), overwrite=True)
+cat.write('/global/cfs/cdirs/desi/users/rongpu/dr10dev/deep_fields/test/survey-ccds-dr10-deep-fields-v1-defringed-cosmos-{}.fits'.format(n_exposures), overwrite=True)
