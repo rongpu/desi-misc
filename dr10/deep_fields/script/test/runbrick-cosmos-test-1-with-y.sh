@@ -5,33 +5,26 @@
 # we're not using the burst-buffer, but here's how one would use it, where "DR9" is the name of your BB:
 #if [ "x$DW_PERSISTENT_STRIPED_DR9" == x ]; then
 
-# export SCR=/global/cscratch1/sd/rongpu
 export SCR=/pscratch/sd/r/rongpu
 
-# Using depth-cut v4 CCDs file, and v3 skies
-export LEGACY_SURVEY_DIR=$SCR/tractor/deep_fields/cosmos/test/test-1-new
+export LEGACY_SURVEY_DIR=$SCR/tractor/deep_fields/cosmos/test/test-1-new-with-y
 outdir=$LEGACY_SURVEY_DIR
 
 export CACHE_DIR=$SCR/tractor/deep_fields/cosmos/cache
 
 export GAIA_CAT_DIR=/global/cfs/cdirs/desi/target/gaia_edr3/healpix
-# export GAIA_CAT_DIR=$SCR/gaia-edr3-healpix/healpix
 export GAIA_CAT_PREFIX=healpix
 export GAIA_CAT_SCHEME=nested
 export GAIA_CAT_VER=E
 
 export DUST_DIR=/global/cfs/cdirs/cosmo/data/dust/v0_1
-# export DUST_DIR=$CACHE_DIR/dust-v0_1
 export UNWISE_COADDS_DIR=/global/cfs/cdirs/cosmo/data/unwise/neo7/unwise-coadds/fulldepth:/global/cfs/cdirs/cosmo/data/unwise/allwise/unwise-coadds/fulldepth
 export UNWISE_COADDS_TIMERESOLVED_DIR=/global/cfs/cdirs/cosmo/work/wise/outputs/merge/neo7
 export UNWISE_MODEL_SKY_DIR=/global/cfs/cdirs/cosmo/data/unwise/neo7/unwise-catalog/mod
 
 export TYCHO2_KD_DIR=/global/cfs/cdirs/cosmo/staging/tycho2
 export LARGEGALAXIES_CAT=/global/cfs/cdirs/cosmo/staging/largegalaxies/v3.0/SGA-ellipse-v3.0.kd.fits
-# export TYCHO2_KD_DIR=$CACHE_DIR/tycho2
-# export LARGEGALAXIES_CAT=$CACHE_DIR/SGA-ellipse-v3.0.kd.fits
 export SKY_TEMPLATE_DIR=/global/cfs/cdirs/cosmo/work/legacysurvey/dr10/calib/sky_pattern
-# export SKY_TEMPLATE_DIR=$CACHE_DIR/calib/sky_pattern
 unset BLOB_MASK_DIR
 unset PS1CAT_DIR
 unset GALEX_DIR
@@ -85,7 +78,8 @@ echo "--------------------------------------------------------------------------
 python -O $LEGACYPIPE_DIR/legacypipe/runbrick.py \
      --brick "$brick" \
      --skip \
-     --bands g,r,i,z \
+     --skip-calibs \
+     --bands g,r,i,z,Y \
      --rgb-stretch 1.5 \
      --nsatur 2 \
      --survey-dir "$LEGACY_SURVEY_DIR" \

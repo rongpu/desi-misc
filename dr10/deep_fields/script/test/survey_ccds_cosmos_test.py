@@ -12,7 +12,7 @@ sys.path.append(os.path.expanduser('~/git/Python/user_modules/'))
 from match_coord import match_coord
 
 
-n_exposures = 100
+n_exposures = 1
 
 deep_ra = np.array([150.1166])
 deep_dec = np.array([2.2058])
