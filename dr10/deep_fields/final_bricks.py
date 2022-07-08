@@ -1,4 +1,4 @@
-# Apply NCCD cut and restrict to 2.05 radius
+# Restrict to 2.05 radius
 
 from __future__ import division, print_function
 import sys, os, glob, time, warnings, gc

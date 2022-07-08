@@ -22,18 +22,28 @@ params = {'legend.fontsize': 'large',
           'figure.facecolor': 'w'}
 plt.rcParams.update(params)
 
+plot_discarded = False
 
-surveyccd_path = '/global/cfs/cdirs/desi/users/rongpu/data/dr10dev/deep_fields/survey-ccds-dr10-deep-fields-v1.fits'
-plot_dir = '/global/cfs/cdirs/cosmo/www/temp/rongpu/dr10dev/deep_fields/new/all_ccds/'
+# surveyccd_path = '/global/cfs/cdirs/desi/users/rongpu/data/dr10dev/deep_fields/survey-ccds-dr10-deep-fields-v1-defringed.fits'
+# plot_dir = '/global/cfs/cdirs/cosmo/www/temp/rongpu/dr10dev/deep_fields/new/all_ccds/'
+surveyccd_path = '/global/cfs/cdirs/desi/users/rongpu/data/dr10dev/deep_fields/survey-ccds-dr10-deep-fields-v1-final.fits'
+plot_dir = '/global/cfs/cdirs/cosmo/www/temp/rongpu/dr10dev/deep_fields/new/final/'
 
 ccd = Table(fitsio.read(surveyccd_path))
 print(len(ccd))
 
-_, idx = np.unique(ccd['expnum'], return_index=True)
-exp = ccd[idx]
+if plot_discarded:
+    # Plot the discarded CCDs
+    discarded_str = 'discarded'
+    ccd_everything = Table(fitsio.read('/global/cfs/cdirs/desi/users/rongpu/data/dr10dev/deep_fields/survey-ccds-dr10-deep-fields-v1-defringed.fits'))
+    ccd_everything['ccd_id_str'] = np.char.add(np.array(ccd_everything['expnum']).astype(str), ccd_everything['ccdname'])
+    ccd['ccd_id_str'] = np.char.add(np.array(ccd['expnum']).astype(str), ccd['ccdname'])
+    mask = ~np.in1d(ccd_everything['ccd_id_str'], ccd['ccd_id_str'])
+    ccd = ccd_everything[mask]
+else:
+    discarded_str = ''
 
-exp['efftime'] = 10**(0.4*exp['zpt']-9) * exp['exptime'] / (exp['median_ccdskycounts'] * exp['median_psf_fwhm']**2)
-
+field_names = ['COSMOS', 'S1 & S2', 'X1 & X2 & X3 (XMM-LSS)', 'C1 & C2 & C3', 'E1 & E2']
 radec_limits = [[147.8, 152.5, -0.1, 4.5],
                 [38.9, 45.1, -3.3, 2.3],
                 [32.2, 38.8, -8.7, -2.3],
@@ -45,18 +55,17 @@ for radec in radec_limits:
     radec_limits_new.append([ramin+0.2/np.cos(np.radians(decmin)), ramax-0.2/np.cos(np.radians(decmin)), decmin+0.2, decmax-0.2])
 radec_limits = radec_limits_new
 
-field_names = ['COSMOS', 'S1 & S2', 'X1 & X2 & X3 (XMM-LSS)', 'C1 & C2 & C3', 'E1 & E2']
-
-deep_ra = np.array([54.2743, 54.2743, 52.6484, 34.4757, 35.6645, 36.4500, 42.8200, 41.1944, 7.8744, 9.5000, 150.1166])
-deep_dec = np.array([-27.1116, -29.0884, -28.1000, -4.9295, -6.4121, -4.6000, 0.0000, -0.9884, -43.0096, -43.9980, 2.2058])
+pointing_ra = np.array([150.1166, 54.2743, 54.2743, 52.6484, 34.4757, 35.6645, 36.4500, 42.8200, 41.1944, 7.8744, 9.5000])
+pointing_dec = np.array([2.2058, -27.1116, -29.0884, -28.1000, -4.9295, -6.4121, -4.6000, 0.0000, -0.9884, -43.0096, -43.9980])
+pointing_names = np.array(['COSMOS', 'C1', 'C2', 'C3', 'X1', 'X2', 'X3', 'S1', 'S2', 'E1', 'E2'])
 
 ccd_all = ccd.copy()
 
 des_nominal_efftimes = {'g': 239.6,
-                       'r': 139.9,
-                       'i': 53.4,
-                       'z': 19.0,
-                       'Y': 4.2}
+                        'r': 139.9,
+                        'i': 53.4,
+                        'z': 19.0,
+                        'Y': 4.2}
 
 vrange_dict = {'g': [100, 10000],
                'r': [100, 4000],
@@ -78,8 +87,8 @@ def get_depth_map(band, field_index):
     mask = (ccd['ra']>ramin) & (ccd['ra']<ramax) & (ccd['dec']>decmin) & (ccd['dec']<decmax)
     ccd = ccd[mask]
 
-    ra_list = np.linspace(ramin, ramax, 300)
-    dec_list = np.linspace(decmin, decmax, 300)
+    ra_list = np.linspace(ramin, ramax, 450)
+    dec_list = np.linspace(decmin, decmax, 450)
     # d_ra, d_dec = np.diff(ra_list)[0], np.diff(dec_list)[0]
     ra_grid, dec_grid = np.meshgrid(ra_list, dec_list)
     ra_grid = ra_grid.flatten()
@@ -107,7 +116,7 @@ def get_depth_map(band, field_index):
 
     # Ignore pixels more than 2.05 deg from the field centers
     search_radius = 2.05*3600.
-    idx1, idx2, d2d, _, _ = search_around(deep_ra, deep_dec, ra_grid, dec_grid, search_radius=search_radius, verbose=False)
+    idx1, idx2, d2d, _, _ = search_around(pointing_ra, pointing_dec, ra_grid, dec_grid, search_radius=search_radius, verbose=False)
     mask = np.full(len(efftime_grid), True)
     mask[idx2] = False
     efftime_grid[mask] = np.nan
@@ -217,12 +226,12 @@ for band in ['g', 'r', 'i', 'z', 'Y']:
     fig_depth.colorbar(im4, ax=axes_depth, location='right', pad=0.015)
     fig_seeing.colorbar(im6, ax=axes_seeing, location='right', pad=0.015)
 
-    fig_efftime.savefig(os.path.join(plot_dir, 'efftime_{}.png'.format(band)), bbox_inches='tight')
-    fig_efftimeh.savefig(os.path.join(plot_dir, 'efftime_{}_hist.png'.format(band)), bbox_inches='tight')
-    fig_nexp.savefig(os.path.join(plot_dir, 'nexp_{}.png'.format(band)), bbox_inches='tight')
-    fig_nexph.savefig(os.path.join(plot_dir, 'nexp_{}_hist.png'.format(band)), bbox_inches='tight')
-    fig_depth.savefig(os.path.join(plot_dir, 'depth_{}.png'.format(band)), bbox_inches='tight')
-    fig_depthh.savefig(os.path.join(plot_dir, 'depth_{}_hist.png'.format(band)), bbox_inches='tight')
-    fig_seeing.savefig(os.path.join(plot_dir, 'seeing_{}.png'.format(band)), bbox_inches='tight')
-    fig_seeingh.savefig(os.path.join(plot_dir, 'seeing_{}_hist.png'.format(band)), bbox_inches='tight')
+    fig_efftime.savefig(os.path.join(plot_dir, discarded_str, 'efftime_{}.png'.format(band)), bbox_inches='tight', dpi=150)
+    fig_efftimeh.savefig(os.path.join(plot_dir, discarded_str, 'efftime_{}_hist.png'.format(band)), bbox_inches='tight')
+    fig_nexp.savefig(os.path.join(plot_dir, discarded_str, 'nexp_{}.png'.format(band)), bbox_inches='tight', dpi=150)
+    fig_nexph.savefig(os.path.join(plot_dir, discarded_str, 'nexp_{}_hist.png'.format(band)), bbox_inches='tight')
+    fig_depth.savefig(os.path.join(plot_dir, discarded_str, 'depth_{}.png'.format(band)), bbox_inches='tight', dpi=150)
+    fig_depthh.savefig(os.path.join(plot_dir, discarded_str, 'depth_{}_hist.png'.format(band)), bbox_inches='tight')
+    fig_seeing.savefig(os.path.join(plot_dir, discarded_str, 'seeing_{}.png'.format(band)), bbox_inches='tight', dpi=150)
+    fig_seeingh.savefig(os.path.join(plot_dir, discarded_str, 'seeing_{}_hist.png'.format(band)), bbox_inches='tight')
     plt.close()

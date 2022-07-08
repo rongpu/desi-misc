@@ -30,6 +30,7 @@ exp = ccd[idx]
 
 exp['efftime'] = 10**(0.4*exp['zpt']-9) * exp['exptime'] / (exp['median_ccdskycounts'] * exp['median_psf_fwhm']**2)
 
+field_names = ['COSMOS', 'S1 & S2', 'X1 & X2 & X3 (XMM-LSS)', 'C1 & C2 & C3', 'E1 & E2']
 radec_limits = [[147.8, 152.5, -0.1, 4.5],
                 [38.9, 45.1, -3.3, 2.3],
                 [32.2, 38.8, -8.7, -2.3],
@@ -41,10 +42,9 @@ for radec in radec_limits:
     radec_limits_new.append([ramin+0.2/np.cos(np.radians(decmin)), ramax-0.2/np.cos(np.radians(decmin)), decmin+0.2, decmax-0.2])
 radec_limits = radec_limits_new
 
-field_names = ['COSMOS', 'S1 & S2', 'X1 & X2 & X3 (XMM-LSS)', 'C1 & C2 & C3', 'E1 & E2']
-
-deep_ra = np.array([54.2743, 54.2743, 52.6484, 34.4757, 35.6645, 36.4500, 42.8200, 41.1944, 7.8744, 9.5000, 150.1166])
-deep_dec = np.array([-27.1116, -29.0884, -28.1000, -4.9295, -6.4121, -4.6000, 0.0000, -0.9884, -43.0096, -43.9980, 2.2058])
+pointing_ra = np.array([150.1166, 54.2743, 54.2743, 52.6484, 34.4757, 35.6645, 36.4500, 42.8200, 41.1944, 7.8744, 9.5000])
+pointing_dec = np.array([2.2058, -27.1116, -29.0884, -28.1000, -4.9295, -6.4121, -4.6000, 0.0000, -0.9884, -43.0096, -43.9980])
+pointing_names = np.array(['COSMOS', 'C1', 'C2', 'C3', 'X1', 'X2', 'X3', 'S1', 'S2', 'E1', 'E2'])
 
 ccd_all = ccd.copy()
 
@@ -103,7 +103,7 @@ def get_depth_map(band, field_index):
 
     # Ignore pixels more than 2.05 deg from the field centers
     search_radius = 2.05*3600.
-    idx1, idx2, d2d, _, _ = search_around(deep_ra, deep_dec, ra_grid, dec_grid, search_radius=search_radius, verbose=False)
+    idx1, idx2, d2d, _, _ = search_around(pointing_ra, pointing_dec, ra_grid, dec_grid, search_radius=search_radius, verbose=False)
     mask = np.full(len(efftime_grid), True)
     mask[idx2] = False
     efftime_grid[mask] = np.nan
