@@ -46,4 +46,4 @@ print(len(ccd), len(ccd['ccd_id_str']))
 
 ccd.remove_column('ccd_id_str')
 
-ccd.write('/global/cfs/cdirs/desi/users/rongpu/data/dr10dev/deep_fields/survey-ccds-dr10-deep-fields-v1-final.fits', overwrite=True)
+ccd.write('/global/cfs/cdirs/desi/users/rongpu/dr10dev/deep_fields/survey-ccds-dr10-deep-fields-v1-defringed-final.fits', overwrite=True)

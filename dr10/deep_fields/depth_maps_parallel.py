@@ -34,7 +34,7 @@ print(len(ccd))
 
 if plot_discarded:
     # Plot the discarded CCDs
-    discarded_str = 'discarded'
+    discarded_str = 'discarded_ccds'
     ccd_everything = Table(fitsio.read('/global/cfs/cdirs/desi/users/rongpu/data/dr10dev/deep_fields/survey-ccds-dr10-deep-fields-v1-defringed.fits'))
     ccd_everything['ccd_id_str'] = np.char.add(np.array(ccd_everything['expnum']).astype(str), ccd_everything['ccdname'])
     ccd['ccd_id_str'] = np.char.add(np.array(ccd['expnum']).astype(str), ccd['ccdname'])
