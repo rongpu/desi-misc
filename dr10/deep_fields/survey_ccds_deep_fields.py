@@ -45,9 +45,9 @@ exp = join(exp, psfex_exp, join_type='inner', keys='expnum')
 print(len(exp))
 
 # Quality cuts for deep exposures
-seeing_limits = {'g':1.65, 'r':1.55, 'i':1.4, 'z':1.4, 'Y':2.0}
-ccdskycounts_limits = {'g':2, 'r':5.5, 'i':15, 'z':30, 'Y':30}
-zpt_limits = {'g':24.9, 'r':25.15, 'i':25.15, 'z':24.85, 'Y':23.7}
+seeing_limits = {'g': 1.65, 'r': 1.55, 'i': 1.4, 'z': 1.4, 'Y': 2.0}
+ccdskycounts_limits = {'g': 2, 'r': 5.5, 'i': 15, 'z': 30, 'Y': 30}
+zpt_limits = {'g': 24.9, 'r': 25.15, 'i': 25.15, 'z': 24.85, 'Y': 23.7}
 
 exp['quality_deep'] = False
 exp['quality_wide'] = False
@@ -82,8 +82,6 @@ mask = exp['quality_deep'].copy()
 mask |= (des_wide | decals | exp['off_center']) & exp['quality_wide']
 exp = exp[mask]
 print('exp', len(exp))
-
-# Require fringe fitting in DR9 (for normalization)
 
 
 ###################### CCDs covering the deep fields ######################
