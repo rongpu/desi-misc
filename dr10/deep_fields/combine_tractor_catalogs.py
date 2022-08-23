@@ -18,8 +18,8 @@ apflux_columns = ['apflux_g', 'apflux_r', 'apflux_i', 'apflux_z', 'apflux_resid_
 
 # output_path = '/global/cfs/cdirs/desi/users/rongpu/data/decam_deep_fields/cosmos.fits'
 output_path = '/global/cfs/cdirs/cosmo/work/legacysurvey/dr10-deep/cosmos/catalogs/cosmos.fits'
-fns = glob.glob('/pscratch/sd/r/rongpu/tractor/deep_fields/cosmos/tractor/*/tractor-1*.fits')
-# fns = glob.glob('/global/cfs/cdirs/cosmo/work/legacysurvey/dr10-deep/cosmos/tractor/*/tractor-1*.fits')
+# fns = glob.glob('/pscratch/sd/r/rongpu/tractor/deep_fields/cosmos/tractor/*/tractor-1*.fits')
+fns = glob.glob('/global/cfs/cdirs/cosmo/work/legacysurvey/dr10-deep/cosmos/tractor/*/tractor-1*.fits')
 
 # output_path = '/global/cfs/cdirs/desi/users/rongpu/data/decam_deep_fields/des_sn.fits'
 # fns = glob.glob('/pscratch/sd/r/rongpu/tractor/deep_fields/cosmos/tractor/*/tractor-0*.fits')
@@ -43,5 +43,8 @@ n_processes = 128
 with Pool(processes=n_processes) as pool:
     res = pool.map(read_catalog, np.arange(len(fns)))
 cat = vstack(res)
+
+cat.rename_column('brickid', 'brickid_small')
+cat.rename_column('brickname', 'brickname_small')
 
 cat.write(output_path, overwrite=True)
