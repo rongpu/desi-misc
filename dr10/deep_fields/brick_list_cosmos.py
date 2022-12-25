@@ -17,3 +17,13 @@ with open(fn, 'w') as f:
     for brickname in bricks['BRICKNAME']:
         if not os.path.isfile('/pscratch/sd/r/rongpu/tractor/deep_fields/cosmos/tractor/{}/tractor-{}.fits'.format(brickname[:3], brickname)):
             f.write('shifter --image docker:legacysurvey/legacypipe:DR10.0.0 ./runbrick-cosmos.sh {} \n'.format(brickname))
+
+# # One task per file
+# counter = 0
+# for brickname in bricks['BRICKNAME']:
+#     if not os.path.isfile('/pscratch/sd/r/rongpu/tractor/deep_fields/cosmos/tractor/{}/tractor-{}.fits'.format(brickname[:3], brickname)):
+#         fn = '/global/u2/r/rongpu/temp/run/single_task/tasks-runbrick-cosmos-{}.sh'.format(counter)
+#         with open(fn, 'w') as f:
+#             print(fn)
+#             f.write('shifter --image docker:legacysurvey/legacypipe:DR10.0.0 ./runbrick-cosmos.sh {} \n'.format(brickname))
+#             counter += 1
