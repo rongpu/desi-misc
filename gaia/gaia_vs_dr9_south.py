@@ -107,4 +107,4 @@ for band in ['g', 'r', 'z']:
     new[band+'_valid'] = (cat['ANYMASK_'+band.upper()]==0)
     new[band+'_valid'] &= mask0
 
-new.write('/global/cfs/cdirs/desi/users/rongpu/data/gaia_dr3/misc/dr9_gaia_dr9_offesets.fits')
+new.write('/global/cfs/cdirs/desi/users/rongpu/data/gaia_dr3/misc/gaia_dr9_south_offesets.fits')

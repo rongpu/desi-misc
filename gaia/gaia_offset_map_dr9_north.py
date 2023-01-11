@@ -30,7 +30,7 @@ def get_systematics(pix_idx):
     return hp_table
 
 
-cat = Table(fitsio.read('/global/cfs/cdirs/desi/users/rongpu/data/gaia_dr3/misc/dr9_gaia_dr9_offesets.fits'))
+cat = Table(fitsio.read('/global/cfs/cdirs/desi/users/rongpu/data/gaia_dr3/misc/gaia_dr9_north_offesets.fits'))
 
 for band in ['g', 'r', 'z']:
     mask = cat[band+'_valid']==False
@@ -58,4 +58,4 @@ with Pool(processes=n_processes) as pool:
 
 hp_table = vstack(res)
 hp_table.sort('HPXPIXEL')
-hp_table.write('/global/cfs/cdirs/desi/users/rongpu/data/gaia_dr3/misc/gaia_xp_dr9_offset_maps_256.fits', overwrite=True)
+hp_table.write('/global/cfs/cdirs/desi/users/rongpu/data/gaia_dr3/misc/gaia_xp_dr9_north_offset_maps_256.fits', overwrite=True)
