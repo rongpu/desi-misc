@@ -29,13 +29,20 @@ def poly_val1d(x, m):
     return z
 
 
-# coefficients from gaia_xp_decam_transformation.ipynb; transformations are only valid for 0.5<BP-RP<3.0
-coeffs = {'g': np.array([0.0290853720, -0.2512460050, 0.4404641812, -0.3773360105,
-        0.1398971000, -0.0185162342]),
- 'r': np.array([-0.0611700882, 0.0716741628, -0.0648957317, 0.0248411929,
-        -0.0039454092, 0.0001510852]),
- 'z': np.array([-0.0606614222, 0.1323440401, -0.1156708755, 0.0470817681,
-        -0.0084565308, 0.0005163927])}
+# transformations are only valid for 0.5<BP-RP<3.0 and 13.5<PHOT_G_MEAN_MAG<17.65
+coeffs_bprp = {'g': np.array([0.0317258007, -0.2591521307, 0.4448270886, -0.3756179585,
+        0.1384606325, -0.0182855368]),
+ 'r': np.array([-0.0588976894, 0.0570838251, -0.0449947423, 0.0148579412,
+        -0.0017908732, -0.0000113123]),
+ 'z': np.array([-0.0647745002, 0.1384065274, -0.1189794965, 0.0486303418,
+        -0.0089436124, 0.0005838499])}
+
+coeffs_g = {'g': np.array([90.4808352429, -27.5933597524, 3.3680706493, -0.2056936116,
+        0.0062874915, -0.0000770047]),
+ 'r': np.array([-16.1217283435, 5.1349872701, -0.6499490427, 0.0409020848,
+        -0.0012790021, 0.0000158683]),
+ 'z': np.array([2.6058627924, -1.9625192766, 0.3900976521, -0.0334199076,
+        0.0013250143, -0.0000200419])}
 
 gaia_columns = ['PHOT_G_MEAN_MAG', 'PHOT_BP_MEAN_MAG', 'PHOT_RP_MEAN_MAG', 'flux_g', 'flux_r', 'flux_z']
 sweep_columns = ['RA', 'DEC', 'MASKBITS', 'FLUX_G', 'FLUX_R', 'FLUX_Z', 'FLUX_IVAR_G', 'FLUX_IVAR_R', 'FLUX_IVAR_Z', 'FRACFLUX_G', 'FRACFLUX_R', 'FRACFLUX_Z', 'ANYMASK_G', 'ANYMASK_R', 'ANYMASK_Z']
@@ -81,6 +88,7 @@ with Pool(processes=n_process) as pool:
 
 gaia = vstack([res[ii][0] for ii in range(len(res))])
 cat = vstack([res[ii][1] for ii in range(len(res))])
+print(len(cat))
 
 with warnings.catch_warnings():
     warnings.simplefilter('ignore')
@@ -92,14 +100,18 @@ with warnings.catch_warnings():
     gaia['zmag'] = 22.5 - 2.5*np.log10(gaia['flux_z'])
 
 for band in ['g', 'r', 'z']:
-    x = (gaia['PHOT_BP_MEAN_MAG']-gaia['PHOT_RP_MEAN_MAG'])
-    gaia[band+'mag_std'] = gaia[band+'mag'] + poly_val1d(x, coeffs[band])
+    bprp = (gaia['PHOT_BP_MEAN_MAG']-gaia['PHOT_RP_MEAN_MAG'])
+    gaia_g = gaia['PHOT_G_MEAN_MAG'].copy()
+    gaia[band+'mag_std'] = gaia[band+'mag'] + poly_val1d(bprp, coeffs_bprp[band])
+    gaia[band+'mag_std'] += poly_val1d(gaia_g, coeffs_g[band])
 
 new = Table()
 new['RA'] = cat['RA']
 new['DEC'] = cat['DEC']
 mask0 = (gaia['PHOT_BP_MEAN_MAG']-gaia['PHOT_RP_MEAN_MAG'])>0.6
 mask0 &= (gaia['PHOT_BP_MEAN_MAG']-gaia['PHOT_RP_MEAN_MAG'])<2.5
+mask0 &= (gaia['PHOT_G_MEAN_MAG']>13.5)
+mask0 &= (gaia['PHOT_G_MEAN_MAG']<17.65)
 
 for band in ['g', 'r', 'z']:
     new[band+'mag_diff'] = cat[band+'mag'] - gaia[band+'mag_std']
