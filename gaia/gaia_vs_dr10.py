@@ -29,17 +29,25 @@ def poly_val1d(x, m):
     return z
 
 
-# coefficients from gaia_xp_decam_transformation.ipynb; transformations are only valid for 0.5<BP-RP<3.0
-coeffs = {'g': np.array([0.0290853720, -0.2512460050, 0.4404641812, -0.3773360105,
-        0.1398971000, -0.0185162342]),
- 'r': np.array([-0.0611700882, 0.0716741628, -0.0648957317, 0.0248411929,
-        -0.0039454092, 0.0001510852]),
+coeffs_bprp = {'g': np.array([0.0416867638, -0.2958055870, 0.4922869977, -0.4032130276,
+        0.1459382610, -0.0190536024]),
+ 'r': np.array([-0.0529926024, 0.0361338856, -0.0188637440, -0.0004627745,
+        0.0025104619, -0.0004741510]),
  'i': np.array([-0.0873044994, 0.1770173852, -0.1933434841, 0.0996162932,
         -0.0245789844, 0.0023553514]),
- 'z': np.array([-0.0606614222, 0.1323440401, -0.1156708755, 0.0470817681,
-        -0.0084565308, 0.0005163927])}
+ 'z': np.array([-0.0431176311, 0.0586222512, -0.0112472116, -0.0188292696,
+        0.0109515264, -0.0016498615])}
 
-gaia_columns = ['PHOT_G_MEAN_MAG', 'PHOT_BP_MEAN_MAG', 'PHOT_RP_MEAN_MAG', 'flux_g', 'flux_r', 'flux_I', 'flux_z']
+coeffs_g = {'g': np.array([-0.6417454609, 0.9144340164, -0.1939379255, 0.0165146864,
+        -0.0006337951, 0.0000091121]),
+ 'r': np.array([-17.4056692603, 5.5389908307, -0.7004043218, 0.0440353839,
+        -0.0013759207, 0.0000170644]),
+ 'i': np.array([112.4088645838, -34.6121088481, 4.2534703382, -0.2607416920,
+        0.0079739763, -0.0000973534]),
+ 'z': np.array([50.9842611342, -15.8466786120, 1.9770712887, -0.1236950359,
+        0.0038797140, -0.0000488000])}
+
+gaia_columns = ['PHOT_G_MEAN_MAG', 'PHOT_BP_MEAN_MAG', 'PHOT_RP_MEAN_MAG', 'flux_g', 'flux_r', 'flux_i', 'flux_z']
 sweep_columns = ['RA', 'DEC', 'MASKBITS', 'FLUX_G', 'FLUX_R', 'FLUX_I', 'FLUX_Z', 'FLUX_IVAR_G', 'FLUX_IVAR_R', 'FLUX_IVAR_I', 'FLUX_IVAR_Z', 'FRACFLUX_G', 'FRACFLUX_R', 'FRACFLUX_I', 'FRACFLUX_Z', 'ANYMASK_G', 'ANYMASK_R', 'ANYMASK_I', 'ANYMASK_Z']
 
 fns = sorted(glob.glob('/global/cfs/cdirs/desi/users/rongpu/data/gaia_dr3/dr10_south_cross_match/*-gaia.fits'))
@@ -96,8 +104,10 @@ with warnings.catch_warnings():
     gaia['zmag'] = 22.5 - 2.5*np.log10(gaia['flux_z'])
 
 for band in ['g', 'r', 'i', 'z']:
-    x = (gaia['PHOT_BP_MEAN_MAG']-gaia['PHOT_RP_MEAN_MAG'])
-    gaia[band+'mag_std'] = gaia[band+'mag'] + poly_val1d(x, coeffs[band])
+    bprp = (gaia['PHOT_BP_MEAN_MAG']-gaia['PHOT_RP_MEAN_MAG'])
+    gaia_g = gaia['PHOT_G_MEAN_MAG'].copy()
+    gaia[band+'mag_std'] = gaia[band+'mag'] + poly_val1d(bprp, coeffs_bprp[band])
+    gaia[band+'mag_std'] += poly_val1d(gaia_g, coeffs_g[band])
 
 new = Table()
 new['RA'] = cat['RA']
@@ -112,4 +122,4 @@ for band in ['g', 'r', 'i', 'z']:
     new[band+'_valid'] &= (cat['FLUX_'+band.upper()]>0) & (cat['FLUX_IVAR_'+band.upper()]>0) & (cat['FRACFLUX_'+band.upper()]<0.1)
     new[band+'_valid'] &= mask0
 
-new.write('/global/cfs/cdirs/desi/users/rongpu/data/gaia_dr3/misc/gaia_dr10_offesets.fits')
+new.write('/global/cfs/cdirs/desi/users/rongpu/data/gaia_dr3/misc/gaia_dr10_offsets.fits')
