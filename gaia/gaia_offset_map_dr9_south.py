@@ -7,6 +7,8 @@ import fitsio
 from multiprocessing import Pool
 import healpy as hp
 
+nmad = lambda x: 1.4826 * np.nanmedian(np.abs(x-np.nanmedian(x)))
+
 
 def get_systematics(pix_idx):
 
@@ -18,6 +20,8 @@ def get_systematics(pix_idx):
     for band in ['g', 'r', 'z']:
         hp_table[band+'mag_diff_median'] = np.nan
         hp_table[band+'mag_diff_mean'] = np.nan
+        hp_table[band+'mag_diff_std'] = np.nan
+        hp_table[band+'mag_diff_nmad'] = np.nan
         hp_table[band+'mag_n_objects'] = 0
 
     for index in np.arange(len(pix_idx)):
@@ -27,6 +31,8 @@ def get_systematics(pix_idx):
         for band in ['g', 'r', 'z']:
             hp_table[band+'mag_diff_median'][index] = np.nanmedian(cat[band+'mag_diff'][idx])
             hp_table[band+'mag_diff_mean'][index] = np.nanmean(cat[band+'mag_diff'][idx])
+            hp_table[band+'mag_diff_std'][index] = np.nanstd(cat[band+'mag_diff'][idx])
+            hp_table[band+'mag_diff_nmad'][index] = nmad(cat[band+'mag_diff'][idx])
             hp_table[band+'mag_n_objects'][index] = np.sum(np.isfinite(cat[band+'mag_diff'][idx]))
 
     return hp_table
