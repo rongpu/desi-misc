@@ -1,4 +1,4 @@
-# Apply ZP correction for objects at DEC<-29.25
+# Apply ZP correction for objects at DEC<-29.25 and save the corrected sweep catalogs
 
 from __future__ import division, print_function
 import sys, os, glob, time, warnings, gc
