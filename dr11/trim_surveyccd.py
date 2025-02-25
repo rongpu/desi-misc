@@ -1,0 +1,45 @@
+# Compute the PSFEx first moments and max location to identify outliers
+# srun -N 1 -C cpu -c 256 -t 04:00:00 -q interactive python compute_psfex_stats.py > compute_psfex_stats.log
+
+from __future__ import division, print_function
+import sys, os, glob, time, warnings
+import numpy as np
+import matplotlib.pyplot as plt
+from astropy.table import Table, vstack, hstack, join
+import fitsio
+# from astropy.io import fits
+import healpy as hp
+
+from multiprocessing import Pool
+from scipy import ndimage
+
+
+surveyccd_path = '/dvs_ro/cfs/cdirs/cosmo/work/legacysurvey/dr11/survey-ccds-decam-dr11-merged.fits'
+
+ccd = Table(fitsio.read(surveyccd_path, columns=['ccdname', 'expnum']))
+print(len(ccd))
+
+ccd['idx'] = np.arange(len(ccd))
+
+# Unique exposures
+print(len(ccd), len(np.unique(ccd['expnum'])))
+# prefer N1, N7, S1 (all good edge CCDs):
+ccd['priority'] = 100
+for ii, ccdname in enumerate(['N1', 'N7', 'S1']):
+    mask = ccd['ccdname']==ccdname
+    ccd['priority'][mask] = ii
+# deprioritize potentially bad CCDs
+ccd_blacklist = ['N10', 'N13', 'N15', 'N30', 'S30', 'S7 ', 'S7']
+mask = np.in1d(ccd['ccdname'], ccd_blacklist)
+ccd['priority'][mask] = 200
+
+ccd.sort('priority')
+_, idx_keep = np.unique(ccd['expnum'], return_index=True)
+ccd = ccd[idx_keep]
+ccd.remove_column('priority')
+print(len(ccd), len(np.unique(ccd['expnum'])))
+
+idx = np.sort(ccd['idx'])
+
+ccd = Table(fitsio.read(surveyccd_path, rows=idx))
+ccd.write('/global/cfs/cdirs/desicollab/users/rongpu/data/dr11/survey-ccds-decam-dr11-merged-trim.fits')

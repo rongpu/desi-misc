@@ -12,6 +12,9 @@ from astropy import wcs
 from matplotlib.colors import LogNorm
 import healpy as hp
 
+from multiprocessing import Pool
+
+
 nmad = lambda x: 1.4826 * np.median(np.abs(x-np.median(x)))
 
 pixscale = 0.262  # arcsec
@@ -26,32 +29,40 @@ mask = ccd['ccd_cuts']==0
 ccd = ccd[mask]
 print(len(ccd))
 
-ccd['r_max'] = np.sqrt((ccd['x_max']-31)**2+(ccd['y_max']-31)**2)
-ccd['r_moment'] = np.sqrt(ccd['x_moment']**2 + ccd['y_moment']**2)
-ccd['r_moment_recentered'] = np.sqrt((ccd['x_moment']-np.median(ccd['x_moment']))**2 + (ccd['y_moment']-np.median(ccd['y_moment']))**2)
+mask = ccd['dec']>-28
+ccd = ccd[mask]
+print(len(ccd))
 
-ccd['fwhm_cp'] = ccd['fwhm'] * pixscale  # in arcsec
-ccd['fwhm_psfex'] = ccd['psfex_fwhm'] * pixscale  # in arcsec
+#################################
+mask = ccd['fwhm_psfex']<3.
+ccd = ccd[mask]
+print(len(ccd))
+#################################
 
-# NEA to FWHM (a la tractor); in arcsec
-ccd['fwhm_nea'] = np.sqrt(ccd['nea'] / (4 * np.pi)) * 2.3548 * pixscale
+ccd['r_cent_recentered'] = np.sqrt((ccd['x_cent']-np.median(ccd['x_cent']))**2 + (ccd['y_cent']-np.median(ccd['y_cent']))**2)
 
-with open('/global/u2/r/rongpu/moregit/legacypipe/py/legacyzpts/data/decam-bad_expid.txt') as f:
-    texts = list(map(str.strip, f.readlines()))
-known_bad_expnum_list = []
-for text in texts:
-    if len(text)>0 and (text[0]!='#'):
-        known_bad_expnum_list.append(int(text.replace('-', ' ').split()[0]))
-print('bad exposure list:', len(known_bad_expnum_list))
+# with open('/global/u2/r/rongpu/moregit/legacypipe/py/legacyzpts/data/decam-bad_expid.txt') as f:
+#     texts = list(map(str.strip, f.readlines()))
+# known_bad_expnum_list = []
+# for text in texts:
+#     if len(text)>0 and (text[0]!='#'):
+#         known_bad_expnum_list.append(int(text.replace('-', ' ').split()[0]))
+# print('bad exposure list:', len(known_bad_expnum_list))
 
-mask = np.in1d(ccd['expnum'], known_bad_expnum_list)
-print('in bad exposure list:', np.sum(mask))
-ccd = ccd[~mask]
+# mask = np.in1d(ccd['expnum'], known_bad_expnum_list)
+# print('in bad exposure list:', np.sum(mask))
+# ccd = ccd[~mask]
 
 
-def plot_psf(ccd_index):
+def plot_psf(ccd_index, show=False):
 
     expnum = ccd['expnum'][ccd_index]
+
+    # plot_path = '/global/cfs/cdirs/cosmo/www/temp/rongpu/dr11/weird_psfs/decam_{}.png'.format(expnum)
+    plot_path = '/global/cfs/cdirs/cosmo/www/temp/rongpu/dr11/bad_psfs/decam_{}.png'.format(expnum)
+    if os.path.isfile(plot_path) and show==False:
+        return None
+
     ############################ Load image ############################
 
     image_dir = '/global/cfs/cdirs/cosmo/staging/'
@@ -89,7 +100,7 @@ def plot_psf(ccd_index):
     gaia['x'], gaia['y'] = w.wcs_world2pix(gaia['RA'], gaia['DEC'], True)
     mask = ~((gaia['x']<31) | (gaia['y']<31) | (gaia['x']>img.shape[1]-31) | (gaia['y']>img.shape[0]-31))
     gaia = gaia[mask]
-    print('{} gaia stars'.format(len(gaia)))
+    # print('{} gaia stars'.format(len(gaia)))
 
     # shuffle
     np.random.seed(expnum)
@@ -99,9 +110,9 @@ def plot_psf(ccd_index):
     # Select the brightest Gaia stars
     if len(gaia)>7:
         idx = np.argsort(gaia['PHOT_G_MEAN_MAG'])
-        idx1 = idx[:4]
+        idx1 = idx[:3]
         np.random.seed(ccd_index)
-        idx2 = np.random.choice(idx[4:], size=3, replace=False)
+        idx2 = np.random.choice(idx[3:], size=4, replace=False)
         idx = np.concatenate([idx1, idx2])
         gaia = gaia[idx]
 
@@ -111,7 +122,7 @@ def plot_psf(ccd_index):
     psfex_filename = image_filename.replace('.fits.fz', '-psfex.fits')
     psfex_path = os.path.join(psfex_dir, psfex_filename)
     data = Table(fitsio.read(psfex_path, ext=1))
-    psf = np.array(data['psf_mask'][0, 0])
+    psf = np.array(data['psf_mask'][0][0])
 
     ############################ Make plot ############################
 
@@ -122,26 +133,54 @@ def plot_psf(ccd_index):
         ax_flat[0].imshow(psf, cmap='viridis', norm=LogNorm(vmin=1e-3*psf.max(), vmax=psf.max()), origin='lower')
         ax_flat[0].axvline((x_size-1)/2, color='0.7', lw=1, ls='--')
         ax_flat[0].axhline((y_size-1)/2, color='0.7', lw=1, ls='--')
+        ax_flat[0].text(0, 0, 'log scale', color='0.7', fontsize=13)
         ax_flat[1].imshow(psf, cmap='gray_r', origin='lower')
         ax_flat[1].axvline((x_size-1)/2, color='0.7', lw=1, ls='--')
         ax_flat[1].axhline((y_size-1)/2, color='0.7', lw=1, ls='--')
     for index in range(0, len(gaia)):
         x, y = int(gaia['x'][index]), int(gaia['y'][index])
         tmp = img[y-30:y+30, x-30:x+30]
-        if tmp.max()>5*sky_nmad:
-            ax_flat[index+2].imshow(tmp, norm=LogNorm(vmin=5*sky_nmad), origin='lower')
+        # ax_flat[index+2].imshow(tmp, norm=LogNorm(vmin=5*sky_nmad), origin='lower')
+        ax_flat[index+2].imshow(tmp, origin='lower', cmap='gray_r')
         ax_flat[index+2].axis('off')
     title_text = ''
-    if expnum in known_bad_expnum_list:
-        title_text += 'known_bad '
+    # if expnum in known_bad_expnum_list:
+    #     title_text += 'known_bad '
     title_text += '{} band; ccd_cuts={}'.format(ccd['filter'][ccd_index], ccd['ccd_cuts'][ccd_index])
-    title_text += '\n fwhm={:.2f} rmax={:.2f} rmoment={:.1f}'.format(ccd['fwhm_psfex'][ccd_index], ccd['r_max'][ccd_index], ccd['r_moment_recentered'][ccd_index])
+    title_text += '\n fwhm={:.2f} rmax={:.2f} rcenter={:.1f}'.format(ccd['fwhm_psfex'][ccd_index], ccd['r_max'][ccd_index], ccd['r_cent_recentered'][ccd_index])
     ax_flat[0].set_title(title_text)
     ax_flat[1].set_title('expnum={}\npropid={}'.format(ccd['expnum'][ccd_index], ccd['propid'][ccd_index]))
-    ax_flat[2].set_title('ra={:.2f} dec={:.2f}'.format(ccd['ra'][ccd_index], ccd['dec'][ccd_index]))
+    text = 'ra={:.2f} dec={:.2f}'.format(ccd['ra'][ccd_index], ccd['dec'][ccd_index])
+    text += '\n ellipticity={:.2f} centroid_max_ratio={:.3f}'.format(ccd['ellipticity'][ccd_index], ccd['centroid_max_ratio'][ccd_index])
+    ax_flat[2].set_title(text)
     plt.tight_layout()
-    # plt.savefig('/global/cfs/cdirs/desi/users/rongpu/pliijots/dr11/weird_psfs/decam_{}.png'.format(expnum))
-    plt.show()
+    if show==False:
+        plt.savefig(plot_path)
+        plt.close()
+    else:
+        plt.show()
+
+    return None
 
 
-# plot_psf(0)
+# plot_psf(0, show=True)
+
+# mask = (ccd['r_cent_recentered']>0.6)
+# print(np.sum(mask), '{:.3f}%'.format(100*np.sum(mask)/len(mask)))
+# idx = np.where(mask)[0]
+
+
+with open('/global/u2/r/rongpu/temp/decam-bad_expid-more.txt') as f:
+    texts = list(map(str.strip, f.readlines()))
+known_bad_expnum_list = []
+for text in texts:
+    if len(text)>0 and (text[0]!='#'):
+        known_bad_expnum_list.append(int(text.replace('-', ' ').split()[0]))
+print('bad exposure list:', len(known_bad_expnum_list))
+mask = np.in1d(ccd['expnum'], known_bad_expnum_list)
+print('in bad exposure list:', np.sum(mask))
+ccd = ccd[mask]
+
+n_process = 128
+with Pool(processes=n_process) as pool:
+    res = pool.map(plot_psf, np.arange(len(ccd)))
