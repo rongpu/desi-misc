@@ -10,19 +10,6 @@ from astropy.io import fits
 
 from multiprocessing import Pool
 
-n_processes = 256
-
-psfex_dir = '/dvs_ro/cfs/cdirs/cosmo/work/legacysurvey/dr11/calib/psfex'
-surveyccd_path = '/dvs_ro/cfs/cdirs/cosmo/work/legacysurvey/dr11/survey-ccds-decam-dr11-merged.fits'
-
-ccd = Table(fitsio.read(surveyccd_path, columns=['expnum', 'filter', 'image_filename']))
-
-expnum_list = np.unique(ccd['expnum'])
-print(len(expnum_list))
-
-# # Downsampling
-# expnum_list = np.sort(np.random.choice(expnum_list, size=64, replace=False))
-# print(len(expnum_list))
 
 def get_moffat_params(expnum):
 
@@ -36,35 +23,51 @@ def get_moffat_params(expnum):
     if not os.path.isfile(psfex_path):
         raise ValueError('No PSFEx file found:', psfex_path)
 
-    with fitsio.FITS(psfex_path) as hdu:
-        if not 'moffat_alpha' in hdu[1].get_colnames():
-            print('Error: No Moffat parameters found:', psfex_path, expnum)
-            return None
+    # with fitsio.FITS(psfex_path) as hdu:
+    #     if not 'moffat_alpha' in hdu[1].get_colnames():
+    #         print('Error: No Moffat parameters found:', psfex_path, expnum)
+    #         return None
 
-        hdu = fits.open(psfex_path)
-        data = Table(hdu[1].data)[['expnum', 'ccdname', 'plver', 'psf_patch_ver', 'moffat_alpha', 'moffat_beta', 'sum_diff', 'fit_original', 'failure']]
-        data['filter'] = band
+    # data = Table(hdu[1].data)[['expnum', 'ccdname', 'plver', 'psf_patch_ver', 'moffat_alpha', 'moffat_beta', 'sum_diff', 'fit_original', 'failure']]
+    data = Table(fitsio.read(psfex_path))
+    data['filter'] = band
+    if 'psf_patch_ver' in data.colnames:
+        data = data[['expnum', 'ccdname', 'filter', 'plver', 'psf_fwhm', 'psf_patch_ver', 'moffat_alpha', 'moffat_beta', 'sum_diff', 'fit_original', 'failure']]
+    else:
+        data = data[['expnum', 'ccdname', 'filter', 'plver', 'psf_fwhm']]
 
-        return data
-
-def main():
-
-    print('Starting')
-
-    with Pool(processes=n_processes) as pool:
-        res = pool.map(get_moffat_params, expnum_list, chunksize=1)
-
-    # Remove None elements from the list
-    for index in range(len(res)-1, -1, -1):
-        if res[index] is None:
-            res.pop(index)
-
-    psf_params = vstack(res)
-    psf_params.write('/global/cfs/cdirs/desicollab/users/rongpu/data/dr11/survey-ccds-decam-dr11-psfex-moffat-params.fits', overwrite=True)
+    return data
 
 
-    print('Done!!!!!!!!!!!!!!!!!!!!!')
+time_start = time.time()
+print('Starting')
 
-if __name__=="__main__":
-    main()
+n_processes = 256
+
+psfex_dir = '/dvs_ro/cfs/cdirs/cosmo/work/legacysurvey/dr11/calib/psfex'
+surveyccd_path = '/dvs_ro/cfs/cdirs/cosmo/work/legacysurvey/dr11/survey-ccds-decam-dr11-merged.fits'
+
+ccd = Table(fitsio.read(surveyccd_path, columns=['expnum', 'filter', 'image_filename']))
+print(len(ccd))
+
+expnum_list = np.unique(ccd['expnum'])
+print(len(expnum_list))
+
+# # Downsampling
+# expnum_list = np.sort(np.random.choice(expnum_list, size=64, replace=False))
+# print(len(expnum_list))
+
+with Pool(processes=n_processes) as pool:
+    res = pool.map(get_moffat_params, expnum_list, chunksize=1)
+
+# Remove None elements from the list
+for index in range(len(res)-1, -1, -1):
+    if res[index] is None:
+        res.pop(index)
+
+psf_params = vstack(res).filled(-99)
+print(len(psf_params))
+psf_params.write('/global/cfs/cdirs/desicollab/users/rongpu/data/dr11/survey-ccds-decam-dr11-psfex-moffat-params-new.fits', overwrite=True)
+
+print('All done!', time.strftime('%H:%M:%S', time.gmtime(time.time() - time_start)))
 

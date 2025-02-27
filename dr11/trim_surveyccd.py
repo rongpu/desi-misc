@@ -40,6 +40,6 @@ ccd.remove_column('priority')
 print(len(ccd), len(np.unique(ccd['expnum'])))
 
 idx = np.sort(ccd['idx'])
-
 ccd = Table(fitsio.read(surveyccd_path, rows=idx))
+
 ccd.write('/global/cfs/cdirs/desicollab/users/rongpu/data/dr11/survey-ccds-decam-dr11-merged-trim.fits')
