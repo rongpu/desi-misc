@@ -4,7 +4,7 @@ from __future__ import division, print_function
 import sys, os, glob, time, warnings, gc
 import matplotlib.pyplot as plt
 import numpy as np
-from astropy.table import Table, vstack, hstack
+from astropy.table import Table, vstack, hstack, join
 import fitsio
 from astropy.io import fits
 
@@ -47,8 +47,10 @@ n_processes = 256
 psfex_dir = '/dvs_ro/cfs/cdirs/cosmo/work/legacysurvey/dr11/calib/psfex'
 surveyccd_path = '/dvs_ro/cfs/cdirs/cosmo/work/legacysurvey/dr11/survey-ccds-decam-dr11-merged.fits'
 
-ccd = Table(fitsio.read(surveyccd_path, columns=['expnum', 'filter', 'image_filename']))
+ccd = Table(fitsio.read(surveyccd_path, columns=['expnum', 'filter', 'image_filename', 'ccdname', 'plver']))
 print(len(ccd))
+
+ccd['ccd_id_str'] = np.char.add(np.array(ccd['expnum']).astype(str), ccd['ccdname'])
 
 expnum_list = np.unique(ccd['expnum'])
 print(len(expnum_list))
@@ -60,14 +62,36 @@ print(len(expnum_list))
 with Pool(processes=n_processes) as pool:
     res = pool.map(get_moffat_params, expnum_list, chunksize=1)
 
-# Remove None elements from the list
-for index in range(len(res)-1, -1, -1):
-    if res[index] is None:
-        res.pop(index)
+# # Remove None elements from the list
+# for index in range(len(res)-1, -1, -1):
+#     if res[index] is None:
+#         res.pop(index)
 
 psf_params = vstack(res).filled(-99)
 print(len(psf_params))
-psf_params.write('/global/cfs/cdirs/desicollab/users/rongpu/data/dr11/survey-ccds-decam-dr11-psfex-moffat-params-new.fits', overwrite=True)
+
+psf_params['ccd_id_str'] = np.char.add(np.array(psf_params['expnum']).astype(str), psf_params['ccdname'])
+
+# remove CCDs not in the CCD list
+mask = np.in1d(psf_params['ccd_id_str'], ccd['ccd_id_str'])
+psf_params = psf_params[mask]
+print(len(psf_params))
+
+# -99 fill CCDs missing from the CCD list
+mask = ~np.in1d(ccd['ccd_id_str'], psf_params['ccd_id_str'])
+psf_params = vstack([psf_params, ccd[['ccd_id_str', 'expnum', 'ccdname', 'filter', 'plver']][mask]], join_type='outer').filled(-99)
+print(len(psf_params))
+
+# Matching psf_params to ccd
+if len(ccd)!=len(psf_params) or not np.all(np.unique(ccd['ccd_id_str'])==np.unique(psf_params['ccd_id_str'])):
+    raise ValueError('ccd and psf_params have different id list')
+t1_reverse_sort = np.array(ccd['ccd_id_str']).argsort().argsort()
+psf_params = psf_params[np.argsort(psf_params['ccd_id_str'])[t1_reverse_sort]]
+assert np.all(ccd['ccd_id_str']==psf_params['ccd_id_str'])
+
+psf_params.remove_column('ccd_id_str')
+
+psf_params.write('/global/cfs/cdirs/desicollab/users/rongpu/data/dr11/survey-ccds-decam-dr11-merged-psfex.fits', overwrite=True)
 
 print('All done!', time.strftime('%H:%M:%S', time.gmtime(time.time() - time_start)))
 

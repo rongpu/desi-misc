@@ -14,7 +14,8 @@ from multiprocessing import Pool
 from scipy import ndimage
 
 
-surveyccd_path = '/dvs_ro/cfs/cdirs/cosmo/work/legacysurvey/dr11/survey-ccds-decam-dr11-merged.fits'
+# surveyccd_path = '/dvs_ro/cfs/cdirs/cosmo/work/legacysurvey/dr11/survey-ccds-decam-dr11-merged.fits'
+surveyccd_path = '/dvs_ro/cfs/cdirs/cosmo/data/legacysurvey/dr10/survey-ccds-decam-dr10.fits.gz'
 
 ccd = Table(fitsio.read(surveyccd_path, columns=['ccdname', 'expnum']))
 print(len(ccd))
@@ -42,4 +43,5 @@ print(len(ccd), len(np.unique(ccd['expnum'])))
 idx = np.sort(ccd['idx'])
 ccd = Table(fitsio.read(surveyccd_path, rows=idx))
 
-ccd.write('/global/cfs/cdirs/desicollab/users/rongpu/data/dr11/survey-ccds-decam-dr11-merged-trim.fits')
+# ccd.write('/global/cfs/cdirs/desicollab/users/rongpu/data/dr11/survey-ccds-decam-dr11-merged-trim.fits')
+ccd.write('/global/cfs/cdirs/desicollab/users/rongpu/data/dr10dev/survey-ccds-decam-dr10-trim.fits')
