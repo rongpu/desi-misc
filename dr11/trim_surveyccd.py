@@ -1,6 +1,3 @@
-# Compute the PSFEx first moments and max location to identify outliers
-# srun -N 1 -C cpu -c 256 -t 04:00:00 -q interactive python compute_psfex_stats.py > compute_psfex_stats.log
-
 from __future__ import division, print_function
 import sys, os, glob, time, warnings
 import numpy as np
@@ -14,8 +11,10 @@ from multiprocessing import Pool
 from scipy import ndimage
 
 
+surveyccd_path = '/global/cfs/cdirs/cosmo/work/legacysurvey/dr11-early/survey-ccds-decam-dr11.fits'
 # surveyccd_path = '/dvs_ro/cfs/cdirs/cosmo/work/legacysurvey/dr11/survey-ccds-decam-dr11-merged.fits'
-surveyccd_path = '/dvs_ro/cfs/cdirs/cosmo/data/legacysurvey/dr10/survey-ccds-decam-dr10.fits.gz'
+# surveyccd_path = '/dvs_ro/cfs/cdirs/cosmo/data/legacysurvey/dr10/survey-ccds-decam-dr10.fits.gz'
+# surveyccd_path = '/dvs_ro/cfs/cdirs/cosmo/data/legacysurvey/dr9/survey-ccds-decam-dr9.fits.gz'
 
 ccd = Table(fitsio.read(surveyccd_path, columns=['ccdname', 'expnum']))
 print(len(ccd))
@@ -43,5 +42,7 @@ print(len(ccd), len(np.unique(ccd['expnum'])))
 idx = np.sort(ccd['idx'])
 ccd = Table(fitsio.read(surveyccd_path, rows=idx))
 
+ccd.write('/global/cfs/cdirs/desicollab/users/rongpu/data/dr11/survey-ccds-decam-dr11-merged-trim-new.fits')
 # ccd.write('/global/cfs/cdirs/desicollab/users/rongpu/data/dr11/survey-ccds-decam-dr11-merged-trim.fits')
-ccd.write('/global/cfs/cdirs/desicollab/users/rongpu/data/dr10dev/survey-ccds-decam-dr10-trim.fits')
+# ccd.write('/global/cfs/cdirs/desicollab/users/rongpu/data/dr11/survey-ccds-decam-dr10-trim.fits')
+# ccd.write('/global/cfs/cdirs/desicollab/users/rongpu/data/dr11/survey-ccds-decam-dr9-trim.fits')
