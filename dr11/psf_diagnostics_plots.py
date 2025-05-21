@@ -22,7 +22,7 @@ pixscale = 0.262  # arcsec
 psfex_dir = '/global/cfs/cdirs/cosmo/work/legacysurvey/dr11/calib/psfex'
 gaia_dir = '/global/cfs/cdirs/cosmo/data/gaia/dr3/healpix'
 
-ccd = Table(fitsio.read('/global/cfs/cdirs/desicollab/users/rongpu/data/dr11/survey-ccds-decam-dr11-psfex-stats.fits'))
+ccd = Table(fitsio.read('/global/cfs/cdirs/desicollab/users/rongpu/data/dr11dev/survey-ccds-decam-dr11-psfex-stats.fits'))
 print(len(ccd))
 
 mask = ccd['ccd_cuts']==0

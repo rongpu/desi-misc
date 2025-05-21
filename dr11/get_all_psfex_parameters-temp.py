@@ -46,8 +46,11 @@ n_processes = 256
 
 psfex_dir = '/dvs_ro/cfs/cdirs/cosmo/work/legacysurvey/dr11/calib/psfex'
 surveyccd_path = '/dvs_ro/cfs/cdirs/cosmo/work/legacysurvey/dr11/survey-ccds-decam-dr11-merged.fits'
+surveyccd_path_early = '/dvs_ro/cfs/cdirs/cosmo/work/legacysurvey/dr11/survey-ccds-decam-dr11-early.fits'
 
 ccd = Table(fitsio.read(surveyccd_path, columns=['expnum', 'filter', 'image_filename', 'ccdname', 'plver']))
+ccd_early = Table(fitsio.read(surveyccd_path_early, columns=['expnum', 'filter', 'image_filename', 'ccdname', 'plver']))
+ccd = vstack([ccd, ccd_early])
 print(len(ccd))
 
 ccd['ccd_id_str'] = np.char.add(np.array(ccd['expnum']).astype(str), ccd['ccdname'])

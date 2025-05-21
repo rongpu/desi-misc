@@ -125,6 +125,6 @@ ccd['fwhm_nea'] = np.sqrt(ccd['nea'] / (4 * np.pi)) * 2.3548 * pixscale  # NEA t
 ccd['r_max'] = np.sqrt((ccd['x_max'])**2+(ccd['y_max'])**2)
 ccd['r_cent'] = np.sqrt(ccd['x_cent']**2 + ccd['y_cent']**2)
 
-ccd.write('/global/cfs/cdirs/desicollab/users/rongpu/data/dr11/survey-ccds-decam-dr11-psfex-stats.fits', overwrite=True)
+ccd.write('/global/cfs/cdirs/desicollab/users/rongpu/data/dr11dev/survey-ccds-decam-dr11-psfex-stats.fits', overwrite=True)
 
 print('Done!', time.strftime('%H:%M:%S', time.gmtime(time.time() - time_start)))

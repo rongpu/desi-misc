@@ -8,18 +8,13 @@ import fitsio
 
 
 b_only = False
-br_only = True
-
-extra_40_percent_fainter = True
+br_only = False
 
 # stack_type = 'same night'
 # # stack_type = 'different nights 3 months'
 
 # n_stack = 1
 
-output_dir = '/global/cfs/cdirs/desicollab/users/rongpu/data/spectro/sky_spectra/stacked_sky_with_lae'
-if extra_40_percent_fainter:
-    output_dir = os.path.join(output_dir, 'extra_faint')
 
 lae_spectrum = Table(fitsio.read('/global/cfs/cdirs/desicollab/users/raichoor/laelbg/lya-flim/desi-lya-flim-coadd-skyflux.fits', ext='LYAPROF'))
 wave, flux = np.array(lae_spectrum['WAVE']), np.array(lae_spectrum['FLUX'])
@@ -35,10 +30,7 @@ b_wavelength = fitsio.read(fn_original, ext='B_WAVELENGTH')
 for band in ['M411', 'M438', 'M464', 'M490', 'M517']:
 
     flux_norm_factor = 10**((lae_ibis_mag[band]-mag_norm)*0.4)
-    flux_norm_factor *= 0.6  # to account for the fact that ~40% of the flux is in the continuum
-
-    if extra_40_percent_fainter:  # to account for scatter in imaging
-        flux_norm_factor *= 0.6
+    flux_norm_factor *= 0.6  # account for the fact that ~40% of the flux is in the continuum
 
     np.random.seed(999)
     # lae_wave = np.full(500, ibis_center_wave[band])
@@ -104,11 +96,11 @@ for band in ['M411', 'M438', 'M464', 'M490', 'M517']:
                 continue
 
             if stack_type == 'same night':
-                fn_output = os.path.join(output_dir, 'coadd-same_night_20240212-stack_{}-{}.fits'.format(n_stack, band.lower()))
+                fn_output = '/global/cfs/cdirs/desicollab/users/rongpu/data/spectro/sky_spectra/stacked_sky_with_lae/coadd-same_night_20240212-stack_{}-{}.fits'.format(n_stack, band.lower())
             elif stack_type == 'different nights 3 months':
-                fn_output = os.path.join(output_dir, 'coadd-different_nights_202401_202403-stack_{}-{}.fits'.format(n_stack, band.lower()))
+                fn_output = '/global/cfs/cdirs/desicollab/users/rongpu/data/spectro/sky_spectra/stacked_sky_with_lae/coadd-different_nights_202401_202403-stack_{}-{}.fits'.format(n_stack, band.lower())
             elif stack_type == 'same night shuffle fibers':
-                fn_output = os.path.join(output_dir, 'coadd-same_night_shuffle_fibers_20240212-stack_{}-{}.fits'.format(n_stack, band.lower()))
+                fn_output = '/global/cfs/cdirs/desicollab/users/rongpu/data/spectro/sky_spectra/stacked_sky_with_lae/coadd-same_night_shuffle_fibers_20240212-stack_{}-{}.fits'.format(n_stack, band.lower())
 
             if b_only:
                 fn_output = fn_output.replace('.fits', '-b_only.fits')

@@ -11,8 +11,7 @@ from multiprocessing import Pool
 from scipy import ndimage
 
 
-surveyccd_path = '/global/cfs/cdirs/cosmo/work/legacysurvey/dr11-early/survey-ccds-decam-dr11.fits'
-# surveyccd_path = '/dvs_ro/cfs/cdirs/cosmo/work/legacysurvey/dr11/survey-ccds-decam-dr11-merged.fits'
+surveyccd_path = '/global/cfs/cdirs/cosmo/work/legacysurvey/dr11-early/survey-ccds-decam-dr11-merged-incl-early.fits'
 # surveyccd_path = '/dvs_ro/cfs/cdirs/cosmo/data/legacysurvey/dr10/survey-ccds-decam-dr10.fits.gz'
 # surveyccd_path = '/dvs_ro/cfs/cdirs/cosmo/data/legacysurvey/dr9/survey-ccds-decam-dr9.fits.gz'
 
@@ -42,7 +41,7 @@ print(len(ccd), len(np.unique(ccd['expnum'])))
 idx = np.sort(ccd['idx'])
 ccd = Table(fitsio.read(surveyccd_path, rows=idx))
 
-ccd.write('/global/cfs/cdirs/desicollab/users/rongpu/data/dr11/survey-ccds-decam-dr11-merged-trim-new.fits')
-# ccd.write('/global/cfs/cdirs/desicollab/users/rongpu/data/dr11/survey-ccds-decam-dr11-merged-trim.fits')
-# ccd.write('/global/cfs/cdirs/desicollab/users/rongpu/data/dr11/survey-ccds-decam-dr10-trim.fits')
-# ccd.write('/global/cfs/cdirs/desicollab/users/rongpu/data/dr11/survey-ccds-decam-dr9-trim.fits')
+ccd.write('/global/cfs/cdirs/desicollab/users/rongpu/data/dr11dev/survey-ccds-decam-dr11-trim.fits')
+# ccd.write('/global/cfs/cdirs/desicollab/users/rongpu/data/dr11dev/survey-ccds-decam-dr11-merged-trim.fits')
+# ccd.write('/global/cfs/cdirs/desicollab/users/rongpu/data/dr11dev/survey-ccds-decam-dr10-trim.fits')
+# ccd.write('/global/cfs/cdirs/desicollab/users/rongpu/data/dr11dev/survey-ccds-decam-dr9-trim.fits')
