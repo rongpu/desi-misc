@@ -1,0 +1,2 @@
+salloc -N 4 -C cpu -t 04:00:00 -q interactive -A m3592
+srun --wait=0 --ntasks-per-node 1 payload.sh tasks.txt > log_sky_template_fitting.txt ; exit
