@@ -31,13 +31,13 @@ for run in run_list:
     expnum_list = np.array(skyrun['expnum'][mask])
     mask = np.in1d(ccd['expnum'], expnum_list)
     ccd1 = ccd[mask].copy()
-    fn = '/global/cfs/cdirs/desi/users/rongpu/data/dr11dev/sky_pattern/survey_ccds_in_runs/survey-ccds-decam-dr11-merged-incl-early-run_{}.fits'.format(run)
+    fn = '/pscratch/sd/r/rongpu/tmp/survey_ccds_in_runs_for_qa/survey-ccds-decam-dr11-merged-incl-early-run_{}.fits'.format(run)
     ccd1.write(fn)
 
 # Sanity check
 ccd_id = []
 for run in run_list:
-    tmp = fitsio.read('/global/cfs/cdirs/desi/users/rongpu/data/dr11dev/sky_pattern/survey_ccds_in_runs/survey-ccds-decam-dr11-merged-incl-early-run_{}.fits'.format(run), columns=['expnum', 'image_hdu'])
+    tmp = fitsio.read('/pscratch/sd/r/rongpu/tmp/survey_ccds_in_runs_for_qa/survey-ccds-decam-dr11-merged-incl-early-run_{}.fits'.format(run), columns=['expnum', 'image_hdu'])
     ccd_id.append(np.array(100*tmp['expnum'] + tmp['image_hdu']))
 ccd_id = np.concatenate(ccd_id)
 ccd_id.sort()

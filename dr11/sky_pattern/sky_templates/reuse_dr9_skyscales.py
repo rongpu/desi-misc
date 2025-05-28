@@ -14,6 +14,12 @@ _, idx = np.unique(skyscales['expnum'], return_index=True)
 skyscales = skyscales[idx]
 print('skyscales', len(skyscales))
 
+skyscales.sort('expnum')
+skyscales.sort('run')
+
+skyscales.sort('expnum')
+skyscales.sort('run', kind='stable')
+
 dr11 = Table(fitsio.read('/global/cfs/cdirs/desicollab/users/rongpu/data/dr11dev/survey-ccds-decam-dr11-trim.fits'))
 print('dr11', len(dr11))
 
@@ -48,4 +54,4 @@ print('skyscales', len(skyscales))
 skyscales.rename_column('PLPROCID', 'plprocid')
 skyscales = skyscales[['skyscale', 'expnum', 'run', 'plprocid']]
 
-skyscales.write('/global/cfs/cdirs/desicollab/users/rongpu/data/dr11dev/sky_pattern/sky-scales-reuse_dr9.fits')
+skyscales.write('/global/cfs/cdirs/desicollab/users/rongpu/data/dr11dev/sky_scales/sky-scales-reuse_dr9.fits')

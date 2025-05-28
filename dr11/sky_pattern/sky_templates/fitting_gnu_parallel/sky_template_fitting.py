@@ -218,7 +218,7 @@ def template_fitting(expnum, diagnostic_touch=True):
                 img = fits.getdata(image_path, extname=ccdname)
                 # ood = fits.getdata(ood_path, extname=ccdname)
         except KeyError:
-            print('Error:', ccdname+' does not exist in image!')
+            print('Error: expnum {} {} does not exist in image!'.format(expnum, ccdname))
             continue
         except:
             print('Error: Corrupted?', image_path, expnum, ccdname)

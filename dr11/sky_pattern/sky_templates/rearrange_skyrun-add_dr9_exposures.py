@@ -14,7 +14,7 @@ mask = ccd['filter']=='z'
 ccd = ccd[mask]
 print('CCDs', len(ccd))
 
-dr9_reuse = Table(fitsio.read('/global/cfs/cdirs/desicollab/users/rongpu/data/dr11dev/sky_pattern/sky-scales-reuse_dr9.fits'))
+dr9_reuse = Table(fitsio.read('/global/cfs/cdirs/desicollab/users/rongpu/data/dr11dev/sky_scales/sky-scales-reuse_dr9.fits'))
 skyrun_dr11 = Table(fitsio.read('/global/cfs/cdirs/desicollab/users/rongpu/data/dr11dev/skyrunsdr11-v3-rearrange.fits'))
 
 mask = (~np.in1d(ccd['expnum'], dr9_reuse['expnum'])) & (ccd['mjd_obs']<skyrun_dr11['mjd_obs'].min())
