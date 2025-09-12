@@ -262,7 +262,7 @@ spec = vstack(res).filled(0)
 spec.sort('FIBER')
 
 if stack_type == 'same_night':
-    spec.write('/pscratch/sd/r/rongpu/tmp/sky_spectra/sky_spectra_same_night_20240212.fits', overwrite=True)
+    spec.write('/global/cfs/cdirs/desicollab/users/rongpu/data/spectro/sky_spectra/sky_spectra_same_night_20240212.fits', overwrite=True)
 elif stack_type == 'different nights 3 months':
-    spec.write('/pscratch/sd/r/rongpu/tmp/sky_spectra/sky_spectra_different_nights_202401_202403.fits', overwrite=True)
+    spec.write('/global/cfs/cdirs/desicollab/users/rongpu/data/spectro/sky_spectra/sky_spectra_different_nights_202401_202403.fits', overwrite=True)
 
