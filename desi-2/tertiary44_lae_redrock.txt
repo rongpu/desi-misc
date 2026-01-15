@@ -1,0 +1,35 @@
+source /global/common/software/desi/desi_environment.sh main
+export RR_TEMPLATE_DIR=/global/cfs/cdirs/desicollab/users/rongpu/data/redrock/laelbg_templates-galaxy_only
+# export ARCHETYPES=/global/cfs/cdirs/desi/users/abhijeet/new-archetypes/rrarchetype-laelbg.fits
+
+salloc -N 4 -C cpu -t 04:00:00 -q interactive
+
+################################################################################################################################################
+
+mkdir -p /pscratch/sd/r/rongpu/desi2/tertiary44/daily/healpix/tertiary44-all/rr_lae_0.0_3.4/logs
+cd /pscratch/sd/r/rongpu/desi2/tertiary44/daily/healpix/tertiary44-all/rr_lae_0.0_3.4
+parallel --jobs 4 --delay 1 < desi_redrock_lae_0.0_3.4.txt
+
+mkdir -p /pscratch/sd/r/rongpu/desi2/tertiary44/daily/healpix/tertiary44-all/rr_lae_2.28_3.38/logs
+cd /pscratch/sd/r/rongpu/desi2/tertiary44/daily/healpix/tertiary44-all/rr_lae_2.28_3.38
+parallel --jobs 4 --delay 1 < desi_redrock_lae_2.28_3.38.txt
+
+################################################################################################################################################
+
+mkdir -p /pscratch/sd/r/rongpu/desi2/tertiary44/daily/healpix/tertiary44-subset_a1/rr_lae_0.0_3.4/logs
+cd /pscratch/sd/r/rongpu/desi2/tertiary44/daily/healpix/tertiary44-subset_a1/rr_lae_0.0_3.4
+parallel --jobs 4 --delay 1 < desi_redrock_lae_0.0_3.4.txt
+
+mkdir -p /pscratch/sd/r/rongpu/desi2/tertiary44/daily/healpix/tertiary44-subset_a1/rr_lae_2.28_3.38/logs
+cd /pscratch/sd/r/rongpu/desi2/tertiary44/daily/healpix/tertiary44-subset_a1/rr_lae_2.28_3.38
+parallel --jobs 4 --delay 1 < desi_redrock_lae_2.28_3.38.txt
+
+################################################################################################################################################
+
+mkdir -p /pscratch/sd/r/rongpu/desi2/tertiary44/daily/healpix/tertiary44-subset_b2/rr_lae_0.0_3.4/logs
+cd /pscratch/sd/r/rongpu/desi2/tertiary44/daily/healpix/tertiary44-subset_b2/rr_lae_0.0_3.4
+parallel --jobs 4 --delay 1 < desi_redrock_lae_0.0_3.4.txt
+
+mkdir -p /pscratch/sd/r/rongpu/desi2/tertiary44/daily/healpix/tertiary44-subset_b2/rr_lae_2.28_3.38/logs
+cd /pscratch/sd/r/rongpu/desi2/tertiary44/daily/healpix/tertiary44-subset_b2/rr_lae_2.28_3.38
+parallel --jobs 4 --delay 1 < desi_redrock_lae_2.28_3.38.txt

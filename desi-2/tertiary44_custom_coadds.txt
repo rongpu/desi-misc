@@ -1,0 +1,43 @@
+source /global/common/software/desi/desi_environment.sh 24.11
+
+export MY_SPECTRO_REDUX=/pscratch/sd/r/rongpu/desi2/tertiary44
+export LASTNIGHT=20241230
+export DESI_SPECTRO_REDUX=/pscratch/sd/r/rongpu/desi2/tertiary44
+export SPECPROD=daily
+
+################################################################################################################################################
+
+export TILEIDS=83519,83520,83521,83522,83523,83524,83525,83526,83527,83528,83529,83530,83531,83532,83533,83534,83535,83536,83537,83538,83539,83540,83541,83542,83543,83544,83545,83546,83547,83548
+export MY_HPXDIR=tertiary44-all
+
+mkdir /pscratch/sd/r/rongpu/desi2/tertiary44/daily/healpix/tertiary44-all
+./desi_custom_coadds.py --my_spectro_redux $MY_SPECTRO_REDUX --my_hpxdir $MY_HPXDIR --tileids $TILEIDS --lastnight $LASTNIGHT
+
+salloc --nodes 4 --qos interactive --time 4:00:00 --constraint cpu
+
+parallel --jobs 4 --delay 1 < desi_spectra.txt && parallel --jobs 4 --delay 1 < desi_coadd.txt
+# parallel --jobs 4 --delay 1 < desi_spectra.txt && parallel --jobs 4 --delay 1 < desi_coadd.txt && parallel --jobs 4 --delay 1 < desi_redrock.txt && parallel --jobs 4 --delay 1 < desi_qsomgii.txt && parallel --jobs 4 --delay 1 < desi_qsoqn.txt && parallel --jobs 4 --delay 1 < desi_emline.txt && exit
+
+################################################################################################################################################
+
+export TILEIDS=83519,83520,83521,83524,83527,83530,83532,83535,83538,83539,83541,83544,83545,83546,83547
+export MY_HPXDIR=tertiary44-subset_a1
+
+mkdir /pscratch/sd/r/rongpu/desi2/tertiary44/daily/healpix/tertiary44-subset_a1
+./desi_custom_coadds.py --my_spectro_redux $MY_SPECTRO_REDUX --my_hpxdir $MY_HPXDIR --tileids $TILEIDS --lastnight $LASTNIGHT
+
+salloc --nodes 4 --qos interactive --time 4:00:00 --constraint cpu
+
+parallel --jobs 4 --delay 1 < desi_spectra.txt && parallel --jobs 4 --delay 1 < desi_coadd.txt && parallel --jobs 4 --delay 1 < desi_redrock.txt && parallel --jobs 4 --delay 1 < desi_qsomgii.txt && parallel --jobs 4 --delay 1 < desi_qsoqn.txt && parallel --jobs 4 --delay 1 < desi_emline.txt && exit
+
+################################################################################################################################################
+
+export TILEIDS=83526,83536,83534,83530,83521,83546
+export MY_HPXDIR=tertiary44-subset_b2
+
+mkdir /pscratch/sd/r/rongpu/desi2/tertiary44/daily/healpix/tertiary44-subset_b2
+./desi_custom_coadds.py --my_spectro_redux $MY_SPECTRO_REDUX --my_hpxdir $MY_HPXDIR --tileids $TILEIDS --lastnight $LASTNIGHT
+
+salloc --nodes 4 --qos interactive --time 4:00:00 --constraint cpu
+
+parallel --jobs 4 --delay 1 < desi_spectra.txt && parallel --jobs 4 --delay 1 < desi_coadd.txt && parallel --jobs 4 --delay 1 < desi_redrock.txt && parallel --jobs 4 --delay 1 < desi_qsomgii.txt && parallel --jobs 4 --delay 1 < desi_qsoqn.txt && parallel --jobs 4 --delay 1 < desi_emline.txt && exit

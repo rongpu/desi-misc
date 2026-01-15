@@ -1,0 +1,10 @@
+source /global/common/software/desi/desi_environment.sh main
+export RR_TEMPLATE_DIR=/global/cfs/cdirs/desicollab/users/rongpu/data/redrock/laelbg_templates-galaxy_only
+# export ARCHETYPES=/global/cfs/cdirs/desi/users/abhijeet/new-archetypes/rrarchetype-laelbg.fits
+
+cd /global/cfs/cdirs/desicollab/users/rongpu/data/desi2/tertiary49
+
+salloc -N 4 -C cpu -t 04:00:00 -q interactive
+
+parallel --jobs 4 --delay 1 < desi_redrock_lae.txt
+parallel --jobs 4 --delay 1 < desi_emline.txt

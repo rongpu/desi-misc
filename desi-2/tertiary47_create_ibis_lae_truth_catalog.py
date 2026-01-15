@@ -15,11 +15,13 @@ def read_redrock_catalogs(dirname):
         tmp1 = Table(fitsio.read(fn, ext='REDSHIFTS'))
         tmp2 = Table(fitsio.read(fn, ext='FIBERMAP'))
         tmp3 = Table(fitsio.read(fn, ext='TSNR2'))
-        assert np.all(tmp1['TARGETID']==tmp2['TARGETID']) and np.all(tmp1['TARGETID']==tmp3['TARGETID'])
+        tmp4 = Table(fitsio.read(fn.replace('redrock-', 'lyaflux-')))
+        assert np.all(tmp1['TARGETID']==tmp2['TARGETID']) and np.all(tmp1['TARGETID']==tmp3['TARGETID']) and np.all(tmp1['TARGETID']==tmp4['TARGETID'])
         tmp2.remove_column('TARGETID')
         tmp3 = tmp3[['TSNR2_ELG', 'TSNR2_LYA', 'TSNR2_BGS', 'TSNR2_QSO', 'TSNR2_LRG']]
         tmp1['fn'] = os.path.basename(fn)
-        cat.append(hstack([tmp1, tmp2, tmp3]))
+        tmp4.remove_column('TARGETID')
+        cat.append(hstack([tmp1, tmp2, tmp3, tmp4]))
     cat = vstack(cat)
     # print(len(cat))
     
@@ -115,4 +117,4 @@ with warnings.catch_warnings():
     cat['synthgmag'] = 22.5 - 2.5*np.log10(cat['FLUX_SYNTHG']) - 3.240 * cat['EBV']
     cat['synthgfibermag'] = 22.5 - 2.5*np.log10(cat['FIBERFLUX_SYNTHG']) - 3.240 * cat['EBV']
 
-cat.write('/global/cfs/cdirs/desicollab/users/rongpu/data/desi2/tertiary47/catalogs/tertiary47_ibis_lae_truth-20250914.fits')
+cat.write('/global/cfs/cdirs/desicollab/users/rongpu/data/desi2/tertiary47/catalogs/tertiary47_ibis_lae_truth-20251104.fits')
