@@ -195,16 +195,17 @@ interlopers = np.loadtxt('/global/cfs/cdirs/desicollab/users/rongpu/data/desi2/t
 mask_lae &= ~np.in1d(cat['TARGETID'], interlopers)
 print('LAEs', np.sum(mask_lae), np.sum(mask_lae)/len(mask_lae))
 
-cat['low_z'] = mask_contam.copy()
-cat['lae'] = mask_lae.copy()
+assert np.all(cat['TARGETID']==daily['TARGETID'])
 
-cat['Z_daily'] = daily['Z']
-cat['ZWARN_daily'] = daily['ZWARN']
-cat['DELTACHI2_daily'] = daily['DELTACHI2']
-cat['SPECTYPE_daily'] = daily['SPECTYPE']
+daily['low_z'] = mask_contam.copy()
+daily['lae'] = mask_lae.copy()
 
-# cat.write('/global/cfs/cdirs/desicollab/users/rongpu/data/desi2/tertiary49/catalogs/tertiary49_ibis_lae_truth-20260125.fits', overwrite=False)
-# cat.write('/global/cfs/cdirs/desicollab/users/rongpu/data/desi2/tertiary49/catalogs/tertiary49_ibis_lae_truth-20260127.fits', overwrite=False)
+daily['Z_LAE'] = cat['Z'].copy()
+daily['ZWARN_LAE'] = cat['ZWARN'].copy()
+daily['DELTACHI2_LAE'] = cat['DELTACHI2'].copy()
+# daily['SPECTYPE_LAE'] = cat['SPECTYPE'].copy()
+
+daily.write('/global/cfs/cdirs/desicollab/users/rongpu/data/desi2/tertiary49/catalogs/tertiary49_ibis_lowz_daily-20260130.fits', overwrite=False)
 
 ############################## Add targeting info ###############################
 
@@ -228,23 +229,27 @@ assert np.all(fa['DEC']==targets['DEC'])
 
 targets['TARGETID'] = fa['TARGETID']
 
-print(len(cat), len(np.unique(cat['TARGETID'])))
+print(len(daily), len(np.unique(daily['TARGETID'])))
 
-mask = np.in1d(targets['TARGETID'], cat['TARGETID'])
+mask = np.in1d(targets['TARGETID'], daily['TARGETID'])
 targets = targets[mask]
 print(len(targets))
 
-# Matching targets to cat
-if len(cat)!=len(targets) or not np.all(np.unique(cat['TARGETID'])==np.unique(targets['TARGETID'])):
-    raise ValueError('cat and targets have different id list')
-cat_reverse_sort = np.array(cat['TARGETID']).argsort().argsort()
+# Matching targets to daily
+if len(daily)!=len(targets) or not np.all(np.unique(daily['TARGETID'])==np.unique(targets['TARGETID'])):
+    raise ValueError('daily and targets have different id list')
+cat_reverse_sort = np.array(daily['TARGETID']).argsort().argsort()
 targets = targets[np.argsort(targets['TARGETID'])[cat_reverse_sort]]
 
-assert np.all(targets['TARGETID']==cat['TARGETID'])
-print(np.intersect1d(targets.colnames, cat.colnames))
+assert np.all(targets['TARGETID']==daily['TARGETID'])
+print(np.intersect1d(targets.colnames, daily.colnames))
 
 targets.remove_column('TARGETID')
-cat = hstack([cat, targets])
-print(len(cat), len(np.unique(cat['TARGETID'])))
+daily = hstack([daily, targets])
+print(len(daily), len(np.unique(daily['TARGETID'])))
 
-cat.write('/global/cfs/cdirs/desicollab/users/rongpu/data/desi2/tertiary49/catalogs/tertiary49_ibis_lae_truth-20260127-add_target_info.fits', overwrite=False)
+daily.write('/global/cfs/cdirs/desicollab/users/rongpu/data/desi2/tertiary49/catalogs/tertiary49_ibis_lowz_daily-20260130-add_target_info.fits', overwrite=False)
+
+
+
+

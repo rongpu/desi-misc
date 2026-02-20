@@ -94,7 +94,7 @@ from match_coord import match_coord
 idx1, idx2, d2d, d_ra, d_dec = match_coord(hsc['ra'], hsc['dec'], cat['RA'], cat['DEC'], search_radius=1., plot_q=False)
 
 # Replace the HSC-wide forced photometry with HSC-deep cross-matched photometry
-for band in ['g', 'r', 'i']:
+for band in ['g', 'r', 'i', 'z', 'y']:
     mask = ~np.isnan(hsc['{}_cmodel_flux'.format(band)][idx1])  # do not use the HSC-deep value if it is NaN
     cat[band+'mag'][idx2[mask]] = 22.5 - 2.5*np.log10(np.clip(hsc['{}_cmodel_flux'.format(band)][idx1[mask]]/3630.78*10**(0.4*get_ext_coeffs()[band]*cat['EBV'][idx2[mask]]), fnodet, None))
     cat['hsc_deep_'+band] = False
@@ -344,6 +344,9 @@ print(np.sum(cat['lae_sel']), np.sum(cat['lae_sel'])/len(cat))
 mask = cat['lae_sel'].copy()
 cat = cat[mask]
 print(len(cat))
+
+cat['lae_sel_bright'] = cat['M411_sel_bright'] | cat['M438_sel_bright'] | cat['M464_sel_bright'] | cat['M490_sel_bright'] | cat['M517_sel_bright']
+print(np.sum(cat['lae_sel_bright']))
 
 tmp = Table(fitsio.read('/global/cfs/cdirs/desicollab/users/rongpu/data/desi2/xmm_highz/tertiary49_xmm_lae_targets.fits'))
 

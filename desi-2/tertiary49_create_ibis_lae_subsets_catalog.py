@@ -14,10 +14,6 @@ params = {'legend.fontsize': 'medium',
           'figure.facecolor': 'w'}
 plt.rcParams.update(params)
 
-sys.path.append(os.path.expanduser('~/git/desi-examples/misc/plot_spectrum'))
-from desi_plot_spectrum import plot_spectrum
-
-lyman_alpha_z = {'M411': [2.3, 2.51], 'M438': [2.51, 2.72], 'M464': [2.72, 2.93], 'M490': [2.93, 3.15], 'M517': [3.15, 3.36]}
 
 columns_1 = ['TARGETID', 'CHI2', 'Z', 'ZERR', 'ZWARN', 'SPECTYPE', 'DELTACHI2']
 columns_2 = ['TARGETID', 'TILEID', 'FIBER', 'PETAL_LOC', 'DEVICE_LOC', 'LOCATION', 'COADD_FIBERSTATUS', 'TARGET_RA', 'TARGET_DEC', 'COADD_NUMEXP', 'COADD_EXPTIME', 'COADD_NUMNIGHT', 'COADD_NUMTILE', 'FIBERASSIGN_X', 'FIBERASSIGN_Y', 'PRIORITY', 'OBJTYPE']
@@ -29,10 +25,9 @@ lastnight_list = [20260116, 20260115, 20260116, 20260116]
 
 ###################### Load daily redrock catalogs ######################
 
-fns = []
-for tileid, lastnight in zip(tile_list, lastnight_list):
-    print(tileid, lastnight)
-    fns += glob.glob('/global/cfs/cdirs/desi/spectro/redux/daily/tiles/cumulative/{}/{}/redrock-*thru{}.fits'.format(tileid, lastnight, lastnight))
+print('daily')
+
+fns = glob.glob('/global/cfs/cdirs/desicollab/users/rongpu/data/desi2/tertiary49/subsets/*/redrock-*.fits')
 fns.sort()
 print(len(fns))
 
@@ -56,22 +51,13 @@ for fn in fns:
     
     cat_stack.append(cat)
     
-cat = vstack(cat_stack)
-
-print(len(cat), len(np.unique(cat['TARGETID'])))
-cat.sort('TSNR2_LRG', reverse=True)
-_, idx_keep = np.unique(cat['TARGETID'], return_index=True)
-cat = cat[idx_keep]
-print(len(cat), len(np.unique(cat['TARGETID'])))
-
-daily = cat.copy()
+daily = vstack(cat_stack)
 
 ###################### Load custom LAE redrock catalogs ######################
 
-fns = []
-for tileid, lastnight in zip(tile_list, lastnight_list):
-    print(tileid, lastnight)
-    fns += glob.glob('/global/cfs/cdirs/desicollab/users/rongpu/data/desi2/tertiary49/rr_lae_2.25_3.4_nmf/redrock-*-{}-thru{}.fits'.format(tileid, lastnight))
+print('LAE NMF')
+
+fns = glob.glob('/global/cfs/cdirs/desicollab/users/rongpu/data/desi2/tertiary49/subsets/*/lae_nmf/redrock-*.fits')
 fns.sort()
 print(len(fns))
 
@@ -88,6 +74,8 @@ for fn in fns:
     # cat['LASTNIGHT'] = np.array(os.path.basename(os.path.dirname(fn)), dtype=int)
     cat['rr_fn'] = fn
 
+    cat['subset'] = fn.split('/')[-2]
+
     # fn_emline = fn.replace('redrock-', 'emline-')
     # emline = Table(fitsio.read(fn_emline, columns=columns_emline))
     # emline.remove_column('TARGETID')
@@ -98,12 +86,6 @@ for fn in fns:
 cat = vstack(cat_stack)
 
 ################################################################################
-
-print(len(cat), len(np.unique(cat['TARGETID'])))
-cat.sort('TSNR2_LRG', reverse=True)
-_, idx_keep = np.unique(cat['TARGETID'], return_index=True)
-cat = cat[idx_keep]
-print(len(cat), len(np.unique(cat['TARGETID'])))
 
 assert np.all(cat['TARGETID']==daily['TARGETID'])
 
@@ -120,16 +102,6 @@ cat = cat[mask]
 daily = daily[mask]
 
 cat['EFFTIME_LRG'] = cat['TSNR2_LRG'] * 12.15
-mask = cat['EFFTIME_LRG']>3000
-print(np.sum(mask), np.sum(mask)/len(mask))
-cat = cat[mask]
-daily = daily[mask]
-
-# Depth cut on the B camera depth
-mask = cat['TSNR2_ELG_B']>0.4
-print(np.sum(mask), np.sum(mask)/len(mask))
-cat = cat[mask]
-daily = daily[mask]
 
 ################################################################################
 
@@ -190,10 +162,10 @@ def dchi2_vs_z(z):
 mask_lae = (cat['Z']>2.2) & (cat['ZWARN']==0) & (cat['DELTACHI2']>dchi2_vs_z(cat['Z'])) & (~mask_contam)
 print('LAEs', np.sum(mask_lae), np.sum(mask_lae)/len(mask_lae))
 
-print('Remove known low-z interlopers')
-interlopers = np.loadtxt('/global/cfs/cdirs/desicollab/users/rongpu/data/desi2/tertiary49/catalogs/known_lowz_interlopers.txt', dtype='int')
-mask_lae &= ~np.in1d(cat['TARGETID'], interlopers)
-print('LAEs', np.sum(mask_lae), np.sum(mask_lae)/len(mask_lae))
+# print('Remove known low-z interlopers')
+# interlopers = np.loadtxt('/global/cfs/cdirs/desicollab/users/rongpu/data/desi2/tertiary49/catalogs/known_lowz_interlopers.txt', dtype='int')
+# mask_lae &= ~np.in1d(cat['TARGETID'], interlopers)
+# print('LAEs', np.sum(mask_lae), np.sum(mask_lae)/len(mask_lae))
 
 cat['low_z'] = mask_contam.copy()
 cat['lae'] = mask_lae.copy()
@@ -203,48 +175,5 @@ cat['ZWARN_daily'] = daily['ZWARN']
 cat['DELTACHI2_daily'] = daily['DELTACHI2']
 cat['SPECTYPE_daily'] = daily['SPECTYPE']
 
-# cat.write('/global/cfs/cdirs/desicollab/users/rongpu/data/desi2/tertiary49/catalogs/tertiary49_ibis_lae_truth-20260125.fits', overwrite=False)
-# cat.write('/global/cfs/cdirs/desicollab/users/rongpu/data/desi2/tertiary49/catalogs/tertiary49_ibis_lae_truth-20260127.fits', overwrite=False)
+cat.write('/global/cfs/cdirs/desicollab/users/rongpu/data/desi2/tertiary49/catalogs/tertiary49_ibis_lae_subsets-20260127.fits', overwrite=False)
 
-############################## Add targeting info ###############################
-
-fa = Table(fitsio.read('/global/cfs/cdirs/desi/survey/fiberassign/special/tertiary/0049/tertiary-targets-0049.fits'))
-print(len(fa))
-mask = fa['TERTIARY_TARGET']=='LAE_HZ'
-fa = fa[mask]
-print(len(fa))
-
-targets = Table(fitsio.read('/global/cfs/cdirs/desicollab/users/rongpu/data/desi2/xmm_highz/tertiary49_xmm_lae_targets.fits'))
-t1 = Table(fitsio.read('/global/cfs/cdirs/desicollab/users/rongpu/data/desi2/xmm_highz/tertiary49_xmm_lae_targets-more.fits'))
-t1.remove_columns(['RA', 'DEC'])
-targets = hstack([targets, t1])
-print(len(targets))
-
-targets = targets[fa['LAE_HZ_ROW']]
-print(len(targets))
-
-assert np.all(fa['RA']==targets['RA'])
-assert np.all(fa['DEC']==targets['DEC'])
-
-targets['TARGETID'] = fa['TARGETID']
-
-print(len(cat), len(np.unique(cat['TARGETID'])))
-
-mask = np.in1d(targets['TARGETID'], cat['TARGETID'])
-targets = targets[mask]
-print(len(targets))
-
-# Matching targets to cat
-if len(cat)!=len(targets) or not np.all(np.unique(cat['TARGETID'])==np.unique(targets['TARGETID'])):
-    raise ValueError('cat and targets have different id list')
-cat_reverse_sort = np.array(cat['TARGETID']).argsort().argsort()
-targets = targets[np.argsort(targets['TARGETID'])[cat_reverse_sort]]
-
-assert np.all(targets['TARGETID']==cat['TARGETID'])
-print(np.intersect1d(targets.colnames, cat.colnames))
-
-targets.remove_column('TARGETID')
-cat = hstack([cat, targets])
-print(len(cat), len(np.unique(cat['TARGETID'])))
-
-cat.write('/global/cfs/cdirs/desicollab/users/rongpu/data/desi2/tertiary49/catalogs/tertiary49_ibis_lae_truth-20260127-add_target_info.fits', overwrite=False)
