@@ -13,12 +13,12 @@ sys.path.append(os.path.expanduser('~/git/Python/user_modules/'))
 from match_coord import match_coord
 
 
-gaia_dir = '/project/projectdirs/cosmo/data/gaia/dr2/healpix'
+gaia_dir = '/dvs_ro/cfs/cdirs/cosmo/data/gaia/dr2/healpix'
 nside = 32
 npix = hp.nside2npix(nside)
 print('Healpix resolution (arcmin):', np.sqrt(hp.nside2resol(nside, arcmin=True)))
 
-sdss = fitsio.read('/global/cfs/cdirs/desi/target/analysis/truth/parent/sdss-specObj-dr16-unique-trimmed.fits')
+sdss = fitsio.read('/dvs_ro/cfs/cdirs/desi/target/analysis/truth/parent/sdss-specObj-dr16-unique-trimmed.fits')
 sdss = Table(sdss)
 sdss_hp_idx = hp.ang2pix(nside, sdss['PLUG_RA'], sdss['PLUG_DEC'], nest=True, lonlat=True)
 sdss_hp_idx_unique = np.unique(sdss_hp_idx)
@@ -50,6 +50,6 @@ print('Done matching!!!!!')
 sdss_stack = vstack(sdss_stack)
 gaia_stack = vstack(gaia_stack)
 
-sdss_stack.write('/global/cscratch1/sd/rongpu/misc/sdss_gaia_match/sdss.fits')
-gaia_stack.write('/global/cscratch1/sd/rongpu/misc/sdss_gaia_match/gaia.fits')
+sdss_stack.write('/pscratch/sd/r/rongpu/tmp/sdss_gaia_match-gaia_dr2/sdss.fits')
+gaia_stack.write('/pscratch/sd/r/rongpu/tmp/sdss_gaia_match-gaia_dr2/gaia.fits')
 

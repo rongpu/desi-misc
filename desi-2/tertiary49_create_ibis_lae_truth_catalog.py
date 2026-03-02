@@ -88,6 +88,12 @@ for fn in fns:
     # cat['LASTNIGHT'] = np.array(os.path.basename(os.path.dirname(fn)), dtype=int)
     cat['rr_fn'] = fn
 
+    lya_path = os.path.join(os.path.dirname(fn), 'lyaflux', os.path.basename(fn.replace('redrock-', 'lyaflux-')))
+    tmp5 = Table(fitsio.read(lya_path))
+    assert len(cat)==len(tmp5) and np.all(cat['TARGETID']==tmp5['TARGETID'])
+    tmp5.remove_column('TARGETID')
+    cat = hstack([cat, tmp5])
+
     # fn_emline = fn.replace('redrock-', 'emline-')
     # emline = Table(fitsio.read(fn_emline, columns=columns_emline))
     # emline.remove_column('TARGETID')
@@ -247,4 +253,5 @@ targets.remove_column('TARGETID')
 cat = hstack([cat, targets])
 print(len(cat), len(np.unique(cat['TARGETID'])))
 
-cat.write('/global/cfs/cdirs/desicollab/users/rongpu/data/desi2/tertiary49/catalogs/tertiary49_ibis_lae_truth-20260127-add_target_info.fits', overwrite=False)
+# cat.write('/global/cfs/cdirs/desicollab/users/rongpu/data/desi2/tertiary49/catalogs/tertiary49_ibis_lae_truth-20260127-add_target_info.fits', overwrite=False)
+cat.write('/global/cfs/cdirs/desicollab/users/rongpu/data/desi2/tertiary49/catalogs/tertiary49_ibis_lae_truth-20260127-add_target_info-add_lyaflux.fits', overwrite=False)
