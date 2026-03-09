@@ -2,14 +2,14 @@
 
 brick="$1"
 
-outdir=$SCRATCH/ibis-dr1/test_new_sky
+outdir=$SCRATCH/ibis-dr1/test/test_prod_wise
 
 export COSMO=/dvs_ro/cfs/cdirs/cosmo
 
 # export LEGACY_SURVEY_DIR=$COSMO/work/legacysurvey/ibis
 export LEGACY_SURVEY_DIR=$outdir
 
-export LARGEGALAXIES_CAT=$COSMO/staging/largegalaxies/v3.0/SGA-ellipse-v3.0.kd.fits
+export LARGEGALAXIES_CAT=$COSMO/work/legacysurvey/sga/2025/SGA2025-ellipse-v1.1-dr11-south.kd.fits
 export DUST_DIR=$COSMO/data/dust/v0_1
 
 export GAIA_CAT_DIR=$COSMO/data/gaia/dr3/healpix
@@ -71,13 +71,13 @@ export LEGACYPIPE_DIR=/src/legacypipe/py
 
 python -u -O $LEGACYPIPE_DIR/legacypipe/runbrick.py \
        --skip \
+       --skip-calibs \
        --run ibis \
        --bands M411,M438,M464,M490,M517 \
        --nsatur 2 \
        --brick "$brick" \
        --rgb-stretch 3.0 \
        --sub-blobs \
-       --no-wise \
        --checkpoint "${outdir}/checkpoints/${bri}/checkpoint-${brick}.pickle" \
        --checkpoint-period 300 \
        --pickle "${outdir}/pickles/${bri}/runbrick-%(brick)s-%%(stage)s.pickle" \
@@ -85,6 +85,7 @@ python -u -O $LEGACYPIPE_DIR/legacypipe/runbrick.py \
        --write-stage srcs \
        --threads 32 \
        --blob-image \
+       --blob-dilate 4 \
        >> "$log" 2>&1
 
 # helps in deep fields:

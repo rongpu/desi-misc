@@ -1,6 +1,6 @@
 #! /bin/bash
 
-outdir=$SCRATCH/ibis-dr1/test_splinesky
+outdir=$SCRATCH/ibis-dr1
 
 export COSMO=/dvs_ro/cfs/cdirs/cosmo
 
@@ -13,7 +13,7 @@ export GAIA_CAT_VER=3
 
 export DUST_DIR=$COSMO/data/dust/v0_1
 export TYCHO2_KD_DIR=$COSMO/staging/tycho2
-export LARGEGALAXIES_CAT=$COSMO/staging/largegalaxies/v3.0/SGA-ellipse-v3.0.kd.fits
+export LARGEGALAXIES_CAT=$COSMO/work/legacysurvey/sga/2025/SGA2025-ellipse-v0.80-dr11-south.kd.fits
 
 unset PS1CAT_DIR
 unset GALEX_DIR

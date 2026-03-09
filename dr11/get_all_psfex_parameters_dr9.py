@@ -44,8 +44,8 @@ print('Starting')
 
 n_processes = 256
 
-psfex_dir = '/dvs_ro/cfs/cdirs/cosmo/work/legacysurvey/dr11/calib/psfex'
-surveyccd_path = '/dvs_ro/cfs/cdirs/cosmo/work/legacysurvey/dr11/survey-ccds-decam-dr11.fits'
+psfex_dir = '/dvs_ro/cfs/cdirs/cosmo/data/legacysurvey/dr9/calib/psfex'
+surveyccd_path = '/dvs_ro/cfs/cdirs/cosmo/data/legacysurvey/dr9/survey-ccds-decam-dr9.fits.gz'
 
 ccd = Table(fitsio.read(surveyccd_path, columns=['expnum', 'filter', 'image_filename', 'ccdname', 'plver', 'ccd_cuts']))
 print(len(ccd))
@@ -92,7 +92,7 @@ assert np.all(ccd['ccd_id_str']==psf_params['ccd_id_str'])
 psf_params['ccd_cuts'] = ccd['ccd_cuts']
 psf_params.remove_column('ccd_id_str')
 
-psf_params.write('/global/cfs/cdirs/desicollab/users/rongpu/data/dr11dev/survey-ccds-decam-dr11-psfex.fits', overwrite=True)
+psf_params.write('/global/cfs/cdirs/desicollab/users/rongpu/data/dr9/survey-ccds-decam-dr9-psfex.fits', overwrite=True)
 
 print('All done!', time.strftime('%H:%M:%S', time.gmtime(time.time() - time_start)))
 

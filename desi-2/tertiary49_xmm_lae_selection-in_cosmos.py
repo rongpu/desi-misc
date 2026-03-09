@@ -50,7 +50,7 @@ def get_maskbits_cut_bits(bands):
 
 
 # AR offset field by +0.3 in dec to avoid shallow m464 region
-field_ra, field_dec, field_rad_deg = 150.1, 2.182 + 0.3, 1.8 - 0.1
+field_ra, field_dec, field_rad_deg = 150.1, 2.182 + 0.3, 1.8
 area = np.pi * field_rad_deg ** 2
 
 fnodet = 0.001
