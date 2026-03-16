@@ -1,0 +1,62 @@
+remove these columns: MAG_M411,MAG_M438,MAG_M464,MAG_M490,MAG_M517,MAG_G,MAG_R2,MAG_I2,MAG_Z,MAG_Y,FIBMAG_M411,FIBMAG_M438,FIBMAG_M464,FIBMAG_M490,FIBMAG_M517,DESISUPRIME,DESISUPRIME_TARGETID,DESISUPRIME_EFFTIME_SPEC,DESISUPRIME_VI,DESISUPRIME_VI_Z,DESISUPRIME_VI_QUALITY,DESISUPRIME_RR_Z,DESISUPRIME_RR_DELTACHI2,DESISUPRIME_RR_Z0_ZELDA,DESISUPRIME_RR_Z0_ZELDA_LYAFLUX,DESISUPRIME_RR_Z0_ZELDA_LYAEW,DESICLAUDS,DESICLAUDS_TARGETID,DESICLAUDS_EFFTIME_SPEC,DESICLAUDS_VI,DESICLAUDS_VI_Z,DESICLAUDS_VI_QUALITY,DESICLAUDS_RR_Z,DESICLAUDS_RR_DELTACHI2,DESICLAUDS_RR_Z0_ZELDA,DESICLAUDS_RR_Z0_ZELDA_LYAFLUX,DESICLAUDS_RR_Z0_ZELDA_LYAEW,DESIHSCWIDE,DESIHSCWIDE_TARGETID,DESIHSCWIDE_EFFTIME_SPEC,DESIHSCWIDE_VI,DESIHSCWIDE_VI_Z,DESIHSCWIDE_VI_QUALITY,DESIHSCWIDE_RR_Z,DESIHSCWIDE_RR_DELTACHI2,DESIHSCWIDE_RR_Z0_ZELDA,DESIHSCWIDE_RR_Z0_ZELDA_LYAFLUX,DESIHSCWIDE_RR_Z0_ZELDA_LYAEW,DESIODIN,DESIODIN_TARGETID,DESIODIN_EFFTIME_SPEC,DESIODIN_VI,DESIODIN_VI_Z,DESIODIN_VI_QUALITY,DESIODIN_RR_Z,DESIODIN_RR_DELTACHI2,DESIODIN_RR_Z0_ZELDA,DESIODIN_RR_Z0_ZELDA_LYAFLUX,DESIODIN_RR_Z0_ZELDA_LYAEW
+156.7k/deg2 after radius cut
+1423039 0.6135446950533614
+19117963
+5495012
+Doubly matched objects = 2380
+Final matched objects = 1272009
+
+M411
+151.3k/deg2 after maskbits cut
+56.4k/deg2  after 22.0 < fibmag < 25.25 cut
+10.5k/deg2  after IBIS color > 0.1 cut
+9.5k/deg2   after g-r < 0.7 cut
+5.7k/deg2   after r-i < 0.35 cut
+6.1k/deg2   after adding back faint sources
+remove 2 targets with r_mag < 18
+
+M438
+151.3k/deg2 after maskbits cut
+62.3k/deg2  after 22.0 < fibmag < 25.25 cut
+14.1k/deg2  after IBIS color > 0.31 cut
+7.9k/deg2   after g-r < 0.7 cut
+5.9k/deg2   after r-i < 0.35 cut
+6.4k/deg2   after adding back faint sources
+remove 1 targets with r_mag < 18
+
+M464
+151.3k/deg2 after maskbits cut
+66.4k/deg2  after 22.0 < fibmag < 25.25 cut
+15.8k/deg2  after IBIS color > 0.3 cut
+8.9k/deg2   after g-r < 0.7 cut
+6.6k/deg2   after r-i < 0.35 cut
+7.3k/deg2   after adding back faint sources
+remove 5 targets with r_mag < 18
+
+M490
+151.3k/deg2 after maskbits cut
+71.0k/deg2  after 22.0 < fibmag < 25.25 cut
+12.7k/deg2  after IBIS color > 0.32 cut
+7.8k/deg2   after g-r < 0.7 cut
+5.6k/deg2   after r-i < 0.35 cut
+6.3k/deg2   after adding back faint sources
+remove 3 targets with r_mag < 18
+
+M517
+151.3k/deg2 after maskbits cut
+75.2k/deg2  after 22.0 < fibmag < 25.25 cut
+14.3k/deg2  after IBIS color > 0.29 cut
+8.5k/deg2   after g-r < 0.8 cut
+6.3k/deg2   after r-i < 0.4 cut
+7.6k/deg2   after adding back faint sources
+remove 6 targets with r_mag < 18
+
+All combined:
+6.1k/deg2   after adding M411
+12.5k/deg2  after adding M438
+18.1k/deg2  after adding M464
+22.9k/deg2  after adding M490
+28.7k/deg2  after adding M517
+
+260877 0.18332385830606188
+260877

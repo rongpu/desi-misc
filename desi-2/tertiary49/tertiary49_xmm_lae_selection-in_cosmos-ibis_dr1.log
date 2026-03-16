@@ -1,0 +1,60 @@
+3097790 3097790
+['dec' 'ibis_id' 'ra']
+3097790
+192.8k/deg2 after radius cut
+1750055 0.5649366161037385
+
+M411
+186.3k/deg2 after maskbits cut
+55.8k/deg2  after 22.0 < fibmag < 25.25 cut
+10.2k/deg2  after IBIS color > 0.1 cut
+9.2k/deg2   after g-r < 0.7 cut
+5.6k/deg2   after r-i < 0.35 cut
+5.9k/deg2   after adding back faint sources
+remove 0 targets with r_mag < 18
+
+M438
+186.3k/deg2 after maskbits cut
+61.6k/deg2  after 22.0 < fibmag < 25.25 cut
+13.8k/deg2  after IBIS color > 0.31 cut
+7.8k/deg2   after g-r < 0.7 cut
+5.9k/deg2   after r-i < 0.35 cut
+6.5k/deg2   after adding back faint sources
+remove 2 targets with r_mag < 18
+
+M464
+186.3k/deg2 after maskbits cut
+65.2k/deg2  after 22.0 < fibmag < 25.25 cut
+13.4k/deg2  after IBIS color > 0.3 cut
+6.9k/deg2   after g-r < 0.7 cut
+5.3k/deg2   after r-i < 0.35 cut
+5.8k/deg2   after adding back faint sources
+remove 1 targets with r_mag < 18
+
+M490
+186.3k/deg2 after maskbits cut
+70.4k/deg2  after 22.0 < fibmag < 25.25 cut
+9.3k/deg2   after IBIS color > 0.32 cut
+5.2k/deg2   after g-r < 0.7 cut
+4.1k/deg2   after r-i < 0.35 cut
+4.6k/deg2   after adding back faint sources
+remove 2 targets with r_mag < 18
+
+M517
+186.3k/deg2 after maskbits cut
+74.5k/deg2  after 22.0 < fibmag < 25.25 cut
+11.5k/deg2  after IBIS color > 0.29 cut
+6.3k/deg2   after g-r < 0.8 cut
+5.0k/deg2   after r-i < 0.4 cut
+6.0k/deg2   after adding back faint sources
+remove 1 targets with r_mag < 18
+
+All combined:
+5.9k/deg2   after adding M411
+12.5k/deg2  after adding M438
+16.7k/deg2  after adding M464
+20.1k/deg2  after adding M490
+24.9k/deg2  after adding M517
+
+225631 0.1289279479787778
+225631

@@ -50,7 +50,7 @@ def get_maskbits_cut_bits(bands):
 
 
 # AR offset field by +0.3 in dec to avoid shallow m464 region
-field_ra, field_dec, field_rad_deg = 150.1, 2.182 + 0.3, 1.8
+field_ra, field_dec, field_rad_deg = 150.1, 2.182 + 0.3, 1.7
 area = np.pi * field_rad_deg ** 2
 
 fnodet = 0.001
@@ -324,5 +324,5 @@ print(np.sum(cat['lae_sel']), np.sum(cat['lae_sel'])/len(cat))
 mask = cat['lae_sel'].copy()
 cat = cat[mask]
 print(len(cat))
-cat.write('/global/cfs/cdirs/desicollab/users/rongpu/data/desi2/xmm_highz/tertiary49_xmm_lae_targets-in_cosmos.fits', overwrite=False)
+# cat.write('/global/cfs/cdirs/desicollab/users/rongpu/data/desi2/xmm_highz/tertiary49_xmm_lae_targets-in_cosmos.fits', overwrite=False)
 

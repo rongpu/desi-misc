@@ -1,0 +1,62 @@
+remove these columns: MAG_M411,MAG_M438,MAG_M464,MAG_M490,MAG_M517,MAG_G,MAG_R,MAG_I,MAG_Z,MAG_Y,FIBMAG_M411,FIBMAG_M438,FIBMAG_M464,FIBMAG_M490,FIBMAG_M517
+195.3k/deg2 after radius cut
+1773034 0.5801588812997404
+19117963
+4645799
+Doubly matched objects = 2854
+Final matched objects = 1420238
+
+M411
+191.3k/deg2 after maskbits cut
+56.0k/deg2  after 22.0 < fibmag < 25.25 cut
+8.8k/deg2   after IBIS color > 0.1 cut
+8.1k/deg2   after g-r < 0.7 cut
+5.0k/deg2   after r-i < 0.35 cut
+5.3k/deg2   after adding back faint sources
+remove 0 targets with r_mag < 18
+
+M438
+191.3k/deg2 after maskbits cut
+61.3k/deg2  after 22.0 < fibmag < 25.25 cut
+10.8k/deg2  after IBIS color > 0.31 cut
+6.3k/deg2   after g-r < 0.7 cut
+5.0k/deg2   after r-i < 0.35 cut
+5.2k/deg2   after adding back faint sources
+remove 0 targets with r_mag < 18
+
+M464
+191.3k/deg2 after maskbits cut
+65.8k/deg2  after 22.0 < fibmag < 25.25 cut
+11.2k/deg2  after IBIS color > 0.3 cut
+6.1k/deg2   after g-r < 0.7 cut
+4.9k/deg2   after r-i < 0.35 cut
+5.1k/deg2   after adding back faint sources
+remove 0 targets with r_mag < 18
+
+M490
+191.3k/deg2 after maskbits cut
+72.0k/deg2  after 22.0 < fibmag < 25.25 cut
+10.5k/deg2  after IBIS color > 0.32 cut
+5.9k/deg2   after g-r < 0.7 cut
+4.7k/deg2   after r-i < 0.35 cut
+5.2k/deg2   after adding back faint sources
+remove 0 targets with r_mag < 18
+
+M517
+191.3k/deg2 after maskbits cut
+75.8k/deg2  after 22.0 < fibmag < 25.25 cut
+10.0k/deg2  after IBIS color > 0.29 cut
+5.5k/deg2   after g-r < 0.8 cut
+4.3k/deg2   after r-i < 0.4 cut
+5.1k/deg2   after adding back faint sources
+remove 1 targets with r_mag < 18
+
+All combined:
+5.3k/deg2   after adding M411
+10.5k/deg2  after adding M438
+14.5k/deg2  after adding M464
+18.7k/deg2  after adding M490
+22.9k/deg2  after adding M517
+
+207820 0.11721151427440196
+207820
