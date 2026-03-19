@@ -1,5 +1,3 @@
-# Run this after the primary LAE selection
-
 from __future__ import division, print_function
 import sys, os, glob, time, warnings
 import numpy as np
@@ -39,68 +37,49 @@ def get_maskbits_cut_bits(bands):
     return cut_bits
 
 
-# offset field by +0.2 in dec to avoid shallow m464 region
-field_ra, field_dec, field_rad_deg = 150.1, 2.182 + 0.2, 1.8
+field_ra, field_dec, field_rad_deg = 35.75, -4.75, 1.8
 
 density_rad_deg = 1.6  # radius for density numbers
 area = np.pi * density_rad_deg ** 2
 
 ##############################################################################################################################
 
-cat = Table(fitsio.read('/dvs_ro/cfs/cdirs/desicollab/users/rongpu/data/ibis/deep_fields/tractor_cosmos.fits'))
-hsc_deep = Table(fitsio.read('/dvs_ro/cfs/cdirs/desicollab/users/rongpu/data/ibis/deep_fields/tractor_cosmos-hsc_deep.fits'))
-hsc_wide = Table(fitsio.read('/dvs_ro/cfs/cdirs/desicollab/users/rongpu/data/ibis/deep_fields/tractor_cosmos-hsc_wide.fits'))
-assert np.all(cat['ibis_id']==hsc_deep['ibis_id']) and np.all(cat['ibis_id']==hsc_wide['ibis_id'])
+ibis = Table(fitsio.read('/dvs_ro/cfs/cdirs/desicollab/users/rongpu/data/ibis/deep_fields/tractor_xmm.fits'))
+hsc = Table(fitsio.read('/dvs_ro/cfs/cdirs/desicollab/users/rongpu/data/ibis/deep_fields/tractor_xmm-hsc_wide.fits'))
+assert np.all(ibis['ibis_id']==hsc['ibis_id'])
 
-cols = list(np.intersect1d(hsc_deep.colnames, hsc_wide.colnames))
-hsc_deep = hsc_deep[cols]
-hsc_wide = hsc_wide[cols]
-hsc_deep['hsc_deep'] = True
-hsc_wide['hsc_wide'] = False
-hsc_deep['id'] = np.arange(len(hsc_deep))
-hsc_wide['id'] = np.arange(len(hsc_wide))
-
-# Use HSC-deep if available
-mask_deep = hsc_deep['ra']!=-99
-hsc = vstack([hsc_deep[mask_deep], hsc_wide[~mask_deep]])
-hsc.sort('id')
-hsc.remove_column('id')
-assert len(hsc)==len(hsc_deep) and np.all(hsc['ibis_id']==hsc_deep['ibis_id'])
-
-print(len(cat), len(hsc))
-print(np.intersect1d(cat.colnames, hsc.colnames))
+print(len(ibis), len(hsc))
+print(np.intersect1d(ibis.colnames, hsc.colnames))
 hsc.remove_columns(['ibis_id', 'ra', 'dec'])
-cat = hstack([cat, hsc])
+cat = hstack([ibis, hsc])
 print(len(cat))
 
-del hsc_deep, hsc_wide, hsc
+################### Add DESI LAE classifications ###################
+desi = Table(fitsio.read('/dvs_ro/cfs/cdirs/desicollab/users/rongpu/data/desi2/tertiary49/catalogs/tertiary49_ibis_lae_truth-20260127-add_target_info-add_lyaflux.fits'))
+print(len(desi))
 
-# ################### Add DESI LAE classifications ###################
-# desi = Table(fitsio.read('/dvs_ro/cfs/cdirs/desicollab/users/rongpu/data/desi2/tertiary49/catalogs/tertiary49_ibis_lae_truth-20260127-add_target_info-add_lyaflux.fits'))
-# print(len(desi))
+desi.rename_columns(['lae_sel', 'lae_sel_bright', 'M411_sel', 'M438_sel', 'M464_sel', 'M490_sel', 'M517_sel'], ['lae_sel_t49', 'lae_sel_bright_t49', 'M411_sel_t49', 'M438_sel_t49', 'M464_sel_t49', 'M490_sel_t49', 'M517_sel_t49'])
 
-# desi.rename_columns(['lae_sel', 'lae_sel_bright', 'M411_sel', 'M438_sel', 'M464_sel', 'M490_sel', 'M517_sel'], ['lae_sel_t49', 'lae_sel_bright_t49', 'M411_sel_t49', 'M438_sel_t49', 'M464_sel_t49', 'M490_sel_t49', 'M517_sel_t49'])
+# https://github.com/rongpu/Python/blob/master/user_modules/match_coord.py
+sys.path.append(os.path.expanduser('~/git/Python/user_modules/'))
+from match_coord import match_coord
 
-# # https://github.com/rongpu/Python/blob/master/user_modules/match_coord.py
-# sys.path.append(os.path.expanduser('~/git/Python/user_modules/'))
-# from match_coord import match_coord
-
-# idx1, idx2, d2d, d_ra, d_dec = match_coord(cat['ra'], cat['dec'], desi['RA'], desi['DEC'], search_radius=0.5, plot_q=True)
-# print(len(idx2), len(idx2)/len(desi))
-# cat['obs'] = False
-# cat['obs'][idx1] = True
-# cat['lae'] = False
-# cat['lae'][idx1] = desi['lae'][idx2]
-# cat['lae'] = False
-# cat['lae'][idx1] = desi['lae'][idx2]
-# for col in ['lae_sel_t49', 'lae_sel_bright_t49', 'M411_sel_t49', 'M438_sel_t49', 'M464_sel_t49', 'M490_sel_t49', 'M517_sel_t49']:
-#     cat[col] = False
-#     cat[col][idx1] = desi[col][idx2]
-# for col in ['DELTACHI2', 'lya_flux', 'lya_flux_err']:
-#     cat[col] = -99.
-#     cat[col][idx1] = desi[col][idx2]
-# print(len(desi), np.sum(cat['obs']))
-# print(np.sum(desi['lae']), np.sum(cat['lae']))
+idx1, idx2, d2d, d_ra, d_dec = match_coord(cat['ra'], cat['dec'], desi['RA'], desi['DEC'], search_radius=0.5, plot_q=True)
+print(len(idx2), len(idx2)/len(desi))
+cat['obs'] = False
+cat['obs'][idx1] = True
+cat['lae'] = False
+cat['lae'][idx1] = desi['lae'][idx2]
+cat['lae'] = False
+cat['lae'][idx1] = desi['lae'][idx2]
+for col in ['lae_sel_t49', 'lae_sel_bright_t49', 'M411_sel_t49', 'M438_sel_t49', 'M464_sel_t49', 'M490_sel_t49', 'M517_sel_t49']:
+    cat[col] = False
+    cat[col][idx1] = desi[col][idx2]
+for col in ['DELTACHI2', 'lya_flux', 'lya_flux_err']:
+    cat[col] = -99.
+    cat[col][idx1] = desi[col][idx2]
+print(len(desi), np.sum(cat['obs']))
+print(np.sum(desi['lae']), np.sum(cat['lae']))
 
 ##############################################################################################################################
 
@@ -157,7 +136,7 @@ def select_lae(cat, band, cfg, area):
 
     # cut on IBIS color
     color = cat[band+'_free_mag'] - cat[band+'mag']
-    mask &= color > cfg['mb_colmin']
+    mask &= color > np.exp((cat[f'{band}fibmag'] - 25.) * cfg['exp_a']) * cfg['exp_b'] + cfg['mb_colmin']
     print(f'{(mask & mask_rad).sum() / area:.1f}/deg2\tafter IBIS color cut')
 
     # cut on g-r and r-i
@@ -178,37 +157,47 @@ def select_lae(cat, band, cfg, area):
     print(f'remove {np.sum(mask & mask1)} targets with r_mag < {RMAG_BRIGHT_CUT}')
     mask &= (~mask1)
 
-    # print('LAE completeness: {:.1f}% ({}/{})'.format(100*np.sum(cat['lae'][mask])/np.sum(cat['lae'] & cat[f'{band}_sel_t49'] & cat[f'lae_sel_bright_t49']), np.sum(cat['lae'][mask]), np.sum(cat['lae'] & cat[f'{band}_sel_t49'] & cat[f'lae_sel_bright_t49'])))
-    # print('LAE purity:       {:.1f}% ({}/{})'.format(100*np.sum(cat['lae'][mask])/np.sum(cat['obs'][mask]), np.sum(cat['lae'][mask]), np.sum(cat['obs'][mask])))
+    print('LAE completeness: {:.1f}% ({}/{})'.format(100*np.sum(cat['lae'][mask])/np.sum(cat['lae'] & cat[f'{band}_sel_t49'] & cat[f'lae_sel_bright_t49']), np.sum(cat['lae'][mask]), np.sum(cat['lae'] & cat[f'{band}_sel_t49'] & cat[f'lae_sel_bright_t49'])))
+    print('LAE purity:       {:.1f}% ({}/{})'.format(100*np.sum(cat['lae'][mask])/np.sum(cat['obs'][mask]), np.sum(cat['lae'][mask]), np.sum(cat['obs'][mask])))
 
     return mask
 
 
-FIBMAG_MIN, FIBMAG_MAX = 22.0, 25.25
+FIBMAG_MIN, FIBMAG_MAX = 22.0, 25.0
 RMAG_BRIGHT_CUT = 18
 MAGNODET = 30.0
 MAGNODET_HSC = 25.0
 
 LAE_CONFIGS = {
     'M411': {
-        'mb_colmin': 0.085,
+        'mb_colmin': 0.24,
+        'exp_a': 4.,
+        'exp_b': 0.3,
         'ri_colmax': 0.35, 'gr_colmax': 0.7,
     },
     'M438': {
-        'mb_colmin': 0.14,
+        'mb_colmin': 0.23,
+        'exp_a': 4.,
+        'exp_b': 0.6,
         'ri_colmax': 0.35, 'gr_colmax': 0.7,
     },
     'M464': {
-        'mb_colmin': 0.155,
+        'mb_colmin': 0.30,
+        'exp_a': 4.,
+        'exp_b': 0.3,
         'ri_colmax': 0.35, 'gr_colmax': 0.7,
     },
     'M490': {
-        'mb_colmin': 0.325,
-        'ri_colmax': 0.35, 'gr_colmax': 0.8,
+        'mb_colmin': 0.55,
+        'exp_a': 4.,
+        'exp_b': 0.3,
+        'ri_colmax': 0.35, 'gr_colmax': 0.7,
     },
     'M517': {
-        'mb_colmin': 0.565,
-        'ri_colmax': 0.4, 'gr_colmax': 0.9,
+        'mb_colmin': 0.81,
+        'exp_a': 4.,
+        'exp_b': 0.3,
+        'ri_colmax': 0.4, 'gr_colmax': 0.8,
     },
 }
 
@@ -221,33 +210,11 @@ for band in ibis_filters:
     cat['lae_sel'] |= cat[f'{band}_sel']
     print(f'{np.sum(cat["lae_sel"] & mask_rad) / area:.1f}/deg2\tafter adding {band}')
 mask = cat['lae_sel'].copy()
-# print('LAE completeness: {:.1f}% ({}/{})'.format(100*np.sum(cat['lae'][mask])/np.sum(cat['lae'] & cat['lae_sel_t49'] & cat[f'lae_sel_bright_t49']), np.sum(cat['lae'][mask]), np.sum(cat['lae'] & cat['lae_sel_t49'] & cat[f'lae_sel_bright_t49'])))
-# print('LAE purity:       {:.1f}% ({}/{})'.format(100*np.sum(cat['lae'][mask])/np.sum(cat['obs'][mask]), np.sum(cat['lae'][mask]), np.sum(cat['obs'][mask])))
+print('LAE completeness: {:.1f}% ({}/{})'.format(100*np.sum(cat['lae'][mask])/np.sum(cat['lae'] & cat['lae_sel_t49'] & cat[f'lae_sel_bright_t49']), np.sum(cat['lae'][mask]), np.sum(cat['lae'] & cat['lae_sel_t49'] & cat[f'lae_sel_bright_t49'])))
+print('LAE purity:       {:.1f}% ({}/{})'.format(100*np.sum(cat['lae'][mask])/np.sum(cat['obs'][mask]), np.sum(cat['lae'][mask]), np.sum(cat['obs'][mask])))
 
-
-primary_lae = Table(fitsio.read('/global/cfs/cdirs/desicollab/users/rongpu/data/desi2/tertiary54/tertiary54_lae_targets.fits'))
+# cat.write('/pscratch/sd/r/rongpu/tmp/ibis_hsc-wide_xmm-synthmag.fits', overwrite=False)
+cat.write('/pscratch/sd/r/rongpu/tmp/tertiary54/tertiary54_lae_targets-xmm-all.fits', overwrite=False)
 
 mask = cat['lae_sel'].copy()
-print('Filler LAEs: {}'.format(np.sum(mask)))
-cat[mask].write('/global/cfs/cdirs/desicollab/users/rongpu/data/desi2/tertiary54/misc/tertiary54_lae_filler_targets-include_primary_laes.fits', overwrite=False)
-
-mask &= ~np.in1d(cat['ibis_id'], primary_lae['ibis_id'])
-print('after excluding the primary LAEs: {}'.format(np.sum(mask)))
-cat[mask].write('/global/cfs/cdirs/desicollab/users/rongpu/data/desi2/tertiary54/tertiary54_lae_filler_targets.fits', overwrite=False)
-
-###################### Check the density with FIBMAG_MAX = 25.0 ######################
-
-print()
-print('###################### Check the density with FIBMAG_MAX = 25.0 ######################')
-
-FIBMAG_MAX = 25.0
-for band, cfg in LAE_CONFIGS.items():
-    cat[f'{band}_sel'] = select_lae(cat, band, cfg, area)
-
-print('\nAll combined:')
-cat['lae_sel'] = False
-for band in ibis_filters:
-    cat['lae_sel'] |= cat[f'{band}_sel']
-    print(f'{np.sum(cat["lae_sel"] & mask_rad) / area:.1f}/deg2\tafter adding {band}')
-mask = cat['lae_sel'].copy()
-
+cat[mask].write('/global/cfs/cdirs/desicollab/users/rongpu/data/desi2/tertiary54/tertiary54_lae_targets-xmm.fits', overwrite=False)

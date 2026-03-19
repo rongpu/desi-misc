@@ -1,5 +1,3 @@
-# Run this after the primary LAE selection
-
 from __future__ import division, print_function
 import sys, os, glob, time, warnings
 import numpy as np
@@ -47,33 +45,15 @@ area = np.pi * density_rad_deg ** 2
 
 ##############################################################################################################################
 
-cat = Table(fitsio.read('/dvs_ro/cfs/cdirs/desicollab/users/rongpu/data/ibis/deep_fields/tractor_cosmos.fits'))
-hsc_deep = Table(fitsio.read('/dvs_ro/cfs/cdirs/desicollab/users/rongpu/data/ibis/deep_fields/tractor_cosmos-hsc_deep.fits'))
-hsc_wide = Table(fitsio.read('/dvs_ro/cfs/cdirs/desicollab/users/rongpu/data/ibis/deep_fields/tractor_cosmos-hsc_wide.fits'))
-assert np.all(cat['ibis_id']==hsc_deep['ibis_id']) and np.all(cat['ibis_id']==hsc_wide['ibis_id'])
+ibis = Table(fitsio.read('/dvs_ro/cfs/cdirs/desicollab/users/rongpu/data/ibis/deep_fields/tractor_cosmos.fits'))
+hsc = Table(fitsio.read('/dvs_ro/cfs/cdirs/desicollab/users/rongpu/data/ibis/deep_fields/tractor_cosmos-hsc_wide.fits'))
+assert np.all(ibis['ibis_id']==hsc['ibis_id'])
 
-cols = list(np.intersect1d(hsc_deep.colnames, hsc_wide.colnames))
-hsc_deep = hsc_deep[cols]
-hsc_wide = hsc_wide[cols]
-hsc_deep['hsc_deep'] = True
-hsc_wide['hsc_wide'] = False
-hsc_deep['id'] = np.arange(len(hsc_deep))
-hsc_wide['id'] = np.arange(len(hsc_wide))
-
-# Use HSC-deep if available
-mask_deep = hsc_deep['ra']!=-99
-hsc = vstack([hsc_deep[mask_deep], hsc_wide[~mask_deep]])
-hsc.sort('id')
-hsc.remove_column('id')
-assert len(hsc)==len(hsc_deep) and np.all(hsc['ibis_id']==hsc_deep['ibis_id'])
-
-print(len(cat), len(hsc))
-print(np.intersect1d(cat.colnames, hsc.colnames))
+print(len(ibis), len(hsc))
+print(np.intersect1d(ibis.colnames, hsc.colnames))
 hsc.remove_columns(['ibis_id', 'ra', 'dec'])
-cat = hstack([cat, hsc])
+cat = hstack([ibis, hsc])
 print(len(cat))
-
-del hsc_deep, hsc_wide, hsc
 
 # ################### Add DESI LAE classifications ###################
 # desi = Table(fitsio.read('/dvs_ro/cfs/cdirs/desicollab/users/rongpu/data/desi2/tertiary49/catalogs/tertiary49_ibis_lae_truth-20260127-add_target_info-add_lyaflux.fits'))
@@ -157,7 +137,7 @@ def select_lae(cat, band, cfg, area):
 
     # cut on IBIS color
     color = cat[band+'_free_mag'] - cat[band+'mag']
-    mask &= color > cfg['mb_colmin']
+    mask &= color > np.exp((cat[f'{band}fibmag'] - 25.) * cfg['exp_a']) * cfg['exp_b'] + cfg['mb_colmin']
     print(f'{(mask & mask_rad).sum() / area:.1f}/deg2\tafter IBIS color cut')
 
     # cut on g-r and r-i
@@ -177,38 +157,48 @@ def select_lae(cat, band, cfg, area):
     mask1 = cat['rmag'] < RMAG_BRIGHT_CUT
     print(f'remove {np.sum(mask & mask1)} targets with r_mag < {RMAG_BRIGHT_CUT}')
     mask &= (~mask1)
-
+    
     # print('LAE completeness: {:.1f}% ({}/{})'.format(100*np.sum(cat['lae'][mask])/np.sum(cat['lae'] & cat[f'{band}_sel_t49'] & cat[f'lae_sel_bright_t49']), np.sum(cat['lae'][mask]), np.sum(cat['lae'] & cat[f'{band}_sel_t49'] & cat[f'lae_sel_bright_t49'])))
     # print('LAE purity:       {:.1f}% ({}/{})'.format(100*np.sum(cat['lae'][mask])/np.sum(cat['obs'][mask]), np.sum(cat['lae'][mask]), np.sum(cat['obs'][mask])))
 
     return mask
 
 
-FIBMAG_MIN, FIBMAG_MAX = 22.0, 25.25
+FIBMAG_MIN, FIBMAG_MAX = 22.0, 25.0
 RMAG_BRIGHT_CUT = 18
 MAGNODET = 30.0
 MAGNODET_HSC = 25.0
 
 LAE_CONFIGS = {
     'M411': {
-        'mb_colmin': 0.085,
+        'mb_colmin': 0.24,
+        'exp_a': 4.,
+        'exp_b': 0.3,
         'ri_colmax': 0.35, 'gr_colmax': 0.7,
     },
     'M438': {
-        'mb_colmin': 0.14,
+        'mb_colmin': 0.23,
+        'exp_a': 4.,
+        'exp_b': 0.6,
         'ri_colmax': 0.35, 'gr_colmax': 0.7,
     },
     'M464': {
-        'mb_colmin': 0.155,
+        'mb_colmin': 0.30,
+        'exp_a': 4.,
+        'exp_b': 0.3,
         'ri_colmax': 0.35, 'gr_colmax': 0.7,
     },
     'M490': {
-        'mb_colmin': 0.325,
-        'ri_colmax': 0.35, 'gr_colmax': 0.8,
+        'mb_colmin': 0.55,
+        'exp_a': 4.,
+        'exp_b': 0.3,
+        'ri_colmax': 0.35, 'gr_colmax': 0.7,
     },
     'M517': {
-        'mb_colmin': 0.565,
-        'ri_colmax': 0.4, 'gr_colmax': 0.9,
+        'mb_colmin': 0.81,
+        'exp_a': 4.,
+        'exp_b': 0.3,
+        'ri_colmax': 0.4, 'gr_colmax': 0.8,
     },
 }
 
@@ -220,34 +210,9 @@ cat['lae_sel'] = False
 for band in ibis_filters:
     cat['lae_sel'] |= cat[f'{band}_sel']
     print(f'{np.sum(cat["lae_sel"] & mask_rad) / area:.1f}/deg2\tafter adding {band}')
-mask = cat['lae_sel'].copy()
-# print('LAE completeness: {:.1f}% ({}/{})'.format(100*np.sum(cat['lae'][mask])/np.sum(cat['lae'] & cat['lae_sel_t49'] & cat[f'lae_sel_bright_t49']), np.sum(cat['lae'][mask]), np.sum(cat['lae'] & cat['lae_sel_t49'] & cat[f'lae_sel_bright_t49'])))
-# print('LAE purity:       {:.1f}% ({}/{})'.format(100*np.sum(cat['lae'][mask])/np.sum(cat['obs'][mask]), np.sum(cat['lae'][mask]), np.sum(cat['obs'][mask])))
 
 
-primary_lae = Table(fitsio.read('/global/cfs/cdirs/desicollab/users/rongpu/data/desi2/tertiary54/tertiary54_lae_targets.fits'))
+cat.write('/pscratch/sd/r/rongpu/tmp/tertiary54/tertiary54_lae_targets-all.fits', overwrite=False)
 
 mask = cat['lae_sel'].copy()
-print('Filler LAEs: {}'.format(np.sum(mask)))
-cat[mask].write('/global/cfs/cdirs/desicollab/users/rongpu/data/desi2/tertiary54/misc/tertiary54_lae_filler_targets-include_primary_laes.fits', overwrite=False)
-
-mask &= ~np.in1d(cat['ibis_id'], primary_lae['ibis_id'])
-print('after excluding the primary LAEs: {}'.format(np.sum(mask)))
-cat[mask].write('/global/cfs/cdirs/desicollab/users/rongpu/data/desi2/tertiary54/tertiary54_lae_filler_targets.fits', overwrite=False)
-
-###################### Check the density with FIBMAG_MAX = 25.0 ######################
-
-print()
-print('###################### Check the density with FIBMAG_MAX = 25.0 ######################')
-
-FIBMAG_MAX = 25.0
-for band, cfg in LAE_CONFIGS.items():
-    cat[f'{band}_sel'] = select_lae(cat, band, cfg, area)
-
-print('\nAll combined:')
-cat['lae_sel'] = False
-for band in ibis_filters:
-    cat['lae_sel'] |= cat[f'{band}_sel']
-    print(f'{np.sum(cat["lae_sel"] & mask_rad) / area:.1f}/deg2\tafter adding {band}')
-mask = cat['lae_sel'].copy()
-
+cat[mask].write('/global/cfs/cdirs/desicollab/users/rongpu/data/desi2/tertiary54/tertiary54_lae_targets.fits', overwrite=False)

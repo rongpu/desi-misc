@@ -1,0 +1,85 @@
+3310703 3310703
+['dec' 'ibis_id' 'ra']
+3310703
+14010
+Doubly matched objects = 0
+Final matched objects = 13872
+13872 0.9901498929336189
+14010 13872
+1461 1458
+radius cut 2030034 0.6131730934487328
+81.4% within 1.60 deg radius
+
+M411
+205419.8/deg2   initial
+199805.0/deg2   after maskbits cut
+41914.1/deg2    after 22.0 < fibmag < 25.0 cut
+278.0/deg2  after IBIS color cut
+272.6/deg2  after g-r < 0.7 cut
+231.6/deg2  after r-i < 0.35 cut
+237.6/deg2  after adding back rmag>25.0 sources
+197.3/deg2  after removing shreds
+remove 0 targets with r_mag < 18
+LAE completeness: 40.3% (104/258)
+LAE purity:       86.0% (104/121)
+
+M438
+205419.8/deg2   initial
+199805.0/deg2   after maskbits cut
+46048.2/deg2    after 22.0 < fibmag < 25.0 cut
+232.1/deg2  after IBIS color cut
+228.5/deg2  after g-r < 0.7 cut
+203.3/deg2  after r-i < 0.35 cut
+208.9/deg2  after adding back rmag>25.0 sources
+166.2/deg2  after removing shreds
+remove 0 targets with r_mag < 18
+LAE completeness: 36.4% (100/275)
+LAE purity:       93.5% (100/107)
+
+M464
+205419.8/deg2   initial
+199805.0/deg2   after maskbits cut
+49710.9/deg2    after 22.0 < fibmag < 25.0 cut
+317.1/deg2  after IBIS color cut
+272.3/deg2  after g-r < 0.7 cut
+239.0/deg2  after r-i < 0.35 cut
+245.2/deg2  after adding back rmag>25.0 sources
+200.9/deg2  after removing shreds
+remove 0 targets with r_mag < 18
+LAE completeness: 45.5% (95/209)
+LAE purity:       85.6% (95/111)
+
+M490
+205419.8/deg2   initial
+199805.0/deg2   after maskbits cut
+54815.9/deg2    after 22.0 < fibmag < 25.0 cut
+350.1/deg2  after IBIS color cut
+209.3/deg2  after g-r < 0.7 cut
+192.0/deg2  after r-i < 0.35 cut
+198.4/deg2  after adding back rmag>25.0 sources
+147.1/deg2  after removing shreds
+remove 0 targets with r_mag < 18
+LAE completeness: 40.6% (71/175)
+LAE purity:       84.5% (71/84)
+
+M517
+205419.8/deg2   initial
+199805.0/deg2   after maskbits cut
+58038.3/deg2    after 22.0 < fibmag < 25.0 cut
+2049.5/deg2 after IBIS color cut
+291.5/deg2  after g-r < 0.8 cut
+270.4/deg2  after r-i < 0.4 cut
+279.4/deg2  after adding back rmag>25.0 sources
+157.8/deg2  after removing shreds
+remove 0 targets with r_mag < 18
+LAE completeness: 46.1% (71/154)
+LAE purity:       84.5% (71/84)
+
+All combined:
+197.3/deg2  after adding M411
+361.6/deg2  after adding M438
+559.0/deg2  after adding M464
+704.3/deg2  after adding M490
+860.9/deg2  after adding M517
+LAE completeness: 48.2% (437/907)
+LAE purity:       87.2% (437/501)
