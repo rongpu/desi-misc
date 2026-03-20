@@ -11,8 +11,6 @@ from astropy.coordinates import SkyCoord
 from astropy import units as u
 
 
-ibis_filters = ['M411', 'M438', 'M464', 'M490', 'M517']
-
 ext_coeffs = {
 'g': 3.240, 'r': 2.276, 'i': 1.633, 'z': 1.263, 'y': 1.076,
 'M411': 4.290, 'M438': 4.099, 'M464': 3.877, 'M490': 3.634, 'M517': 3.389}
@@ -75,7 +73,8 @@ fnodet = 0.001
 magnodet = 22.5 - 2.5 * np.log10(fnodet) # 30
 
 # clip the magnitudes at 30.0
-for band in ['M411', 'M438', 'M464', 'M490', 'M517']:
+ibis_filters = ['M411', 'M438', 'M464', 'M490', 'M517']
+for band in ibis_filters:
     cat[band+'mag'] = 22.5 - 2.5*np.log10(np.clip(cat['flux_{}'.format(band)]*10**(0.4*ext_coeffs[band]*cat['ebv']), fnodet, None))
     cat[band+'fibmag'] = 22.5 - 2.5*np.log10(np.clip(cat['fiberflux_{}'.format(band)]*10**(0.4*ext_coeffs[band]*cat['ebv']), fnodet, None))
 for band in ['g', 'r', 'i', 'z', 'y']:
