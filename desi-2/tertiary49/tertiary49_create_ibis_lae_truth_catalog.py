@@ -186,12 +186,13 @@ print('mask_contam', np.sum(mask_contam))
 
 # DELTACHI2 threshold that increases with redshift
 def dchi2_vs_z(z):
-    min_dchi2 = np.zeros(len(z))
+    min_dchi2, min_dchi2_faint = 9, 18
+    dchi2_threshold = np.zeros(len(z))
     mask = z<=2.8
-    min_dchi2[mask] = 9
+    dchi2_threshold[mask] = min_dchi2
     mask = z>2.8
-    min_dchi2[mask] = 10**(np.log10(9) + (np.log10(18)-np.log10(9))/0.6 * (z[mask]-2.8))
-    return min_dchi2
+    dchi2_threshold[mask] = 10**(np.log10(min_dchi2) + (np.log10(min_dchi2_faint)-np.log10(min_dchi2))/0.6 * (z[mask]-2.8))
+    return dchi2_threshold
 
 mask_lae = (cat['Z']>2.2) & (cat['ZWARN']==0) & (cat['DELTACHI2']>dchi2_vs_z(cat['Z'])) & (~mask_contam)
 print('LAEs', np.sum(mask_lae), np.sum(mask_lae)/len(mask_lae))

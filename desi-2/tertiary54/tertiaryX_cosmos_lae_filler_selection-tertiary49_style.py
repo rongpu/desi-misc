@@ -202,4 +202,4 @@ mask = cat['lae_sel'].copy()
 cat = cat[mask]
 print(len(cat))
 
-cat.write('/global/cfs/cdirs/desicollab/users/rongpu/data/desi2/tertiary53/tertiary53_cosmos_lae_filler_targets.fits', overwrite=False)
+cat.write('/global/cfs/cdirs/desicollab/users/rongpu/data/desi2/tertiary54/tertiary54_cosmos_lae_filler_targets.fits', overwrite=False)

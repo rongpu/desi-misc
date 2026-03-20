@@ -62,8 +62,8 @@ tmp2['TARGET'] = 'LAE_FILLER'
 cat = vstack([tmp1, tmp2])
 print(len(cat))
 
-lbg1 = Table(fitsio.read('/global/cfs/cdirs/desicollab/users/rongpu/data/desi2/tertiaryX/misc/LSST_Y4_CC_COSMOS_lbg_targets.fits'))
-lbg2 = Table(fitsio.read('/global/cfs/cdirs/desicollab/users/rongpu/data/desi2/tertiaryX/misc/LSST_Y4_RF_COSMOS_lbg_targets.fits'))
+lbg1 = Table(fitsio.read('/global/cfs/cdirs/desicollab/users/rongpu/data/desi2/tertiary54/misc/LSST_Y4_CC_COSMOS_lbg_targets.fits'))
+lbg2 = Table(fitsio.read('/global/cfs/cdirs/desicollab/users/rongpu/data/desi2/tertiary54/misc/LSST_Y4_RF_COSMOS_lbg_targets.fits'))
 
 mask = np.full(len(lbg1), True)
 plt.figure(figsize=(12, 12))
@@ -113,5 +113,5 @@ plt.axis([ramax, ramin, decmin, decmax])
 plt.legend(markerscale=5)
 plt.show()
 
-cat.write('/global/cfs/cdirs/desicollab/users/rongpu/data/desi2/tertiaryX/cosmos_lae_lbg_placeholder.fits')
+cat.write('/global/cfs/cdirs/desicollab/users/rongpu/data/desi2/tertiary54/cosmos_lae_lbg_placeholder.fits')
 
