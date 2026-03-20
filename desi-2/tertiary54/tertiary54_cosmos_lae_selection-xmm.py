@@ -56,46 +56,6 @@ print(len(cat))
 
 del ibis, hsc
 
-################### Add DESI LAE classifications ###################
-desi = Table(fitsio.read('/dvs_ro/cfs/cdirs/desicollab/users/rongpu/data/desi2/tertiary49/catalogs/tertiary49_ibis_lae_truth-20260127-add_target_info-add_lyaflux.fits'))
-print(len(desi))
-
-desi.rename_columns(['lae_sel', 'lae_sel_bright', 'M411_sel', 'M438_sel', 'M464_sel', 'M490_sel', 'M517_sel'], ['lae_sel_t49', 'lae_sel_bright_t49', 'M411_sel_t49', 'M438_sel_t49', 'M464_sel_t49', 'M490_sel_t49', 'M517_sel_t49'])
-
-# https://github.com/rongpu/Python/blob/master/user_modules/match_coord.py
-sys.path.append(os.path.expanduser('~/git/Python/user_modules/'))
-from match_coord import match_coord
-
-idx1, idx2, d2d, d_ra, d_dec = match_coord(cat['ra'], cat['dec'], desi['RA'], desi['DEC'], search_radius=0.5, plot_q=True)
-print(len(idx2), len(idx2)/len(desi))
-cat['obs'] = False
-cat['obs'][idx1] = True
-cat['lae'] = False
-cat['lae'][idx1] = desi['lae'][idx2]
-cat['lae'] = False
-cat['lae'][idx1] = desi['lae'][idx2]
-for col in ['lae_sel_t49', 'lae_sel_bright_t49', 'M411_sel_t49', 'M438_sel_t49', 'M464_sel_t49', 'M490_sel_t49', 'M517_sel_t49']:
-    cat[col] = False
-    cat[col][idx1] = desi[col][idx2]
-for col in ['DELTACHI2', 'lya_flux', 'lya_flux_err']:
-    cat[col] = -99.
-    cat[col][idx1] = desi[col][idx2]
-print(len(desi), np.sum(cat['obs']))
-print(np.sum(desi['lae']), np.sum(cat['lae']))
-
-##############################################################################################################################
-
-# cut on radius
-field_c = SkyCoord(ra=field_ra * u.deg, dec=field_dec * u.deg, frame='icrs')                                                                                                   
-cs = SkyCoord(ra=cat['ra'] * u.deg, dec=cat['dec'] * u.deg, frame='icrs')
-cat['CENTER_OFFSET'] = cs.separation(field_c).deg
-mask = cat['CENTER_OFFSET'] < field_rad_deg
-cat = cat[mask]
-print('radius cut', len(cat), np.sum(mask)/len(mask))
-
-mask_rad = cat['CENTER_OFFSET'] < density_rad_deg
-print('{:.1f}% within {:.2f} deg radius'.format(100*np.sum(mask_rad)/len(mask_rad), density_rad_deg))
-
 # compute magnitudes
 fnodet = 0.001
 magnodet = 22.5 - 2.5 * np.log10(fnodet) # 30
@@ -117,6 +77,60 @@ for band in ibis_filters:
         if band1!=band:
             cat[band+'_free_flux'] += cat['flux_'+band1] * 10**(0.4*ext_coeffs[band1]*cat['ebv']) / 4
     cat[band+'_free_mag'] = 22.5 - 2.5*np.log10(np.clip(cat[band+'_free_flux'], fnodet, None))
+
+################### Add DESI LAE classifications ###################
+desi = Table(fitsio.read('/dvs_ro/cfs/cdirs/desicollab/users/rongpu/data/desi2/tertiary49/catalogs/tertiary49_ibis_lae_truth-20260127-add_target_info-add_lyaflux.fits'))
+print(len(desi))
+
+desi.rename_columns(['lae_sel', 'lae_sel_bright', 'M411_sel', 'M438_sel', 'M464_sel', 'M490_sel', 'M517_sel'], ['lae_sel_t49', 'lae_sel_bright_t49', 'M411_sel_t49', 'M438_sel_t49', 'M464_sel_t49', 'M490_sel_t49', 'M517_sel_t49'])
+
+# https://github.com/rongpu/Python/blob/master/user_modules/match_coord.py
+sys.path.append(os.path.expanduser('~/git/Python/user_modules/'))
+from match_coord import match_coord
+
+idx1, idx2, d2d, d_ra, d_dec = match_coord(cat['ra'], cat['dec'], desi['RA'], desi['DEC'], search_radius=0.5, plot_q=True)
+print(len(idx2), len(idx2)/len(desi))
+cat['Z'] = -99.
+cat['Z'][idx1] = desi['Z'][idx2]
+cat['obs'] = False
+cat['obs'][idx1] = True
+cat['lae'] = False
+cat['lae'][idx1] = desi['lae'][idx2]
+cat['lae'] = False
+cat['lae'][idx1] = desi['lae'][idx2]
+for col in ['lae_sel_t49', 'lae_sel_bright_t49', 'M411_sel_t49', 'M438_sel_t49', 'M464_sel_t49', 'M490_sel_t49', 'M517_sel_t49']:
+    cat[col] = False
+    cat[col][idx1] = desi[col][idx2]
+for col in ['DELTACHI2', 'lya_flux', 'lya_flux_err']:
+    cat[col] = -99.
+    cat[col][idx1] = desi[col][idx2]
+print(len(desi), np.sum(cat['obs']))
+print(np.sum(desi['lae']), np.sum(cat['lae']))
+
+lyman_alpha_z = {'M411': [2.3, 2.51], 'M438': [2.51, 2.72], 'M464': [2.72, 2.93], 'M490': [2.93, 3.15], 'M517': [3.15, 3.36]}
+lyman_alpha_z_min, lyman_alpha_z_max = 2.3, 3.36
+
+cat['lae'] &= (cat['Z']>lyman_alpha_z_min) & (cat['Z']<lyman_alpha_z_max)
+cat['lae_bright'] = np.full(len(cat), False)
+for band in lyman_alpha_z.keys():
+    zmin, zmax = lyman_alpha_z[band][0], lyman_alpha_z[band][1]
+    mask = (cat['Z']>zmin) & (cat['Z']<=zmax)
+    cat['lae_'+band] = cat['lae'] & mask
+    cat['lae_'+band+'_bright'] = cat['lae'] & mask & (cat[band+'fibmag']<25.0)
+    cat['lae_bright'] |= cat['lae_'+band+'_bright']
+
+##############################################################################################################################
+
+# cut on radius
+field_c = SkyCoord(ra=field_ra * u.deg, dec=field_dec * u.deg, frame='icrs')                                                                                                   
+cs = SkyCoord(ra=cat['ra'] * u.deg, dec=cat['dec'] * u.deg, frame='icrs')
+cat['CENTER_OFFSET'] = cs.separation(field_c).deg
+mask = cat['CENTER_OFFSET'] < field_rad_deg
+cat = cat[mask]
+print('radius cut', len(cat), np.sum(mask)/len(mask))
+
+mask_rad = cat['CENTER_OFFSET'] < density_rad_deg
+print('{:.1f}% within {:.2f} deg radius'.format(100*np.sum(mask_rad)/len(mask_rad), density_rad_deg))
 
 ##############################################################################################################################
 
@@ -159,7 +173,7 @@ def select_lae(cat, band, cfg, area):
     print(f'remove {np.sum(mask & mask1)} targets with r_mag < {RMAG_BRIGHT_CUT}')
     mask &= (~mask1)
 
-    print('LAE completeness: {:.1f}% ({}/{})'.format(100*np.sum(cat['lae'][mask])/np.sum(cat['lae'] & cat[f'{band}_sel_t49'] & cat[f'lae_sel_bright_t49']), np.sum(cat['lae'][mask]), np.sum(cat['lae'] & cat[f'{band}_sel_t49'] & cat[f'lae_sel_bright_t49'])))
+    print('LAE completeness: {:.1f}% ({}/{})'.format(100*np.sum(cat['lae_'+band+'_bright'][mask])/np.sum(cat['lae_'+band+'_bright']), np.sum(cat['lae_'+band+'_bright'][mask]), np.sum(cat['lae_'+band+'_bright'])))
     print('LAE purity:       {:.1f}% ({}/{})'.format(100*np.sum(cat['lae'][mask])/np.sum(cat['obs'][mask]), np.sum(cat['lae'][mask]), np.sum(cat['obs'][mask])))
 
     return mask
@@ -212,7 +226,7 @@ for band in ibis_filters:
     cat['lae_sel'] |= cat[f'{band}_sel']
     print(f'{np.sum(cat["lae_sel"] & mask_rad) / area:.1f}/deg2\tafter adding {band}')
 mask = cat['lae_sel'].copy()
-print('LAE completeness: {:.1f}% ({}/{})'.format(100*np.sum(cat['lae'][mask])/np.sum(cat['lae'] & cat['lae_sel_t49'] & cat[f'lae_sel_bright_t49']), np.sum(cat['lae'][mask]), np.sum(cat['lae'] & cat['lae_sel_t49'] & cat[f'lae_sel_bright_t49'])))
+print('LAE completeness: {:.1f}% ({}/{})'.format(100*np.sum(cat['lae_bright'][mask])/np.sum(cat['lae_bright']), np.sum(cat['lae_bright'][mask]), np.sum(cat['lae_bright'])))
 print('LAE purity:       {:.1f}% ({}/{})'.format(100*np.sum(cat['lae'][mask])/np.sum(cat['obs'][mask]), np.sum(cat['lae'][mask]), np.sum(cat['obs'][mask])))
 
 # cat.write('/pscratch/sd/r/rongpu/tmp/ibis_hsc-wide_xmm-synthmag.fits', overwrite=False)

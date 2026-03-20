@@ -20,8 +20,8 @@ M411
 237.6/deg2  after adding back rmag>25.0 sources
 197.3/deg2  after removing shreds
 remove 0 targets with r_mag < 18
-LAE completeness: 40.3% (104/258)
-LAE purity:       86.0% (104/121)
+LAE completeness: 55.7% (102/183)
+LAE purity:       85.1% (103/121)
 
 M438
 205419.8/deg2   initial
@@ -33,7 +33,7 @@ M438
 208.9/deg2  after adding back rmag>25.0 sources
 166.2/deg2  after removing shreds
 remove 0 targets with r_mag < 18
-LAE completeness: 36.4% (100/275)
+LAE completeness: 50.0% (98/196)
 LAE purity:       93.5% (100/107)
 
 M464
@@ -46,7 +46,7 @@ M464
 245.2/deg2  after adding back rmag>25.0 sources
 200.9/deg2  after removing shreds
 remove 0 targets with r_mag < 18
-LAE completeness: 45.5% (95/209)
+LAE completeness: 51.1% (91/178)
 LAE purity:       85.6% (95/111)
 
 M490
@@ -59,7 +59,7 @@ M490
 198.4/deg2  after adding back rmag>25.0 sources
 147.1/deg2  after removing shreds
 remove 0 targets with r_mag < 18
-LAE completeness: 40.6% (71/175)
+LAE completeness: 48.3% (70/145)
 LAE purity:       84.5% (71/84)
 
 M517
@@ -72,7 +72,7 @@ M517
 279.4/deg2  after adding back rmag>25.0 sources
 157.8/deg2  after removing shreds
 remove 0 targets with r_mag < 18
-LAE completeness: 46.1% (71/154)
+LAE completeness: 58.2% (71/122)
 LAE purity:       84.5% (71/84)
 
 All combined:
@@ -81,5 +81,5 @@ All combined:
 559.0/deg2  after adding M464
 704.3/deg2  after adding M490
 860.9/deg2  after adding M517
-LAE completeness: 48.2% (437/907)
-LAE purity:       87.2% (437/501)
+LAE completeness: 52.7% (434/824)
+LAE purity:       87.0% (436/501)

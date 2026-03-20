@@ -57,33 +57,6 @@ print(len(cat))
 
 del ibis, hsc
 
-# ################### Add DESI LAE classifications ###################
-# desi = Table(fitsio.read('/dvs_ro/cfs/cdirs/desicollab/users/rongpu/data/desi2/tertiary49/catalogs/tertiary49_ibis_lae_truth-20260127-add_target_info-add_lyaflux.fits'))
-# print(len(desi))
-
-# desi.rename_columns(['lae_sel', 'lae_sel_bright', 'M411_sel', 'M438_sel', 'M464_sel', 'M490_sel', 'M517_sel'], ['lae_sel_t49', 'lae_sel_bright_t49', 'M411_sel_t49', 'M438_sel_t49', 'M464_sel_t49', 'M490_sel_t49', 'M517_sel_t49'])
-
-# # https://github.com/rongpu/Python/blob/master/user_modules/match_coord.py
-# sys.path.append(os.path.expanduser('~/git/Python/user_modules/'))
-# from match_coord import match_coord
-
-# idx1, idx2, d2d, d_ra, d_dec = match_coord(cat['ra'], cat['dec'], desi['RA'], desi['DEC'], search_radius=0.5, plot_q=True)
-# print(len(idx2), len(idx2)/len(desi))
-# cat['obs'] = False
-# cat['obs'][idx1] = True
-# cat['lae'] = False
-# cat['lae'][idx1] = desi['lae'][idx2]
-# cat['lae'] = False
-# cat['lae'][idx1] = desi['lae'][idx2]
-# for col in ['lae_sel_t49', 'lae_sel_bright_t49', 'M411_sel_t49', 'M438_sel_t49', 'M464_sel_t49', 'M490_sel_t49', 'M517_sel_t49']:
-#     cat[col] = False
-#     cat[col][idx1] = desi[col][idx2]
-# for col in ['DELTACHI2', 'lya_flux', 'lya_flux_err']:
-#     cat[col] = -99.
-#     cat[col][idx1] = desi[col][idx2]
-# print(len(desi), np.sum(cat['obs']))
-# print(np.sum(desi['lae']), np.sum(cat['lae']))
-
 ##############################################################################################################################
 
 # cut on radius
@@ -160,9 +133,6 @@ def select_lae(cat, band, cfg, area):
     print(f'remove {np.sum(mask & mask1)} targets with r_mag < {RMAG_BRIGHT_CUT}')
     mask &= (~mask1)
     
-    # print('LAE completeness: {:.1f}% ({}/{})'.format(100*np.sum(cat['lae'][mask])/np.sum(cat['lae'] & cat[f'{band}_sel_t49'] & cat[f'lae_sel_bright_t49']), np.sum(cat['lae'][mask]), np.sum(cat['lae'] & cat[f'{band}_sel_t49'] & cat[f'lae_sel_bright_t49'])))
-    # print('LAE purity:       {:.1f}% ({}/{})'.format(100*np.sum(cat['lae'][mask])/np.sum(cat['obs'][mask]), np.sum(cat['lae'][mask]), np.sum(cat['obs'][mask])))
-
     return mask
 
 
