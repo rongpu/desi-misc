@@ -1,0 +1,48 @@
+# source /global/common/software/desi/desi_environment.sh main
+# PATH=/global/u2/r/rongpu/moregit/desispec/bin:$PATH
+# PYTHONPATH=/global/u2/r/rongpu/moregit/desispec/py:$PYTHONPATH
+# export INDIR=/dvs_ro/cfs/cdirs/desi/spectro/redux/loa/tiles/cumulative
+# cd /pscratch/sd/r/rongpu/tmp/emline_bugfix
+# salloc -N 1 -C cpu -t 04:00:00 -q interactive
+# parallel --jobs 20 --delay 1 < run_emline_bugfix.txt
+
+desi_emlinefit_afterburner --coadd $INDIR/9057/20230614/coadd-1-9057-thru20230614.fits --redrock $INDIR/9057/20230614/redrock-1-9057-thru20230614.fits --output emline-1-9057-thru20230614.fits
+desi_emlinefit_afterburner --coadd $INDIR/6995/20211028/coadd-3-6995-thru20211028.fits --redrock $INDIR/6995/20211028/redrock-3-6995-thru20211028.fits --output emline-3-6995-thru20211028.fits
+desi_emlinefit_afterburner --coadd $INDIR/10295/20220927/coadd-9-10295-thru20220927.fits --redrock $INDIR/10295/20220927/redrock-9-10295-thru20220927.fits --output emline-9-10295-thru20220927.fits
+desi_emlinefit_afterburner --coadd $INDIR/7529/20221223/coadd-8-7529-thru20221223.fits --redrock $INDIR/7529/20221223/redrock-8-7529-thru20221223.fits --output emline-8-7529-thru20221223.fits
+desi_emlinefit_afterburner --coadd $INDIR/10393/20230413/coadd-2-10393-thru20230413.fits --redrock $INDIR/10393/20230413/redrock-2-10393-thru20230413.fits --output emline-2-10393-thru20230413.fits
+desi_emlinefit_afterburner --coadd $INDIR/5166/20221030/coadd-4-5166-thru20221030.fits --redrock $INDIR/5166/20221030/redrock-4-5166-thru20221030.fits --output emline-4-5166-thru20221030.fits
+desi_emlinefit_afterburner --coadd $INDIR/11492/20230317/coadd-0-11492-thru20230317.fits --redrock $INDIR/11492/20230317/redrock-0-11492-thru20230317.fits --output emline-0-11492-thru20230317.fits
+desi_emlinefit_afterburner --coadd $INDIR/10633/20220407/coadd-6-10633-thru20220407.fits --redrock $INDIR/10633/20220407/redrock-6-10633-thru20220407.fits --output emline-6-10633-thru20220407.fits
+desi_emlinefit_afterburner --coadd $INDIR/6556/20231015/coadd-1-6556-thru20231015.fits --redrock $INDIR/6556/20231015/redrock-1-6556-thru20231015.fits --output emline-1-6556-thru20231015.fits
+desi_emlinefit_afterburner --coadd $INDIR/11500/20230124/coadd-6-11500-thru20230124.fits --redrock $INDIR/11500/20230124/redrock-6-11500-thru20230124.fits --output emline-6-11500-thru20230124.fits
+desi_emlinefit_afterburner --coadd $INDIR/2156/20210516/coadd-6-2156-thru20210516.fits --redrock $INDIR/2156/20210516/redrock-6-2156-thru20210516.fits --output emline-6-2156-thru20210516.fits
+desi_emlinefit_afterburner --coadd $INDIR/6006/20221101/coadd-9-6006-thru20221101.fits --redrock $INDIR/6006/20221101/redrock-9-6006-thru20221101.fits --output emline-9-6006-thru20221101.fits
+desi_emlinefit_afterburner --coadd $INDIR/9409/20220408/coadd-4-9409-thru20220408.fits --redrock $INDIR/9409/20220408/redrock-4-9409-thru20220408.fits --output emline-4-9409-thru20220408.fits
+desi_emlinefit_afterburner --coadd $INDIR/2371/20211105/coadd-4-2371-thru20211105.fits --redrock $INDIR/2371/20211105/redrock-4-2371-thru20211105.fits --output emline-4-2371-thru20211105.fits
+desi_emlinefit_afterburner --coadd $INDIR/3371/20220917/coadd-6-3371-thru20220917.fits --redrock $INDIR/3371/20220917/redrock-6-3371-thru20220917.fits --output emline-6-3371-thru20220917.fits
+desi_emlinefit_afterburner --coadd $INDIR/10256/20211110/coadd-0-10256-thru20211110.fits --redrock $INDIR/10256/20211110/redrock-0-10256-thru20211110.fits --output emline-0-10256-thru20211110.fits
+desi_emlinefit_afterburner --coadd $INDIR/7040/20220108/coadd-6-7040-thru20220108.fits --redrock $INDIR/7040/20220108/redrock-6-7040-thru20220108.fits --output emline-6-7040-thru20220108.fits
+desi_emlinefit_afterburner --coadd $INDIR/1478/20240113/coadd-3-1478-thru20240113.fits --redrock $INDIR/1478/20240113/redrock-3-1478-thru20240113.fits --output emline-3-1478-thru20240113.fits
+desi_emlinefit_afterburner --coadd $INDIR/1679/20221028/coadd-4-1679-thru20221028.fits --redrock $INDIR/1679/20221028/redrock-4-1679-thru20221028.fits --output emline-4-1679-thru20221028.fits
+desi_emlinefit_afterburner --coadd $INDIR/2745/20221020/coadd-6-2745-thru20221020.fits --redrock $INDIR/2745/20221020/redrock-6-2745-thru20221020.fits --output emline-6-2745-thru20221020.fits
+desi_emlinefit_afterburner --coadd $INDIR/2291/20231103/coadd-2-2291-thru20231103.fits --redrock $INDIR/2291/20231103/redrock-2-2291-thru20231103.fits --output emline-2-2291-thru20231103.fits
+desi_emlinefit_afterburner --coadd $INDIR/7841/20211130/coadd-0-7841-thru20211130.fits --redrock $INDIR/7841/20211130/redrock-0-7841-thru20211130.fits --output emline-0-7841-thru20211130.fits
+desi_emlinefit_afterburner --coadd $INDIR/9036/20230327/coadd-6-9036-thru20230327.fits --redrock $INDIR/9036/20230327/redrock-6-9036-thru20230327.fits --output emline-6-9036-thru20230327.fits
+desi_emlinefit_afterburner --coadd $INDIR/5340/20230420/coadd-5-5340-thru20230420.fits --redrock $INDIR/5340/20230420/redrock-5-5340-thru20230420.fits --output emline-5-5340-thru20230420.fits
+desi_emlinefit_afterburner --coadd $INDIR/4871/20230621/coadd-5-4871-thru20230621.fits --redrock $INDIR/4871/20230621/redrock-5-4871-thru20230621.fits --output emline-5-4871-thru20230621.fits
+desi_emlinefit_afterburner --coadd $INDIR/7436/20221027/coadd-9-7436-thru20221027.fits --redrock $INDIR/7436/20221027/redrock-9-7436-thru20221027.fits --output emline-9-7436-thru20221027.fits
+desi_emlinefit_afterburner --coadd $INDIR/10950/20221126/coadd-6-10950-thru20221126.fits --redrock $INDIR/10950/20221126/redrock-6-10950-thru20221126.fits --output emline-6-10950-thru20221126.fits
+desi_emlinefit_afterburner --coadd $INDIR/1799/20221130/coadd-5-1799-thru20221130.fits --redrock $INDIR/1799/20221130/redrock-5-1799-thru20221130.fits --output emline-5-1799-thru20221130.fits
+desi_emlinefit_afterburner --coadd $INDIR/11960/20220916/coadd-0-11960-thru20220916.fits --redrock $INDIR/11960/20220916/redrock-0-11960-thru20220916.fits --output emline-0-11960-thru20220916.fits
+desi_emlinefit_afterburner --coadd $INDIR/5827/20230512/coadd-6-5827-thru20230512.fits --redrock $INDIR/5827/20230512/redrock-6-5827-thru20230512.fits --output emline-6-5827-thru20230512.fits
+desi_emlinefit_afterburner --coadd $INDIR/1816/20210614/coadd-2-1816-thru20210614.fits --redrock $INDIR/1816/20210614/redrock-2-1816-thru20210614.fits --output emline-2-1816-thru20210614.fits
+desi_emlinefit_afterburner --coadd $INDIR/1314/20230919/coadd-3-1314-thru20230919.fits --redrock $INDIR/1314/20230919/redrock-3-1314-thru20230919.fits --output emline-3-1314-thru20230919.fits
+desi_emlinefit_afterburner --coadd $INDIR/9016/20230420/coadd-6-9016-thru20230420.fits --redrock $INDIR/9016/20230420/redrock-6-9016-thru20230420.fits --output emline-6-9016-thru20230420.fits
+desi_emlinefit_afterburner --coadd $INDIR/7706/20220228/coadd-4-7706-thru20220228.fits --redrock $INDIR/7706/20220228/redrock-4-7706-thru20220228.fits --output emline-4-7706-thru20220228.fits
+desi_emlinefit_afterburner --coadd $INDIR/5600/20211201/coadd-6-5600-thru20211201.fits --redrock $INDIR/5600/20211201/redrock-6-5600-thru20211201.fits --output emline-6-5600-thru20211201.fits
+desi_emlinefit_afterburner --coadd $INDIR/7458/20230521/coadd-5-7458-thru20230521.fits --redrock $INDIR/7458/20230521/redrock-5-7458-thru20230521.fits --output emline-5-7458-thru20230521.fits
+desi_emlinefit_afterburner --coadd $INDIR/1514/20210619/coadd-1-1514-thru20210619.fits --redrock $INDIR/1514/20210619/redrock-1-1514-thru20210619.fits --output emline-1-1514-thru20210619.fits
+desi_emlinefit_afterburner --coadd $INDIR/3788/20231207/coadd-8-3788-thru20231207.fits --redrock $INDIR/3788/20231207/redrock-8-3788-thru20231207.fits --output emline-8-3788-thru20231207.fits
+desi_emlinefit_afterburner --coadd $INDIR/10255/20221225/coadd-8-10255-thru20221225.fits --redrock $INDIR/10255/20221225/redrock-8-10255-thru20221225.fits --output emline-8-10255-thru20221225.fits
+desi_emlinefit_afterburner --coadd $INDIR/8385/20240311/coadd-4-8385-thru20240311.fits --redrock $INDIR/8385/20240311/redrock-4-8385-thru20240311.fits --output emline-4-8385-thru20240311.fits
