@@ -197,8 +197,14 @@ def get_detector_changes(base_path=None, output_path=None):
 def print_detector_changes(detector_changes):
     """Pretty print detector changes."""
     # Dictionary is already in natural order from get_detector_changes()
+
+    # Spectrograph SM <-> SP
+    sp2sm = {0: 4, 1: 10, 2: 5, 3: 6, 4: 1, 5: 9, 6: 7, 7: 8, 8: 2, 9: 3}
+    sm2sp = {aa: bb for bb, aa in sp2sm.items()}
+
     for camera, changes in detector_changes.items():
-        print(f"\n{camera}:")
+        petal = sm2sp[int(camera.split('-')[0].replace('sm', ''))]
+        print(f"\n{camera}{petal}:")
         for i, change in enumerate(changes, 1):
             detector = list(change.keys())[0]
             info = change[detector]
