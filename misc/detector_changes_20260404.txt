@@ -1,0 +1,107 @@
+As of 2026/04/04:
+
+sm1-b4:
+  1. sn17986: 20191106 to 20221107
+  2. sn22822: 20221108 to present
+
+sm1-r4:
+  1. LBNL-PE-21: 20191106 to 20221107
+  2. M1-12: 20221108 to present
+
+sm1-z4:
+  1. M1-20: 20191106 to present
+
+sm2-b8:
+  1. sn22802: 20191107 to 20230506
+  2. sn17986: 20230507 to present
+
+sm2-r8:
+  1. M1-46: 20191107 to present
+
+sm2-z8:
+  1. M1-42: 20191107 to present
+
+sm3-b9:
+  1. sn22794: 20191107 to present
+
+sm3-r9:
+  1. M1-12: 20191107 to 20210614
+  2. M1-22-1: 20210615 to present
+
+sm3-z9:
+  1. M1-22: 20191107 to present
+
+sm4-b0:
+  1. sn22797: 20191001 to present
+
+sm4-r0:
+  1. M1-49: 20191001 to 20260105
+  2. sta-dieid164: 20260106 to present
+
+sm4-z0:
+  1. M1-53: 20200125 to present
+
+sm5-b2:
+  1. sn22801: 20191107 to present
+
+sm5-r2:
+  1. M1-48: 20191107 to 20201112
+  2. M1-28: 20201113 to present
+
+sm5-z2:
+  1. M1-59: 20191107 to present
+
+sm6-b3:
+  1. sn22804: 20191108 to present
+
+sm6-r3:
+  1. M1-50: 20191108 to present
+
+sm6-z3:
+  1. M1-60: 20191108 to 20250513
+  2. M1-02-1: 20250514 to present
+
+sm7-b6:
+  1. sn22813: 20191108 to present
+
+sm7-r6:
+  1. M1-15: 20191108 to present
+
+sm7-z6:
+  1. M1-51: 20191108 to present
+
+sm8-b7:
+  1. sn22829: 20191108 to present
+
+sm8-r7:
+  1. M1-02-1: 20191108 to 20240723
+  2. M1-35: 20240724 to 20251006
+  3. dieid390: 20251007 to present
+
+sm8-z7:
+  1. M1-40: 20191108 to 20251006
+  2. M1-35: 20251007 to present
+
+sm9-b5:
+  1. sn22825: 20190901 to 20210621
+  2. sn22817: 20210622 to present
+
+sm9-r5:
+  1. M1-52: 20190901 to present
+
+sm9-z5:
+  1. M1-45C: 20190901 to 20221107
+  2. Mosaic-3: 20221108 to present
+
+sm10-b1:
+  1. sn22822: 20191001 to 20220612
+  2. sn22805: 20220613 to 20230726
+  3. STA31230: 20230727 to present
+
+sm10-r1:
+  1. M1-26: 20191001 to 20241118
+  2. sta-dieid159: 20241119 to present
+
+sm10-z1:
+  1. M1-35: 20191001 to 20231128
+  2. M1-27: 20231129 to present

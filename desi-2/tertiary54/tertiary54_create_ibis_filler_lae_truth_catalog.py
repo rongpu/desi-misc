@@ -20,7 +20,7 @@ from desi_plot_spectrum import plot_spectrum
 
 fa = Table(fitsio.read('/global/cfs/cdirs/desi/survey/fiberassign/special/tertiary/0054/tertiary-targets-0054.fits'))
 print(len(fa))
-mask = fa['TERTIARY_TARGET']=='LAE'
+mask = fa['TERTIARY_TARGET']=='LAE_FILLER'
 fa = fa[mask]
 print(len(fa))
 
@@ -31,8 +31,8 @@ columns_2 = ['TARGETID', 'TILEID', 'FIBER', 'PETAL_LOC', 'DEVICE_LOC', 'LOCATION
 columns_4 = ['TARGETID', 'TSNR2_ELG', 'TSNR2_BGS', 'TSNR2_QSO', 'TSNR2_LRG', 'TSNR2_ELG_B', 'TSNR2_BGS_B', 'TSNR2_QSO_B', 'TSNR2_LRG_B']
 columns_emline = ['TARGETID', 'OII_FLUX', 'OII_FLUX_IVAR', 'HDELTA_FLUX', 'HDELTA_FLUX_IVAR', 'HGAMMA_FLUX', 'HGAMMA_FLUX_IVAR', 'HBETA_FLUX', 'HBETA_FLUX_IVAR', 'OIII_FLUX', 'OIII_FLUX_IVAR', 'HALPHA_FLUX', 'HALPHA_FLUX_IVAR']
 
-tile_list = [83616, 83617]
-lastnight_list = [20260320, 20260321]
+tile_list = [83616, 83617, 83618, 83619, 83620]
+lastnight_list = [20260320, 20260321, 20260407, 20260410, 20260410]
 
 ###################### Load daily redrock catalogs ######################
 
@@ -65,11 +65,11 @@ for fn in fns:
     
 cat = vstack(cat_stack)
 
-print(len(cat), len(np.unique(cat['TARGETID'])))
+print('All', len(cat), len(np.unique(cat['TARGETID'])))
 cat.sort('TSNR2_LRG', reverse=True)
 _, idx_keep = np.unique(cat['TARGETID'], return_index=True)
 cat = cat[idx_keep]
-print(len(cat), len(np.unique(cat['TARGETID'])))
+print('Unique', len(cat), len(np.unique(cat['TARGETID'])))
 
 daily = cat.copy()
 
@@ -95,11 +95,11 @@ for fn in fns:
     # cat['LASTNIGHT'] = np.array(os.path.basename(os.path.dirname(fn)), dtype=int)
     cat['rr_fn'] = fn
 
-    # lya_path = os.path.join(os.path.dirname(fn), 'lyaflux', os.path.basename(fn.replace('redrock-', 'lyaflux-')))
-    # tmp5 = Table(fitsio.read(lya_path))
-    # assert len(cat)==len(tmp5) and np.all(cat['TARGETID']==tmp5['TARGETID'])
-    # tmp5.remove_column('TARGETID')
-    # cat = hstack([cat, tmp5])
+    lya_path = fn.replace('redrock-', 'lyaflux-')
+    tmp5 = Table(fitsio.read(lya_path))
+    assert len(cat)==len(tmp5) and np.all(cat['TARGETID']==tmp5['TARGETID'])
+    tmp5.remove_column('TARGETID')
+    cat = hstack([cat, tmp5])
 
     # fn_emline = fn.replace('redrock-', 'emline-')
     # emline = Table(fitsio.read(fn_emline, columns=columns_emline))
@@ -110,25 +110,25 @@ for fn in fns:
     
 cat = vstack(cat_stack)
 
-print(len(cat), len(np.unique(cat['TARGETID'])))
+print('All', len(cat), len(np.unique(cat['TARGETID'])))
 cat.sort('TSNR2_LRG', reverse=True)
 _, idx_keep = np.unique(cat['TARGETID'], return_index=True)
 cat = cat[idx_keep]
-print(len(cat), len(np.unique(cat['TARGETID'])))
+print('Unique', len(cat), len(np.unique(cat['TARGETID'])))
 
 assert np.all(cat['TARGETID']==daily['TARGETID'])
 
 cat['coadd_fn'] = daily['coadd_fn']
 
-mask = cat['COADD_FIBERSTATUS']==0
-print(np.sum(mask), np.sum(mask)/len(mask))
-cat = cat[mask]
-daily = daily[mask]
-
 # select LAE targets
 mask = cat['OBJTYPE']=='TGT'
 mask &= np.in1d(cat['TARGETID'], fa['TARGETID'])
-print(np.sum(mask), np.sum(mask)/len(mask))
+print('Filler LAE', np.sum(mask), np.sum(mask)/len(mask))
+cat = cat[mask]
+daily = daily[mask]
+
+mask = cat['COADD_FIBERSTATUS']==0
+print('COADD_FIBERSTATUS', np.sum(mask), np.sum(mask)/len(mask))
 cat = cat[mask]
 daily = daily[mask]
 
@@ -217,4 +217,25 @@ cat['ZWARN_daily'] = daily['ZWARN']
 cat['DELTACHI2_daily'] = daily['DELTACHI2']
 cat['SPECTYPE_daily'] = daily['SPECTYPE']
 
-cat.write('/global/cfs/cdirs/desicollab/users/rongpu/data/desi2/tertiary54/catalogs/tmp/tertiary54_ibis_lae_truth-20260322.fits', overwrite=True)
+############################## Add targeting info ###############################
+
+targets = Table(fitsio.read('/global/cfs/cdirs/desicollab/users/rongpu/data/desi2/tertiary54/tertiary54_lae_filler_targets.fits'))
+
+print(len(cat), len(np.unique(cat['TARGETID'])))
+
+sys.path.append(os.path.expanduser('~/git/Python/user_modules/'))
+from match_coord import match_coord
+
+idx1, idx2, d2d, d_ra, d_dec = match_coord(targets['ra'], targets['dec'], cat['TARGET_RA'], cat['TARGET_DEC'], search_radius=0.5, plot_q=False)
+print(len(idx2), len(cat), len(cat)-len(idx2))
+
+targets = targets[idx1]
+cat = cat[idx2]
+
+print(np.intersect1d(targets.colnames, cat.colnames))
+cat = hstack([cat, targets])
+print(len(cat), len(np.unique(cat['TARGETID'])))
+
+##################################################################################
+
+cat.write('/global/cfs/cdirs/desicollab/users/rongpu/data/desi2/tertiary54/catalogs/tertiary54_ibis_filler_lae_truth-20260413.fits', overwrite=False)
