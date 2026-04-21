@@ -1,4 +1,4 @@
-# Compare the crude depth maps with the depth values in the tractor catalogs
+# Compare the approximate depth maps with the depth values in the tractor catalogs
 
 from __future__ import division, print_function
 import sys, os, glob, time, warnings
@@ -40,11 +40,11 @@ for band in ibis_filters:
     plt.axis([ramax, ramin, decmin, decmax])
     plt.grid(alpha=0.5)
     plt.title(band+' 5-sigma PSF depth [mag]')
-    plt.savefig('/global/cfs/cdirs/cosmo/www/temp/rongpu/ibis/ibis_dr1_subsets/full_depth/compare_crude_maps_with_tractor/xmm_{}_tractor.png'.format(band))
+    plt.savefig('/global/cfs/cdirs/cosmo/www/temp/rongpu/ibis/ibis_dr1_subsets/full_depth/compare_approximate_maps_with_tractor/xmm_{}_tractor.png'.format(band))
     plt.close()
 
 for band in ibis_filters:
-    tt = Table(fitsio.read('/global/cfs/cdirs/desicollab/users/rongpu/data/ibis/deep_field_subsets/crude_depth_maps/xmm-lss_{}.fits'.format(band)))
+    tt = Table(fitsio.read('/global/cfs/cdirs/desicollab/users/rongpu/data/ibis/deep_field_subsets/approximate_depth_maps/xmm-lss_{}.fits'.format(band)))
     mask = np.isfinite(tt['depth'])
     tt = tt[mask]
 
@@ -52,25 +52,25 @@ for band in ibis_filters:
     # idx1, idx2, d2d, d_ra, d_dec = match_coord(ra1, dec1, ra2, dec2, search_radius=1., plot_q=True)
 
     x, y = cat[band+'_psfdepth'][idx1].copy(), tt['depth'][idx2].copy()
-    median_offset = np.median(y-x)
-    print(median_offset)
-    y -= median_offset
+    median_zp = np.median(y-x)
+    print(median_zp)
+    y -= median_zp
     # x -= np.median(x)
     # y -= np.median(y)
     plt.figure(figsize=(10, 10))
     plt.plot(x, y, '.', ms=0.5, alpha=0.1)
     plt.axis([24.5, 25.8, 24.5, 25.8])
     plt.grid(alpha=0.5)
-    plt.savefig('/global/cfs/cdirs/cosmo/www/temp/rongpu/ibis/ibis_dr1_subsets/full_depth/compare_crude_maps_with_tractor/xmm_{}_compare.png'.format(band))
+    plt.savefig('/global/cfs/cdirs/cosmo/www/temp/rongpu/ibis/ibis_dr1_subsets/full_depth/compare_approximate_maps_with_tractor/xmm_{}_compare.png'.format(band))
     plt.close()
 
     mask = np.isfinite(tt['depth'])
     plt.figure(figsize=(12, 10))
-    plt.scatter(tt['ra'][mask], tt['dec'][mask], c=tt['depth'][mask]-median_offset, vmin=23.5, vmax=25.8, s=0.5, cmap='jet')
+    plt.scatter(tt['ra'][mask], tt['dec'][mask], c=tt['depth'][mask]-median_zp, vmin=23.5, vmax=25.8, s=0.5, cmap='jet')
     plt.colorbar(aspect=30)
     plt.axis([ramax, ramin, decmin, decmax])
     plt.grid(alpha=0.5)
-    plt.savefig('/global/cfs/cdirs/cosmo/www/temp/rongpu/ibis/ibis_dr1_subsets/full_depth/compare_crude_maps_with_tractor/xmm_{}_crude.png'.format(band))
+    plt.savefig('/global/cfs/cdirs/cosmo/www/temp/rongpu/ibis/ibis_dr1_subsets/full_depth/compare_approximate_maps_with_tractor/xmm_{}_approximate.png'.format(band))
     plt.close()
 
 ###################################################### COSMOS ######################################################
@@ -96,11 +96,11 @@ for band in ibis_filters:
     plt.axis([ramax, ramin, decmin, decmax])
     plt.grid(alpha=0.5)
     plt.title(band+' 5-sigma PSF depth [mag]')
-    plt.savefig('/global/cfs/cdirs/cosmo/www/temp/rongpu/ibis/ibis_dr1_subsets/full_depth/compare_crude_maps_with_tractor/cosmos_{}_tractor.png'.format(band))
+    plt.savefig('/global/cfs/cdirs/cosmo/www/temp/rongpu/ibis/ibis_dr1_subsets/full_depth/compare_approximate_maps_with_tractor/cosmos_{}_tractor.png'.format(band))
     plt.close()
 
 for band in ibis_filters:
-    tt = Table(fitsio.read('/global/cfs/cdirs/desicollab/users/rongpu/data/ibis/deep_field_subsets/crude_depth_maps/cosmos_{}.fits'.format(band)))
+    tt = Table(fitsio.read('/global/cfs/cdirs/desicollab/users/rongpu/data/ibis/deep_field_subsets/approximate_depth_maps/cosmos_{}.fits'.format(band)))
     mask = np.isfinite(tt['depth'])
     tt = tt[mask]
 
@@ -108,23 +108,23 @@ for band in ibis_filters:
     # idx1, idx2, d2d, d_ra, d_dec = match_coord(ra1, dec1, ra2, dec2, search_radius=1., plot_q=True)
 
     x, y = cat[band+'_psfdepth'][idx1].copy(), tt['depth'][idx2].copy()
-    median_offset = np.median(y-x)
-    print(median_offset)
-    y -= median_offset
+    median_zp = np.median(y-x)
+    print(median_zp)
+    y -= median_zp
     # x -= np.median(x)
     # y -= np.median(y)
     plt.figure(figsize=(10, 10))
     plt.plot(x, y, '.', ms=0.5, alpha=0.1)
     plt.axis([24.5, 25.8, 24.5, 25.8])
     plt.grid(alpha=0.5)
-    plt.savefig('/global/cfs/cdirs/cosmo/www/temp/rongpu/ibis/ibis_dr1_subsets/full_depth/compare_crude_maps_with_tractor/cosmos_{}_compare.png'.format(band))
+    plt.savefig('/global/cfs/cdirs/cosmo/www/temp/rongpu/ibis/ibis_dr1_subsets/full_depth/compare_approximate_maps_with_tractor/cosmos_{}_compare.png'.format(band))
     plt.close()
 
     mask = np.isfinite(tt['depth'])
     plt.figure(figsize=(12, 10))
-    plt.scatter(tt['ra'][mask], tt['dec'][mask], c=tt['depth'][mask]-median_offset, vmin=23.5, vmax=25.8, s=0.5, cmap='jet')
+    plt.scatter(tt['ra'][mask], tt['dec'][mask], c=tt['depth'][mask]-median_zp, vmin=23.5, vmax=25.8, s=0.5, cmap='jet')
     plt.colorbar(aspect=30)
     plt.axis([ramax, ramin, decmin, decmax])
     plt.grid(alpha=0.5)
-    plt.savefig('/global/cfs/cdirs/cosmo/www/temp/rongpu/ibis/ibis_dr1_subsets/full_depth/compare_crude_maps_with_tractor/cosmos_{}_crude.png'.format(band))
+    plt.savefig('/global/cfs/cdirs/cosmo/www/temp/rongpu/ibis/ibis_dr1_subsets/full_depth/compare_approximate_maps_with_tractor/cosmos_{}_approximate.png'.format(band))
     plt.close()

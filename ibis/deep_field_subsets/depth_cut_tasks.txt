@@ -1,0 +1,10 @@
+python depth_cut.py 0 M411 > depth_cut_0_M411.log
+python depth_cut.py 0 M438 > depth_cut_0_M438.log
+python depth_cut.py 0 M464 > depth_cut_0_M464.log
+python depth_cut.py 0 M490 > depth_cut_0_M490.log
+python depth_cut.py 0 M517 > depth_cut_0_M517.log
+python depth_cut.py 1 M411 > depth_cut_1_M411.log
+python depth_cut.py 1 M438 > depth_cut_1_M438.log
+python depth_cut.py 1 M464 > depth_cut_1_M464.log
+python depth_cut.py 1 M490 > depth_cut_1_M490.log
+python depth_cut.py 1 M517 > depth_cut_1_M517.log

@@ -51,7 +51,7 @@ print(len(ccd))
 
 tmp = Table()
 tmp['object'], tmp['count'] = np.unique(ccd['object'], return_counts=True)
-nonstandard = False
+nonstandard = np.full(len(ccd), False)
 for index in range(len(tmp)):
     if not tmp['object'][index].startswith('IBIS_deep'):
         print(tmp['object'][index], tmp['count'][index])
@@ -104,7 +104,7 @@ print(len(ccd))
 
 tmp = Table()
 tmp['object'], tmp['count'] = np.unique(ccd['object'], return_counts=True)
-nonstandard = False
+nonstandard = np.full(len(ccd), False)
 for index in range(len(tmp)):
     if not tmp['object'][index].startswith('IBIS_deep'):
         print(tmp['object'][index], tmp['count'][index])
