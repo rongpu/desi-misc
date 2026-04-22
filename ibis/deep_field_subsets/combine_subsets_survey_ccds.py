@@ -25,7 +25,7 @@ for field_index in [0, 1]:
     for band in ibis_filters:
         field = field_names[field_index]
         print(field, band)
-        ccd = Table(fitsio.read(f'/global/cfs/cdirs/desicollab/users/rongpu/data/ibis/deep_field_subsets/misc/survey-ccds-ibis-dr1-nominal-wide-depth_{field}_{band}.fits'))
+        ccd = Table(fitsio.read(f'/global/cfs/cdirs/desicollab/users/rongpu/data/ibis/deep_field_subsets/misc/survey-ccds-ibis-dr1-subset_25.0_{field}_{band}.fits'))
         print(len(ccd))
         ccd_stack.append(ccd)
 ccd = vstack(ccd_stack)

@@ -5,7 +5,7 @@
 #
 # Process:
 # 1. Load survey-ccds table and filter for field/band
-# 2. Create spatial grid over field (0.025° spacing)
+# 2. Create spatial grid over field (0.025 deg spacing)
 # 3. Calculate effective exposure time for each CCD
 # 4. Iteratively optimize CCD selection:
 #    - Compute current depth at each grid point
@@ -47,9 +47,10 @@ half_height = 2046/2 * 0.262 / 3600
 
 field_names = ['COSMOS', 'XMM-LSS']
 field_centers = {'COSMOS':[150.1, 2.182], 'XMM-LSS':[35.75, -4.75]}
-field_size = 5.0  # degrees
+field_size = 6.0  # degrees
 # grid_size = 0.025  # degrees
-n_points = int(2e5)
+sampling_density = 8000  # per sq. deg.
+n_points = int(sampling_density * field_size**2)
 
 n_processes = 12
 
@@ -92,7 +93,7 @@ def sample_ra_dec(ramin, ramax, decmin, decmax, n, seed=None):
     dec = np.degrees(np.arcsin(rng.uniform(sin_min, sin_max, n)))
     return ra, dec
 
-ra_grid, dec_grid = sample_ra_dec(ramin, ramax, decmin, decmax, n=n_points)
+ra_grid, dec_grid = sample_ra_dec(ramin, ramax, decmin, decmax, n=n_points, seed=888)
 
 grid = Table()
 grid['ra'] = ra_grid.flatten()
@@ -252,9 +253,9 @@ grid_efftime = np.dot(ccd_mask_cube.T, ccd['efftime'][ccds_to_keep])
 
 grid['nccd'] = np.sum(ccd_mask_cube, axis=0)
 grid['efftime'] = grid_efftime
-grid.write(f'/global/cfs/cdirs/desicollab/users/rongpu/data/ibis/deep_field_subsets/misc/nominal_depth_{field}_{band}.fits', overwrite=True)
+grid.write(f'/global/cfs/cdirs/desicollab/users/rongpu/data/ibis/deep_field_subsets/misc/depth_and_efftime_subset_25.0_{field}_{band}.fits', overwrite=True)
 
 ccd = ccd[ccds_to_keep]
-ccd.write(f'/global/cfs/cdirs/desicollab/users/rongpu/data/ibis/deep_field_subsets/misc/survey-ccds-ibis-dr1-nominal-wide-depth_{field}_{band}.fits', overwrite=True)
+ccd.write(f'/global/cfs/cdirs/desicollab/users/rongpu/data/ibis/deep_field_subsets/misc/survey-ccds-ibis-dr1-subset_25.0_{field}_{band}.fits', overwrite=True)
 
 print(f"\nFinal: {len(ccd)} CCDs remaining")
