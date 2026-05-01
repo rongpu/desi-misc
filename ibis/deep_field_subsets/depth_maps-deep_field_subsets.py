@@ -41,8 +41,14 @@ half_height = 2046/2 * 0.262 / 3600
 
 
 plot_dir = '/global/cfs/cdirs/cosmo/www/temp/rongpu/ibis/ibis_dr1_subsets/deep_fields_subset_25.0'
+# plot_dir = '/global/cfs/cdirs/cosmo/www/temp/rongpu/ibis/ibis_dr1_subsets/deep_fields_subset_25.0-1'
+# plot_dir = '/global/cfs/cdirs/cosmo/www/temp/rongpu/ibis/ibis_dr1_subsets/deep_fields_subset_24.8'
+# plot_dir = '/global/cfs/cdirs/cosmo/www/temp/rongpu/ibis/ibis_dr1_subsets/deep_fields_subset_25.2'
 
 surveyccd_path = '/global/cfs/cdirs/desicollab/users/rongpu/data/ibis/deep_field_subsets/survey-ccds-ibis-dr1-subset-25.0.fits'
+# surveyccd_path = '/global/cfs/cdirs/desicollab/users/rongpu/data/ibis/deep_field_subsets/survey-ccds-ibis-dr1-subset-25.0-1.fits'
+# surveyccd_path = '/global/cfs/cdirs/desicollab/users/rongpu/data/ibis/deep_field_subsets/survey-ccds-ibis-dr1-subset-24.8.fits'
+# surveyccd_path = '/global/cfs/cdirs/desicollab/users/rongpu/data/ibis/deep_field_subsets/survey-ccds-ibis-dr1-subset-25.2.fits'
 ccd = Table(fitsio.read(surveyccd_path))
 
 mask = (ccd['ccd_cuts']==0) & (~ccd['failure'])
@@ -136,7 +142,10 @@ for band in ibis_filters:
         maps = Table()
         maps['ra'], maps['dec'] = ra, dec
         maps['nexp'], maps['efftime'], maps['depth'], maps['seeing'] = nexp_grid, efftime_grid, depth_grid, seeing_grid
-        maps.write('/global/cfs/cdirs/desicollab/users/rongpu/data/ibis/deep_field_subsets/approximate_depth_maps/subset_25.0_{}_{}.fits'.format(field.lower(), band), overwrite=True)
+        maps.write('/global/cfs/cdirs/desicollab/users/rongpu/data/ibis/deep_field_subsets/approximate_depth_maps/subset_25.0_{}_{}.fits'.format(field.lower(), band), overwrite=False)
+        # maps.write('/global/cfs/cdirs/desicollab/users/rongpu/data/ibis/deep_field_subsets/approximate_depth_maps/subset_25.0_{}_{}-1.fits'.format(field.lower(), band), overwrite=False)
+        # maps.write('/global/cfs/cdirs/desicollab/users/rongpu/data/ibis/deep_field_subsets/approximate_depth_maps/subset_24.8_{}_{}.fits'.format(field.lower(), band), overwrite=False)
+        # maps.write('/global/cfs/cdirs/desicollab/users/rongpu/data/ibis/deep_field_subsets/approximate_depth_maps/subset_25.2_{}_{}.fits'.format(field.lower(), band), overwrite=False)
 
         # Get depths in actual zero points
         depth_grid -= nominal_zp[band]

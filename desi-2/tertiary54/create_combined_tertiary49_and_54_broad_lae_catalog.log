@@ -1,0 +1,47 @@
+Tertiery49 target density: 21509.4 per sq deg
+
+14010 14010
+12243
+11575
+6427
+7281 7281
+6103
+187328
+118659
+8322 8322
+7292
+Tertiery54 target density: 17696.0 per sq deg
+
+Primary completeness: 94.96%
+Filler completeness: 6.15%
+
+Primary completeness: 6.15%
+Filler completeness: 6.15%
+7687
+19930 2138
+Effective area: 1.0036 sq deg
+
+/global/cfs/cdirs/desicollab/users/rongpu/data/ibis/deep_fields/
+Cross-matching
+Doubly matched objects = 0
+Final matched objects = 19813
+19813
+Cross-matching completeness: 99.41%
+19813
+['dec' 'ra']
+/global/cfs/cdirs/desicollab/users/rongpu/data/ibis/deep_field_subsets/subset-25.0/
+Cross-matching
+Doubly matched objects = 0
+Final matched objects = 19052
+19052
+Cross-matching completeness: 95.59%
+19052
+['dec' 'ra']
+/global/cfs/cdirs/desicollab/users/rongpu/data/ibis/deep_field_subsets/subset-24.8/
+Cross-matching
+Doubly matched objects = 0
+Final matched objects = 18049
+18049
+Cross-matching completeness: 90.56%
+18049
+['dec' 'ra']

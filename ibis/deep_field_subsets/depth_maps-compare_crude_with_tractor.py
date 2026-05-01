@@ -40,7 +40,7 @@ for band in ibis_filters:
     plt.axis([ramax, ramin, decmin, decmax])
     plt.grid(alpha=0.5)
     plt.title(band+' 5-sigma PSF depth [mag]')
-    plt.savefig('/global/cfs/cdirs/cosmo/www/temp/rongpu/ibis/ibis_dr1_subsets/full_depth/compare_approximate_maps_with_tractor/xmm_{}_tractor.png'.format(band))
+    plt.savefig('/global/cfs/cdirs/cosmo/www/temp/rongpu/ibis/ibis_dr1_subsets/compare_approximate_maps_with_tractor/xmm_{}_tractor.png'.format(band))
     plt.close()
 
 for band in ibis_filters:
@@ -61,7 +61,7 @@ for band in ibis_filters:
     plt.plot(x, y, '.', ms=0.5, alpha=0.1)
     plt.axis([24.5, 25.8, 24.5, 25.8])
     plt.grid(alpha=0.5)
-    plt.savefig('/global/cfs/cdirs/cosmo/www/temp/rongpu/ibis/ibis_dr1_subsets/full_depth/compare_approximate_maps_with_tractor/xmm_{}_compare.png'.format(band))
+    plt.savefig('/global/cfs/cdirs/cosmo/www/temp/rongpu/ibis/ibis_dr1_subsets/compare_approximate_maps_with_tractor/xmm_{}_compare.png'.format(band))
     plt.close()
 
     mask = np.isfinite(tt['depth'])
@@ -70,7 +70,7 @@ for band in ibis_filters:
     plt.colorbar(aspect=30)
     plt.axis([ramax, ramin, decmin, decmax])
     plt.grid(alpha=0.5)
-    plt.savefig('/global/cfs/cdirs/cosmo/www/temp/rongpu/ibis/ibis_dr1_subsets/full_depth/compare_approximate_maps_with_tractor/xmm_{}_approximate.png'.format(band))
+    plt.savefig('/global/cfs/cdirs/cosmo/www/temp/rongpu/ibis/ibis_dr1_subsets/compare_approximate_maps_with_tractor/xmm_{}_approximate.png'.format(band))
     plt.close()
 
 ###################################################### COSMOS ######################################################
@@ -96,7 +96,7 @@ for band in ibis_filters:
     plt.axis([ramax, ramin, decmin, decmax])
     plt.grid(alpha=0.5)
     plt.title(band+' 5-sigma PSF depth [mag]')
-    plt.savefig('/global/cfs/cdirs/cosmo/www/temp/rongpu/ibis/ibis_dr1_subsets/full_depth/compare_approximate_maps_with_tractor/cosmos_{}_tractor.png'.format(band))
+    plt.savefig('/global/cfs/cdirs/cosmo/www/temp/rongpu/ibis/ibis_dr1_subsets/compare_approximate_maps_with_tractor/cosmos_{}_tractor.png'.format(band))
     plt.close()
 
 for band in ibis_filters:
@@ -117,7 +117,7 @@ for band in ibis_filters:
     plt.plot(x, y, '.', ms=0.5, alpha=0.1)
     plt.axis([24.5, 25.8, 24.5, 25.8])
     plt.grid(alpha=0.5)
-    plt.savefig('/global/cfs/cdirs/cosmo/www/temp/rongpu/ibis/ibis_dr1_subsets/full_depth/compare_approximate_maps_with_tractor/cosmos_{}_compare.png'.format(band))
+    plt.savefig('/global/cfs/cdirs/cosmo/www/temp/rongpu/ibis/ibis_dr1_subsets/compare_approximate_maps_with_tractor/cosmos_{}_compare.png'.format(band))
     plt.close()
 
     mask = np.isfinite(tt['depth'])
@@ -126,5 +126,5 @@ for band in ibis_filters:
     plt.colorbar(aspect=30)
     plt.axis([ramax, ramin, decmin, decmax])
     plt.grid(alpha=0.5)
-    plt.savefig('/global/cfs/cdirs/cosmo/www/temp/rongpu/ibis/ibis_dr1_subsets/full_depth/compare_approximate_maps_with_tractor/cosmos_{}_approximate.png'.format(band))
+    plt.savefig('/global/cfs/cdirs/cosmo/www/temp/rongpu/ibis/ibis_dr1_subsets/compare_approximate_maps_with_tractor/cosmos_{}_approximate.png'.format(band))
     plt.close()

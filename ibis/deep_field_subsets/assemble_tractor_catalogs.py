@@ -10,7 +10,7 @@ from multiprocessing import Pool
 
 lc_columns = ['lc_flux_w1', 'lc_flux_w2', 'lc_flux_ivar_w1', 'lc_flux_ivar_w2', 'lc_nobs_w1', 'lc_nobs_w2', 'lc_fracflux_w1', 'lc_fracflux_w2', 'lc_rchisq_w1', 'lc_rchisq_w2', 'lc_mjd_w1', 'lc_mjd_w2', 'lc_epoch_index_w1', 'lc_epoch_index_w2']
 
-fns = glob.glob('/pscratch/sd/r/rongpu/ibis-dr1-subsets/tractor/*/tractor-*.fits')
+fns = glob.glob('/pscratch/sd/r/rongpu/ibis-dr1-subset-25.0/tractor/*/tractor-*.fits')
 print(len(fns))
 
 def read_catalog(index):
