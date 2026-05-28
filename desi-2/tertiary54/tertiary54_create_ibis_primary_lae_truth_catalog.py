@@ -209,13 +209,22 @@ print('LAEs', np.sum(mask_lae), np.sum(mask_lae)/len(mask_lae))
 # mask_lae &= ~np.in1d(cat['TARGETID'], interlopers)
 # print('LAEs', np.sum(mask_lae), np.sum(mask_lae)/len(mask_lae))
 
-cat['low_z'] = mask_contam.copy()
+cat['low_z'] = mask_lowz | mask_elg
+cat['qso'] = mask_qso.copy()
 cat['lae'] = mask_lae.copy()
 
 cat['Z_daily'] = daily['Z']
 cat['ZWARN_daily'] = daily['ZWARN']
 cat['DELTACHI2_daily'] = daily['DELTACHI2']
 cat['SPECTYPE_daily'] = daily['SPECTYPE']
+cat['OII_FLUX_daily'] = daily['OII_FLUX']
+cat['OII_FLUX_IVAR_daily'] = daily['OII_FLUX_IVAR']
+cat['HALPHA_FLUX_daily'] = daily['HALPHA_FLUX']
+cat['HALPHA_FLUX_IVAR_daily'] = daily['HALPHA_FLUX_IVAR']
+cat['HBETA_FLUX_daily'] = daily['HBETA_FLUX']
+cat['HBETA_FLUX_IVAR_daily'] = daily['HBETA_FLUX_IVAR']
+cat['OIII_FLUX_daily'] = daily['OIII_FLUX']
+cat['OIII_FLUX_IVAR_daily'] = daily['OIII_FLUX_IVAR']
 
 ############################## Add targeting info ###############################
 
@@ -238,4 +247,4 @@ print(len(cat), len(np.unique(cat['TARGETID'])))
 
 ##################################################################################
 
-cat.write('/global/cfs/cdirs/desicollab/users/rongpu/data/desi2/tertiary54/catalogs/tertiary54_ibis_primary_lae_truth-20260413.fits', overwrite=False)
+cat.write('/global/cfs/cdirs/desicollab/users/rongpu/data/desi2/tertiary54/catalogs/tertiary54_ibis_primary_lae_truth-20260413-newcol.fits', overwrite=False)
