@@ -202,6 +202,7 @@ interlopers = np.loadtxt('/global/cfs/cdirs/desicollab/users/rongpu/data/desi2/t
 mask_lae &= ~np.in1d(cat['TARGETID'], interlopers)
 print('LAEs', np.sum(mask_lae), np.sum(mask_lae)/len(mask_lae))
 
+cat['star'] = mask_star.copy()
 cat['low_z'] = mask_lowz | mask_elg
 cat['qso'] = mask_qso.copy()
 cat['lae'] = mask_lae.copy()
@@ -264,4 +265,4 @@ cat = hstack([cat, targets])
 print(len(cat), len(np.unique(cat['TARGETID'])))
 
 # cat.write('/global/cfs/cdirs/desicollab/users/rongpu/data/desi2/tertiary49/catalogs/tertiary49_ibis_lae_truth-20260127-add_target_info.fits', overwrite=False)
-cat.write('/global/cfs/cdirs/desicollab/users/rongpu/data/desi2/tertiary49/catalogs/tertiary49_ibis_lae_truth-20260127-add_target_info-add_lyaflux-newcol.fits', overwrite=False)
+cat.write('/global/cfs/cdirs/desicollab/users/rongpu/data/desi2/tertiary49/catalogs/tertiary49_ibis_lae_truth-20260127-add_target_info-add_lyaflux-newcol.fits', overwrite=True)
