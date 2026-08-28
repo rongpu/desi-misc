@@ -2,6 +2,8 @@
 
 # Script for running the legacypipe code within a Shifter container at NERSC
 
+# The COSMOS deep field reduction was run using the docker image docker:legacysurvey/legacypipe:DR10.0.0
+
 # we're not using the burst-buffer, but here's how one would use it, where "DR9" is the name of your BB:
 #if [ "x$DW_PERSISTENT_STRIPED_DR9" == x ]; then
 
