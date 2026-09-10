@@ -1,3 +1,5 @@
+# Reuse DR9/DR10 coefficients because otherwise change in the absolute ZP difference (due to significantly more low-latitude coverage in DR11) makes cross-DR comparisons difficult
+
 from __future__ import division, print_function
 import sys, os, glob, time, warnings, gc
 import numpy as np
