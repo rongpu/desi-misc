@@ -232,4 +232,4 @@ print('LAE purity:       {:.1f}% ({}/{})'.format(100*np.sum(cat['lae'][mask])/np
 cat.write('/pscratch/sd/r/rongpu/tmp/tertiary54/tertiary54_lae_targets-xmm-all.fits', overwrite=False)
 
 mask = cat['lae_sel'].copy()
-cat[mask].write('/global/cfs/cdirs/desicollab/users/rongpu/data/desi2/tertiary54/tertiary54_lae_targets-xmm.fits', overwrite=False)
+cat[mask].write('/global/cfs/cdirs/desicollab/users/rongpu/data/desi2/tertiary54/misc/tertiary54_lae_targets-xmm.fits', overwrite=False)

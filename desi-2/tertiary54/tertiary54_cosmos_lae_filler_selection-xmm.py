@@ -247,7 +247,7 @@ cat[mask].write('/global/cfs/cdirs/desicollab/users/rongpu/data/desi2/tertiary54
 
 mask &= ~np.in1d(cat['ibis_id'], primary_lae['ibis_id'])
 print('after excluding the primary LAEs: {}'.format(np.sum(mask)))
-cat[mask].write('/global/cfs/cdirs/desicollab/users/rongpu/data/desi2/tertiary54/tertiary54_lae_filler_targets-xmm.fits', overwrite=False)
+cat[mask].write('/global/cfs/cdirs/desicollab/users/rongpu/data/desi2/tertiary54/misc/tertiary54_lae_filler_targets-xmm.fits', overwrite=False)
 
 ###################### Check the density with FIBMAG_MAX = 25.0 ######################
 

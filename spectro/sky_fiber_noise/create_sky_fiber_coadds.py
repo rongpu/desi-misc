@@ -9,7 +9,7 @@ from multiprocessing import Pool
 
 
 b_only = False
-br_only = True
+br_only = False
 
 # stack_type = 'same night'
 # # stack_type = 'different nights 3 months'
@@ -17,8 +17,8 @@ br_only = True
 # n_stack = 1
 
 
-# for stack_type in ['same night', 'different nights 3 months', 'same night shuffle fibers']:
-for stack_type in ['same night shuffle fibers']:
+for stack_type in ['same night', 'different nights 3 months', 'same night shuffle fibers']:
+# for stack_type in ['same night shuffle fibers']:
 
     fn_original = '/global/cfs/cdirs/desi/spectro/redux/loa/tiles/cumulative/1263/20240212/coadd-0-1263-thru20240212.fits'
 
@@ -66,16 +66,14 @@ for stack_type in ['same night shuffle fibers']:
     print('minimum number of spectra per fiber: ', fibercount['count'].min())
     print('maximum number of spectra per fiber: ', fibercount['count'].max())
 
-    for n_stack in [1, 4, 8, 32]:
-        if stack_type == 'same night shuffle fibers' and n_stack==1:
-            continue
+    for n_stack in [1, 2, 4, 8, 16, 32]:
 
         if stack_type == 'same night':
-            fn_output = '/global/cfs/cdirs/desicollab/users/rongpu/data/spectro/sky_spectra/stacked_sky/coadd-same_night_20240212-stack_{}.fits'.format(n_stack)
+            fn_output = '/global/cfs/cdirs/desicollab/users/rongpu/data/spectro/sky_spectra/stacked_sky/more_stacks/coadd-same_night_20240212-stack_{}.fits'.format(n_stack)
         elif stack_type == 'different nights 3 months':
-            fn_output = '/global/cfs/cdirs/desicollab/users/rongpu/data/spectro/sky_spectra/stacked_sky/coadd-different_nights_202401_202403-stack_{}.fits'.format(n_stack)
+            fn_output = '/global/cfs/cdirs/desicollab/users/rongpu/data/spectro/sky_spectra/stacked_sky/more_stacks/coadd-different_nights_202401_202403-stack_{}.fits'.format(n_stack)
         elif stack_type == 'same night shuffle fibers':
-            fn_output = '/global/cfs/cdirs/desicollab/users/rongpu/data/spectro/sky_spectra/stacked_sky/coadd-same_night_shuffle_fibers_20240212-stack_{}.fits'.format(n_stack)
+            fn_output = '/global/cfs/cdirs/desicollab/users/rongpu/data/spectro/sky_spectra/stacked_sky/more_stacks/coadd-same_night_shuffle_fibers_20240212-stack_{}.fits'.format(n_stack)
 
         if b_only:
             fn_output = fn_output.replace('.fits', '-b_only.fits')
@@ -85,6 +83,11 @@ for stack_type in ['same night shuffle fibers']:
         if os.path.isfile(fn_output):
             print('file already exists; skip')
             print(fn_output)
+            continue
+
+        if os.path.isfile(fn_output.replace('/more_stacks/', '/')):
+            os.symlink(fn_output.replace('/more_stacks/', '/'), fn_output)
+            print('file already exists; symlink and skip')
             continue
 
         spec_stack = []

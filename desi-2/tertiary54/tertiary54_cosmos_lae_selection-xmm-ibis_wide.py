@@ -12,6 +12,7 @@ from astropy import units as u
 
 
 ext_coeffs = {
+'g': 3.240, 'r': 2.276, 'i': 1.633, 'z': 1.263, 'y': 1.076,
 'M411': 4.290, 'M438': 4.099, 'M464': 3.877, 'M490': 3.634, 'M517': 3.389}
 
 # [decam-chatter 18711] Suggested MASKBITS for IBIS
@@ -42,12 +43,12 @@ area = np.pi * density_rad_deg ** 2
 ##############################################################################################################################
 
 ibis = Table(fitsio.read('/dvs_ro/cfs/cdirs/cosmo/work/legacysurvey/ibis/reductions/ibis-dr1-subsets/ibis-dr1-subset-25.0/catalogs/tractor-xmm-combined.fits'))
-hsc = Table(fitsio.read('/dvs_ro/cfs/cdirs/cosmo/work/legacysurvey/ibis/reductions/ibis-dr1/catalogs/tractor-xmm-hsc-wide-forced.fits'))
+hsc = Table(fitsio.read('/dvs_ro/cfs/cdirs/cosmo/work/legacysurvey/ibis/reductions/ibis-dr1-subsets/ibis-dr1-subset-25.0/catalogs/tractor-xmm-combined-hsc_wide.fits'))
 assert np.all(ibis['ibis_id_dr1']==hsc['ibis_id_dr1'])
 
 print(len(ibis), len(hsc))
 print(np.intersect1d(ibis.colnames, hsc.colnames))
-hsc.remove_columns(['ibis_id_dr1'])
+hsc.remove_columns(['ibis_id_dr1', 'ra', 'dec'])
 cat = hstack([ibis, hsc])
 print(len(cat))
 
@@ -62,17 +63,11 @@ ibis_filters = ['M411', 'M438', 'M464', 'M490', 'M517']
 for band in ibis_filters:
     cat[band+'mag'] = 22.5 - 2.5*np.log10(np.clip(cat['flux_{}'.format(band)]*10**(0.4*ext_coeffs[band]*cat['ebv']), fnodet, None))
     cat[band+'fibmag'] = 22.5 - 2.5*np.log10(np.clip(cat['fiberflux_{}'.format(band)]*10**(0.4*ext_coeffs[band]*cat['ebv']), fnodet, None))
-
-with warnings.catch_warnings():
-    warnings.simplefilter('ignore')
-    cat['gmag'] = 22.5 - 2.5*np.log10(cat['forced_flux_g']) - 3.240 * cat['ebv']
-    cat['rmag'] = 22.5 - 2.5*np.log10(cat['forced_flux_r']) - 2.276 * cat['ebv']
-    cat['imag'] = 22.5 - 2.5*np.log10(cat['forced_flux_i']) - 1.633 * cat['ebv']
-    cat['zmag'] = 22.5 - 2.5*np.log10(cat['forced_flux_z']) - 1.263 * cat['ebv']
-    cat['ymag'] = 22.5 - 2.5*np.log10(cat['forced_flux_y']) - 1.075 * cat['ebv']
 for band in ['g', 'r', 'i', 'z', 'y']:
-    mask = (~np.isfinite(cat[band+'mag'])) | (cat[band+'mag']>magnodet)
-    cat[band+'mag'][mask] = magnodet
+    mask = ~np.isnan(cat['{}_cmodel_flux'.format(band)])
+    cat[band+'mag'] = -99.
+    cat[band+'mag'][mask] = 22.5 - 2.5*np.log10(np.clip(cat['{}_cmodel_flux'.format(band)]/3630.78*10**(0.4*ext_coeffs[band]*cat['ebv']), fnodet, None))[mask]
+    cat[band+'mag'][~mask] = 30.0
 
 # leave-one-out average magnitude
 for band in ibis_filters:
@@ -234,7 +229,7 @@ print('LAE completeness: {:.1f}% ({}/{})'.format(100*np.sum(cat['lae_bright'][ma
 print('LAE purity:       {:.1f}% ({}/{})'.format(100*np.sum(cat['lae'][mask])/np.sum(cat['obs'][mask]), np.sum(cat['lae'][mask]), np.sum(cat['obs'][mask])))
 
 # cat.write('/pscratch/sd/r/rongpu/tmp/ibis_hsc-wide_xmm-synthmag.fits', overwrite=False)
-cat.write('/pscratch/sd/r/rongpu/tmp/tertiary54/tertiary54_lae_targets-xmm-all-hsc_forced-ibis_wide.fits', overwrite=False)
+cat.write('/pscratch/sd/r/rongpu/tmp/tertiary54/tertiary54_lae_targets-xmm-all-ibis_wide.fits', overwrite=False)
 
 mask = cat['lae_sel'].copy()
-cat[mask].write('/global/cfs/cdirs/desicollab/users/rongpu/data/desi2/tertiary54/tertiary54_lae_targets-xmm-hsc_forced-ibis_wide.fits', overwrite=False)
+cat[mask].write('/global/cfs/cdirs/desicollab/users/rongpu/data/desi2/tertiary54/misc/tertiary54_lae_targets-xmm-ibis_wide.fits', overwrite=False)
