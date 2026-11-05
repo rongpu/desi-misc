@@ -1,4 +1,4 @@
-# Compute the median IBIS colors of mag_free - mag for the bulk of the sample before the IBIS color cut
+# Compute the median IBIS colors of mag_ref - mag for the bulk of the sample before the IBIS color cut
 # Most of these objects are contaminants
 # Use XMM-LSS because its IBIS imaging is deeper than in COSMOS
 
@@ -86,11 +86,11 @@ for band in ['g', 'r', 'i', 'z', 'y']:
 
 # leave-one-out average magnitude
 for band in ibis_filters:
-    cat[band+'_free_flux'] = 0.
+    cat[band+'_ref_flux'] = 0.
     for band1 in ibis_filters:
         if band1!=band:
-            cat[band+'_free_flux'] += cat['flux_'+band1] * 10**(0.4*ext_coeffs[band1]*cat['ebv']) / 4
-    cat[band+'_free_mag'] = 22.5 - 2.5*np.log10(np.clip(cat[band+'_free_flux'], fnodet, None))
+            cat[band+'_ref_flux'] += cat['flux_'+band1] * 10**(0.4*ext_coeffs[band1]*cat['ebv']) / 4
+    cat[band+'_ref_mag'] = 22.5 - 2.5*np.log10(np.clip(cat[band+'_ref_flux'], fnodet, None))
 
 FIBMAG_MIN, FIBMAG_MAX = 22.0, 25.0
 RMAG_BRIGHT_CUT = 18
@@ -130,7 +130,7 @@ for band in ibis_filters:
     print(f'{mask.sum()}\tafter removing shreds')
     
     mask1 = mask.copy() & (cat[f'{band}mag']>24.4) & (cat[f'{band}mag']<24.5)
-    median_color = np.nanmedian((cat[band+'_free_mag'] - cat[band+'mag'])[mask1])
+    median_color = np.nanmedian((cat[band+'_ref_mag'] - cat[band+'mag'])[mask1])
     print('median IBIS color = {:.2f}'.format(median_color))
     
     contam_median_colors[band] = median_color

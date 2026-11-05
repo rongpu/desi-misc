@@ -180,7 +180,8 @@ def select_lae(cat, band, cfg):
     n = print_density(mask, f'after {FIBMAG_MIN} < fibmag < {FIBMAG_MAX} cut', n)
 
     # cut on excess IBIS flux in the selection band
-    f_ref_lim = flux_threshold(flux_ec[band], depth=median_depths[band], c0=contam_median_colors[band],
+    # f_ref_lim = flux_threshold(flux_ec[band], depth=median_depths[band], c0=contam_median_colors[band],
+    f_ref_lim = flux_threshold(flux_ec[band], depth=cat[band+'_depth_ebv'], c0=contam_median_colors[band],
                                 prob_tail=PROB_TAIL, sigma_c=cfg['color_offset_sigma'])
     mask &= cat[f'{band}_ref_flux'] < 10**(-cfg['color_offset'] / 2.5) * f_ref_lim
     n = print_density(mask, 'after IBIS color cut', n)
