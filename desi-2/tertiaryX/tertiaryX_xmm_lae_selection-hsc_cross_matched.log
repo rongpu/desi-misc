@@ -1,0 +1,73 @@
+MASKBITS names: ['NPRIMARY', 'BRIGHT', 'MEDIUM', 'GALAXY', 'SATUR_M411', 'ALLMASK_M411', 'SATUR_M438', 'ALLMASK_M438', 'SATUR_M464', 'ALLMASK_M464', 'SATUR_M490', 'ALLMASK_M490', 'SATUR_M517', 'ALLMASK_M517']
+3310703 3310703
+['dec' 'ibis_id' 'ra']
+3310703
+radius cut 2030034 0.6131730934487328
+Median depths:
+M411 25.39
+M438 25.45
+M464 25.53
+M490 25.54
+M517 25.59
+
+M411
+205419.8/deg2	initial
+199800.5/deg2	after maskbits cut (2.74% removed)
+41291.8/deg2	after 22.0 < fibmag < 25.0 cut (79.33% removed)
+268.3/deg2	after IBIS color cut (99.35% removed)
+263.1/deg2	after g-r < 0.7 cut (1.95% removed)
+222.4/deg2	after r-i < 0.35 cut (15.45% removed)
+228.7/deg2	after adding back rmag>25.0 sources (2.79% added)
+184.6/deg2	after removing shreds (19.25% removed)
+remove 0 targets with r_mag < 18
+
+M438
+205419.8/deg2	initial
+199800.5/deg2	after maskbits cut (2.74% removed)
+45347.0/deg2	after 22.0 < fibmag < 25.0 cut (77.30% removed)
+286.0/deg2	after IBIS color cut (99.37% removed)
+280.5/deg2	after g-r < 0.7 cut (1.91% removed)
+242.3/deg2	after r-i < 0.35 cut (13.61% removed)
+249.2/deg2	after adding back rmag>25.0 sources (2.82% added)
+194.8/deg2	after removing shreds (21.81% removed)
+remove 0 targets with r_mag < 18
+
+M464
+205419.8/deg2	initial
+199800.5/deg2	after maskbits cut (2.74% removed)
+49004.2/deg2	after 22.0 < fibmag < 25.0 cut (75.47% removed)
+314.6/deg2	after IBIS color cut (99.36% removed)
+281.8/deg2	after g-r < 0.7 cut (10.43% removed)
+246.7/deg2	after r-i < 0.35 cut (12.44% removed)
+252.8/deg2	after adding back rmag>25.0 sources (2.47% added)
+202.8/deg2	after removing shreds (19.77% removed)
+remove 0 targets with r_mag < 18
+
+M490
+205419.8/deg2	initial
+199800.5/deg2	after maskbits cut (2.74% removed)
+54095.4/deg2	after 22.0 < fibmag < 25.0 cut (72.93% removed)
+406.5/deg2	after IBIS color cut (99.25% removed)
+234.9/deg2	after g-r < 0.7 cut (42.21% removed)
+213.5/deg2	after r-i < 0.35 cut (9.11% removed)
+220.5/deg2	after adding back rmag>25.0 sources (3.26% added)
+157.9/deg2	after removing shreds (28.37% removed)
+remove 0 targets with r_mag < 18
+
+M517
+205419.8/deg2	initial
+199800.5/deg2	after maskbits cut (2.74% removed)
+57338.6/deg2	after 22.0 < fibmag < 25.0 cut (71.30% removed)
+2409.6/deg2	after IBIS color cut (95.80% removed)
+328.5/deg2	after g-r < 0.7 cut (86.37% removed)
+302.5/deg2	after r-i < 0.35 cut (7.91% removed)
+314.0/deg2	after adding back rmag>25.0 sources (3.78% added)
+169.5/deg2	after removing shreds (46.02% removed)
+remove 0 targets with r_mag < 18
+
+All combined:
+   184.6/deg2 after adding M411 (184.6/deg2)
+   377.4/deg2 after adding M438 (194.8/deg2)
+   576.7/deg2 after adding M464 (202.8/deg2)
+   732.7/deg2 after adding M490 (157.9/deg2)
+   900.7/deg2 after adding M517 (169.5/deg2)

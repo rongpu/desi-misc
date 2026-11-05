@@ -47,11 +47,11 @@ RMAG_BRIGHT_CUT = 18
 PROB_TAIL = 0.0001
 
 LAE_CONFIGS = {
-    'M411': {'gr_colmax': 0.7, 'ri_colmax': 0.35, 'color_offset': 0., 'color_offset_sigma': 0.059},
-    'M438': {'gr_colmax': 0.7, 'ri_colmax': 0.35, 'color_offset': 0., 'color_offset_sigma': 0.053},
-    'M464': {'gr_colmax': 0.7, 'ri_colmax': 0.35, 'color_offset': 0., 'color_offset_sigma': 0.064},
-    'M490': {'gr_colmax': 0.7, 'ri_colmax': 0.35, 'color_offset': 0., 'color_offset_sigma': 0.102},
-    'M517': {'gr_colmax': 0.7, 'ri_colmax': 0.35, 'color_offset': 0., 'color_offset_sigma': 0.170},
+    'M411': {'gr_colmax': 0.7, 'ri_colmax': 0.35, 'color_offset': -0.075, 'color_offset_sigma': 0.087},
+    'M438': {'gr_colmax': 0.7, 'ri_colmax': 0.35, 'color_offset': -0.085, 'color_offset_sigma': 0.08},
+    'M464': {'gr_colmax': 0.7, 'ri_colmax': 0.35, 'color_offset': -0.125, 'color_offset_sigma': 0.098},
+    'M490': {'gr_colmax': 0.7, 'ri_colmax': 0.35, 'color_offset': -0.03, 'color_offset_sigma': 0.121},
+    'M517': {'gr_colmax': 0.7, 'ri_colmax': 0.35, 'color_offset': 0., 'color_offset_sigma': 0.178},
 }
 
 ##############################################################################################################################
@@ -76,14 +76,14 @@ def get_maskbits_cut_bits(bands, fn):
 
 def flux_threshold(f_b, depth, c0, prob_tail, sigma_c=0., rescale_factor=1, include_color_lim=False):
     '''
-    Compute the continuum flux threshold f_free_lim for selecting narrow-band excess objects (e.g. LAEs).
+    Compute the continuum flux threshold f_ref_lim for selecting narrow-band excess objects (e.g. LAEs).
 
-    This threshold is used to select objects with f_free < f_free_lim, where f_free is the measured
+    This threshold is used to select objects with f_ref < f_ref_lim, where f_ref is the measured
     continuum flux: the mean of the 4 other IBIS bands.
 
     Contaminant model: every contaminant has the same true color
-    c0 = free_mag - mag, i.e. true band flux = a * true continuum flux with
-    a = 10**(0.4*c0). For a contaminant, the excess X = f_b - a*f_free then has
+    c0 = ref_mag - mag, i.e. true band flux = a * true continuum flux with
+    a = 10**(0.4*c0). For a contaminant, the excess X = f_b - a*f_ref then has
     mean zero and Gaussian error sigma_x, whatever its brightness. Requiring
     X > z*sigma_x (z = norm.isf(prob_tail)) therefore lets each contaminant pass
     with probability prob_tail at every magnitude.
@@ -94,7 +94,7 @@ def flux_threshold(f_b, depth, c0, prob_tail, sigma_c=0., rescale_factor=1, incl
     Intrinsic color scatter: if sigma_c > 0, the contaminant true color is
     c ~ N(c0, sigma_c), which adds a flux-proportional term to the error on X:
     Var(X) = sigma_x**2 + (k * a * F)**2, where F is the true continuum flux
-    (estimated as f_free at the threshold). k is chosen so that the bright-end
+    (estimated as f_ref at the threshold). k is chosen so that the bright-end
     limit is exactly color > c0 + z*sigma_c. sigma_c = 0 recovers the
     single-color model.
 
@@ -105,7 +105,7 @@ def flux_threshold(f_b, depth, c0, prob_tail, sigma_c=0., rescale_factor=1, incl
     depth : float
         5-sigma point-source depth (mag), the same for all bands.
     c0 : float
-        True color (free_mag - mag) of the contaminants.
+        True color (ref_mag - mag) of the contaminants.
     prob_tail : float
         Probability that a contaminant passes the cut.
     sigma_c : float
@@ -118,34 +118,34 @@ def flux_threshold(f_b, depth, c0, prob_tail, sigma_c=0., rescale_factor=1, incl
 
     Returns
     -------
-    f_free_lim : array
-        Upper limit on f_free (nanomaggies). Compare against the unclipped
-        continuum flux, not one derived from a clipped free_mag.
+    f_ref_lim : array
+        Upper limit on f_ref (nanomaggies). Compare against the unclipped
+        continuum flux, not one derived from a clipped ref_mag.
     color_lim : array, only if include_color_lim is True
-        Equivalent lower limit on color = free_mag - mag; select
-        color > color_lim. It is inf where f_free_lim <= 0 < f_b (no object
-        with positive f_free passes) and NaN where f_b <= 0 (color undefined).
+        Equivalent lower limit on color = ref_mag - mag; select
+        color > color_lim. It is inf where f_ref_lim <= 0 < f_b (no object
+        with positive f_ref passes) and NaN where f_b <= 0 (color undefined).
     '''
     f_b = np.asarray(f_b, dtype=float)
     z = norm.isf(prob_tail)  # gaussian sigma at tail probability prob_tail
     a = 10**(0.4 * c0)
     sigma_b = rescale_factor * 10**(-0.4 * (depth - 22.5)) / 5  # error on selection-band flux
-    sigma_x = sigma_b * np.sqrt(1 + a**2 / 4)  # error on f_b - a*f_free
-    # solve f_b - y = z * sqrt(sigma_x**2 + (k*y)**2) for y = a * f_free_lim (root with y < f_b)
+    sigma_x = sigma_b * np.sqrt(1 + a**2 / 4)  # error on f_b - a*f_ref
+    # solve f_b - y = z * sqrt(sigma_x**2 + (k*y)**2) for y = a * f_ref_lim (root with y < f_b)
     k = (10**(0.4 * z * sigma_c) - 1) / z
     A = 1 - (z * k)**2
     if A <= 0:
         raise ValueError('sigma_c too large for this prob_tail')
     disc = f_b**2 - A * (f_b**2 - (z * sigma_x)**2)
-    f_free_lim = (f_b - np.sqrt(disc)) / A / a
+    f_ref_lim = (f_b - np.sqrt(disc)) / A / a
 
     if not include_color_lim:
-        return f_free_lim
+        return f_ref_lim
     else:
         with np.errstate(divide='ignore', invalid='ignore'):
-            color_lim = np.where(f_free_lim > 0, 2.5 * np.log10(f_b / f_free_lim), np.inf)
+            color_lim = np.where(f_ref_lim > 0, 2.5 * np.log10(f_b / f_ref_lim), np.inf)
         color_lim = np.where(f_b > 0, color_lim, np.nan)
-        return f_free_lim, color_lim
+        return f_ref_lim, color_lim
 
 
 def flux_to_mag(flux):
@@ -180,9 +180,9 @@ def select_lae(cat, band, cfg):
     n = print_density(mask, f'after {FIBMAG_MIN} < fibmag < {FIBMAG_MAX} cut', n)
 
     # cut on excess IBIS flux in the selection band
-    f_free_lim = flux_threshold(flux_ec[band], depth=median_depths[band], c0=contam_median_colors[band],
+    f_ref_lim = flux_threshold(flux_ec[band], depth=median_depths[band], c0=contam_median_colors[band],
                                 prob_tail=PROB_TAIL, sigma_c=cfg['color_offset_sigma'])
-    mask &= cat[f'{band}_free_flux'] < 10**(-cfg['color_offset'] / 2.5) * f_free_lim
+    mask &= cat[f'{band}_ref_flux'] < 10**(-cfg['color_offset'] / 2.5) * f_ref_lim
     n = print_density(mask, 'after IBIS color cut', n)
 
     # cut on g-r and r-i
@@ -256,12 +256,12 @@ for band in hsc_filters:
 
 # leave-one-out average flux of the other 4 IBIS bands
 for band in ibis_filters:
-    free_flux = np.zeros(len(cat))
+    ref_flux = np.zeros(len(cat))
     for band1 in ibis_filters:
         if band1 != band:
-            free_flux += flux_ec[band1] / 4
-    cat[band+'_free_flux'] = free_flux
-    cat[band+'_free_mag'] = flux_to_mag(free_flux)
+            ref_flux += flux_ec[band1] / 4
+    cat[band+'_ref_flux'] = ref_flux
+    cat[band+'_ref_mag'] = flux_to_mag(ref_flux)
 
 # extinction-corrected 5-sigma PSF depths
 with warnings.catch_warnings():
@@ -288,5 +288,5 @@ for band in ibis_filters:
     band_density = np.sum(cat[f'{band}_sel'] & mask_rad) / area
     print('{:8.1f}/deg2 after adding {} ({:.1f}/deg2)'.format(np.sum(cat['lae_sel'] & mask_rad) / area, band, band_density))
 
-cat.write(output_all_fn, overwrite=True)
-cat[cat['lae_sel']].write(output_fn, overwrite=True)
+cat.write(output_all_fn, overwrite=False)
+cat[cat['lae_sel']].write(output_fn, overwrite=False)

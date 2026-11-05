@@ -1,8 +1,8 @@
+MASKBITS names: ['NPRIMARY', 'BRIGHT', 'MEDIUM', 'GALAXY', 'SATUR_M411', 'ALLMASK_M411', 'SATUR_M438', 'ALLMASK_M438', 'SATUR_M464', 'ALLMASK_M464', 'SATUR_M490', 'ALLMASK_M490', 'SATUR_M517', 'ALLMASK_M517']
 3097790 3097790
 ['ibis_id_dr1']
 3097790
 radius cut 1929814 0.622964758747365
-82.4% within 1.60 deg radius
 Median depths:
 M411 25.34
 M438 25.21
@@ -12,67 +12,62 @@ M517 25.51
 
 M411
 197730.7/deg2	initial
-191067.9/deg2	after maskbits cut
-41292.5/deg2	after 22.0 < fibmag < 25.0 cut
-29291.0/deg2	after g-r < 0.7 cut
-17944.3/deg2	after r-i < 0.35 cut
-18001.4/deg2	after adding back rmag>25.0 sources
-17390.0/deg2	after removing shreds
-median IBIS color = -0.05
-171.0/deg2	after IBIS color cut
+191067.9/deg2	after maskbits cut (3.37% removed)
+41292.5/deg2	after 22.0 < fibmag < 25.0 cut (78.39% removed)
+299.5/deg2	after IBIS color cut (99.27% removed)
+293.1/deg2	after g-r < 0.7 cut (2.16% removed)
+235.6/deg2	after r-i < 0.35 cut (19.60% removed)
+248.6/deg2	after adding back rmag>25.0 sources (5.49% added)
+187.5/deg2	after removing shreds (24.56% removed)
 remove 0 targets with r_mag < 18
 
 M438
 197730.7/deg2	initial
-191067.9/deg2	after maskbits cut
-45634.1/deg2	after 22.0 < fibmag < 25.0 cut
-31857.7/deg2	after g-r < 0.7 cut
-19919.6/deg2	after r-i < 0.35 cut
-19992.3/deg2	after adding back rmag>25.0 sources
-19200.7/deg2	after removing shreds
-median IBIS color = 0.01
-154.9/deg2	after IBIS color cut
+191067.9/deg2	after maskbits cut (3.37% removed)
+45634.1/deg2	after 22.0 < fibmag < 25.0 cut (76.12% removed)
+292.4/deg2	after IBIS color cut (99.36% removed)
+281.4/deg2	after g-r < 0.7 cut (3.78% removed)
+232.8/deg2	after r-i < 0.35 cut (17.28% removed)
+242.2/deg2	after adding back rmag>25.0 sources (4.06% added)
+192.7/deg2	after removing shreds (20.43% removed)
 remove 0 targets with r_mag < 18
 
 M464
 197730.7/deg2	initial
-191067.9/deg2	after maskbits cut
-48923.9/deg2	after 22.0 < fibmag < 25.0 cut
-33500.3/deg2	after g-r < 0.7 cut
-21147.8/deg2	after r-i < 0.35 cut
-21206.0/deg2	after adding back rmag>25.0 sources
-20256.6/deg2	after removing shreds
-median IBIS color = 0.03
-206.0/deg2	after IBIS color cut
+191067.9/deg2	after maskbits cut (3.37% removed)
+48923.9/deg2	after 22.0 < fibmag < 25.0 cut (74.39% removed)
+365.3/deg2	after IBIS color cut (99.25% removed)
+299.9/deg2	after g-r < 0.7 cut (17.90% removed)
+262.2/deg2	after r-i < 0.35 cut (12.56% removed)
+270.6/deg2	after adding back rmag>25.0 sources (3.18% added)
+217.7/deg2	after removing shreds (19.53% removed)
 remove 0 targets with r_mag < 18
 
 M490
 197730.7/deg2	initial
-191067.9/deg2	after maskbits cut
-53379.0/deg2	after 22.0 < fibmag < 25.0 cut
-36123.3/deg2	after g-r < 0.7 cut
-22869.4/deg2	after r-i < 0.35 cut
-22933.5/deg2	after adding back rmag>25.0 sources
-21877.1/deg2	after removing shreds
-median IBIS color = 0.09
-203.0/deg2	after IBIS color cut
+191067.9/deg2	after maskbits cut (3.37% removed)
+53379.0/deg2	after 22.0 < fibmag < 25.0 cut (72.06% removed)
+430.8/deg2	after IBIS color cut (99.19% removed)
+208.4/deg2	after g-r < 0.7 cut (51.63% removed)
+189.4/deg2	after r-i < 0.35 cut (9.13% removed)
+196.8/deg2	after adding back rmag>25.0 sources (3.94% added)
+162.8/deg2	after removing shreds (17.31% removed)
 remove 0 targets with r_mag < 18
 
 M517
 197730.7/deg2	initial
-191067.9/deg2	after maskbits cut
-56907.2/deg2	after 22.0 < fibmag < 25.0 cut
-42022.4/deg2	after g-r < 0.8 cut
-28392.5/deg2	after r-i < 0.4 cut
-28460.1/deg2	after adding back rmag>25.0 sources
-27268.0/deg2	after removing shreds
-median IBIS color = 0.13
-169.4/deg2	after IBIS color cut
+191067.9/deg2	after maskbits cut (3.37% removed)
+56907.2/deg2	after 22.0 < fibmag < 25.0 cut (70.22% removed)
+2528.1/deg2	after IBIS color cut (95.56% removed)
+195.3/deg2	after g-r < 0.7 cut (92.27% removed)
+178.6/deg2	after r-i < 0.35 cut (8.59% removed)
+187.9/deg2	after adding back rmag>25.0 sources (5.22% added)
+148.0/deg2	after removing shreds (21.24% removed)
 remove 0 targets with r_mag < 18
 
 All combined:
-   171.0/deg2 after adding M411 (171.0/deg2)
-   324.2/deg2 after adding M438 (154.9/deg2)
-   528.7/deg2 after adding M464 (206.0/deg2)
-   729.8/deg2 after adding M490 (203.0/deg2)
-   897.1/deg2 after adding M517 (169.4/deg2)
+   187.5/deg2 after adding M411 (187.5/deg2)
+   378.5/deg2 after adding M438 (192.7/deg2)
+   594.5/deg2 after adding M464 (217.7/deg2)
+   755.9/deg2 after adding M490 (162.8/deg2)
+   902.2/deg2 after adding M517 (148.0/deg2)
