@@ -21,7 +21,7 @@ ibis_fn = f'{ibis_dir}/catalogs/tractor-xmm-combined.fits'
 hsc_fn = f'{ibis_dir}/catalogs/tractor-xmm-hsc-wide-forced.fits'
 maskbits_header_fn = f'{ibis_dir}/tractor/032/tractor-0329m042.fits'  # any tractor file, to grab the MBIT_ header
 output_all_fn = '/pscratch/sd/r/rongpu/tmp/tertiaryX/tertiaryX_lae_targets-all.fits'
-output_fn = '/global/cfs/cdirs/desicollab/users/rongpu/data/desi2/tertiaryX/tertiaryX_lae_targets.fits'
+output_fn = '/global/cfs/cdirs/desicollab/users/rongpu/data/desi2/tertiaryX/tertiaryX_xmm_lae_targets-ibis_deep.fits'
 
 ibis_filters = ['M411', 'M438', 'M464', 'M490', 'M517']
 hsc_filters = ['g', 'r', 'i', 'z', 'y']

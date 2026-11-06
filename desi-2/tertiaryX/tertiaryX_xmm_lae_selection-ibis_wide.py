@@ -1,5 +1,4 @@
-# High priority LAEs selected using IBIS-DR1 (deep imaging) and HSC forced photometry
-# Note the change of IBIS extinction coefficients
+# Mid priority LAEs selected using IBIS-wide-depth reduction and cross-matched HSC photometry
 
 import sys, os, glob, time, warnings
 import numpy as np
@@ -20,7 +19,7 @@ ibis_fn = '/dvs_ro/cfs/cdirs/cosmo/work/legacysurvey/ibis/reductions/ibis-dr1-su
 hsc_fn = '/dvs_ro/cfs/cdirs/cosmo/work/legacysurvey/ibis/reductions/ibis-dr1-subsets/ibis-dr1-subset-25.0/catalogs/tractor-xmm-combined-hsc_wide.fits'
 ibis_dir = '/dvs_ro/cfs/cdirs/cosmo/work/legacysurvey/ibis/reductions/ibis-dr1'
 maskbits_header_fn = f'{ibis_dir}/tractor/032/tractor-0329m042.fits'  # any tractor file, to grab the MBIT_ header
-output_fn = '/global/cfs/cdirs/desicollab/users/rongpu/data/desi2/tertiaryX/misc/tertiaryX_lae_targets-ibis_wide.fits'
+output_fn = '/global/cfs/cdirs/desicollab/users/rongpu/data/desi2/tertiaryX/tertiaryX_xmm_lae_targets-ibis_wide.fits'
 
 ibis_filters = ['M411', 'M438', 'M464', 'M490', 'M517']
 hsc_filters = ['g', 'r', 'i', 'z', 'y']
