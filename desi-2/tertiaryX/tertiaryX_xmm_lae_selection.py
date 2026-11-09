@@ -13,6 +13,10 @@ from astropy.coordinates import SkyCoord
 from astropy import units as u
 from scipy.stats import norm
 
+# https://github.com/rongpu/Python/blob/master/user_modules/match_coord.py
+sys.path.append(os.path.expanduser('~/git/Python/user_modules/'))
+from match_coord import match_coord
+
 ##############################################################################################################################
 # Configuration
 
@@ -288,6 +292,20 @@ for band in ibis_filters:
     cat['lae_sel'] |= cat[f'{band}_sel']
     band_density = np.sum(cat[f'{band}_sel'] & mask_rad) / area
     print('{:8.1f}/deg2 after adding {} ({:.1f}/deg2)'.format(np.sum(cat['lae_sel'] & mask_rad) / area, band, band_density))
+
+print('\nFlag previously observed objects')
+obs = Table(fitsio.read('/global/cfs/cdirs/desicollab/users/rongpu/data/desi2/tertiaryX/misc/observed_in_t44_t49.fits'))
+idx1, idx2, d2d, d_ra, d_dec = match_coord(obs['TARGET_RA'], obs['TARGET_DEC'], cat['ra'], cat['dec'], search_radius=0.5, plot_q=False, keep_all_pairs=True)
+idx = np.unique(idx2)
+cat['new_obs'] = True
+cat['new_obs'][idx2] = False
+print('New targets fraction (within {:.2f} radius): {:.2f}%'.format(density_rad_deg, 100*np.sum(cat['new_obs'] & mask_rad & cat['lae_sel'])/np.sum(mask_rad & cat['lae_sel'])))
+print('New targets:')
+cat['lae_sel'] = False
+for band in ibis_filters:
+    cat['lae_sel'] |= cat[f'{band}_sel']
+    band_density = np.sum(cat[f'{band}_sel'] & mask_rad & cat['new_obs']) / area
+    print('{:8.1f}/deg2 after adding {} ({:.1f}/deg2)'.format(np.sum(cat['lae_sel'] & mask_rad & cat['new_obs']) / area, band, band_density))
 
 cat.write(output_all_fn, overwrite=False)
 cat[cat['lae_sel']].write(output_fn, overwrite=False)
