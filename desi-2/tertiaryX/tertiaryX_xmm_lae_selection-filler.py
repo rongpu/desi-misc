@@ -47,7 +47,7 @@ magnodet = 22.5 - 2.5 * np.log10(fnodet)  # 30
 FIBMAG_MIN, FIBMAG_MAX = 22.0, 25.0
 RMAG_ADD_BACK_LIMIT = 25.0
 RMAG_BRIGHT_CUT = 18
-PROB_TAIL = 0.006
+PROB_TAIL = 0.007
 
 LAE_CONFIGS = {
     'M411': {'gr_colmax': 0.7, 'ri_colmax': 0.35, 'color_offset': -0.075, 'color_offset_sigma': 0.087},
