@@ -32,29 +32,29 @@ vlo = vlo[vlo['new_obs']]
 vlo['priority'] = 'very low'
 print(len(vlo))
 
-hip = hip[['ibis_id_dr1', 'ra', 'dec']]
-mip = mip[['ibis_id_dr1', 'ra', 'dec']]
-lop = lop[['ibis_id_dr1', 'ra', 'dec']]
-vlo = vlo[['ibis_id_dr1', 'ra', 'dec']]
+hip = hip[['ibis_id_dr1', 'ra', 'dec', 'priority']]
+mip = mip[['ibis_id_dr1', 'ra', 'dec', 'priority']]
+lop = lop[['ibis_id_dr1', 'ra', 'dec', 'priority']]
+vlo = vlo[['ibis_id_dr1', 'ra', 'dec', 'priority']]
 cat = vstack([hip, mip, lop, vlo])
 print(len(cat))
 
 _, idx = np.unique(cat['ibis_id_dr1'], return_index=True)
 cat = cat[idx]
 
-mask = np.in1d(cat['ibis_id_dr1'], hip['ibis_id_dr1'])
+mask = np.isin(cat['ibis_id_dr1'], hip['ibis_id_dr1'])
 cat['lae_ibis_deep'] = False
 cat['lae_ibis_deep'][mask] = True
 
-mask = np.in1d(cat['ibis_id_dr1'], mip['ibis_id_dr1'])
+mask = np.isin(cat['ibis_id_dr1'], mip['ibis_id_dr1'])
 cat['lae_ibis_wide'] = False
 cat['lae_ibis_wide'][mask] = True
 
-mask = np.in1d(cat['ibis_id_dr1'], lop['ibis_id_dr1'])
+mask = np.isin(cat['ibis_id_dr1'], lop['ibis_id_dr1'])
 cat['lae_ibis_2x_dens'] = False
 cat['lae_ibis_2x_dens'][mask] = True
 
-mask = np.in1d(cat['ibis_id_dr1'], vlo['ibis_id_dr1'])
+mask = np.isin(cat['ibis_id_dr1'], vlo['ibis_id_dr1'])
 cat['lae_ibis_filler'] = False
 cat['lae_ibis_filler'][mask] = True
 
