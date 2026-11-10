@@ -1,5 +1,3 @@
-# To-do: add filler targets
-
 import sys, os, glob, time, warnings
 import numpy as np
 import matplotlib.pyplot as plt

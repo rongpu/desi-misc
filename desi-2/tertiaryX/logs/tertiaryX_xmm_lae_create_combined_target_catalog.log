@@ -1,10 +1,11 @@
-8761
-4091
-6586
-3489
-18392
-12744
-35433
-28726
-49050
-Density = 2785.4 per deg2 within 1.50 degree radius
+Densities are within 1.50 degree radius of (35.75, -4.75)
+ibis_deep (high):      8761 selected (853.4/deg2), 4091 new_obs (296.1/deg2)
+ibis_wide (mid):       6586 selected (642.8/deg2), 3489 new_obs (275.4/deg2)
+2x_dens (low):         18392 selected (1727.6/deg2), 12744 new_obs (1054.9/deg2)
+filler (very low):     35433 selected (3316.6/deg2), 28726 new_obs (2513.2/deg2)
+Stacked: 49050 new_obs targets in total (4139.7/deg2)
+After removing duplicates (keeping highest priority): 32165 unique targets (16885 duplicates removed), 2785.4/deg2
+    high     : 4091 (296.1/deg2)
+    mid      : 3485 (275.4/deg2)
+    low      : 8641 (758.0/deg2)
+    very low : 15948 (1455.9/deg2)
