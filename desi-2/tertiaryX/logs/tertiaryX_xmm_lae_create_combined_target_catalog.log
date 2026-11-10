@@ -1,11 +1,11 @@
 Densities are within 1.50 degree radius of (35.75, -4.75)
 ibis_deep (high):      8761 selected (853.4/deg2), 4091 new_obs (296.1/deg2)
-ibis_wide (mid):       6586 selected (642.8/deg2), 3489 new_obs (275.4/deg2)
+ibis_wide (mid):       6330 selected (620.9/deg2), 3238 new_obs (254.8/deg2)
 2x_dens (low):         18392 selected (1727.6/deg2), 12744 new_obs (1054.9/deg2)
 filler (very low):     39069 selected (3656.6/deg2), 32160 new_obs (2828.0/deg2)
-Stacked: 52484 new_obs targets in total (4454.5/deg2)
-After removing duplicates (keeping highest priority): 35598 unique targets (16886 duplicates removed), 3100.2/deg2
+Stacked: 52233 new_obs targets in total (4433.8/deg2)
+After removing duplicates (keeping highest priority): 33529 unique targets (18704 duplicates removed), 2965.7/deg2
     high     : 4091 (296.1/deg2)
-    mid      : 3485 (275.4/deg2)
-    low      : 8641 (758.0/deg2)
-    very low : 19381 (1770.7/deg2)
+    mid      : 1641 (162.8/deg2)
+    low      : 8452 (739.9/deg2)
+    very low : 19345 (1766.8/deg2)

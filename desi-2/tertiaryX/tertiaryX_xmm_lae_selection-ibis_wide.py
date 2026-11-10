@@ -20,7 +20,9 @@ from match_coord import match_coord
 # Configuration
 
 ibis_fn = '/dvs_ro/cfs/cdirs/cosmo/work/legacysurvey/ibis/reductions/ibis-dr1-subsets/ibis-dr1-subset-25.0/catalogs/tractor-xmm-combined.fits'
-hsc_fn = '/dvs_ro/cfs/cdirs/cosmo/work/legacysurvey/ibis/reductions/ibis-dr1-subsets/ibis-dr1-subset-25.0/catalogs/tractor-xmm-combined-hsc_wide.fits'
+ibis_deep_fn = '/dvs_ro/cfs/cdirs/cosmo/work/legacysurvey/ibis/reductions/ibis-dr1/catalogs/tractor-xmm-combined.fits'
+hsc_fn = '/dvs_ro/cfs/cdirs/cosmo/work/legacysurvey/ibis/reductions/ibis-dr1/catalogs/tractor-xmm-hsc-wide-forced.fits'
+
 ibis_dir = '/dvs_ro/cfs/cdirs/cosmo/work/legacysurvey/ibis/reductions/ibis-dr1'
 maskbits_header_fn = f'{ibis_dir}/tractor/032/tractor-0329m042.fits'  # any tractor file, to grab the MBIT_ header
 output_fn = '/global/cfs/cdirs/desicollab/users/rongpu/data/desi2/tertiaryX/tertiaryX_xmm_lae_targets-ibis_wide.fits'
@@ -218,19 +220,32 @@ cut_bits = get_maskbits_cut_bits(ibis_filters, maskbits_header_fn)
 
 ibis_columns = ['ibis_id_dr1', 'ra', 'dec', 'ebv', 'maskbits']
 ibis_columns += [f'{prefix}_{band}' for band in ibis_filters for prefix in ['flux', 'fiberflux', 'fracflux', 'psfdepth']]
+hsc_columns = ['ibis_id_dr1'] + [f'forced_flux_{band}' for band in hsc_filters]
 
 ibis = Table(fitsio.read(ibis_fn, columns=ibis_columns))
-hsc = Table(fitsio.read(hsc_fn))
+ibis.rename_column('ibis_id_dr1', 'ibis_id_dr1_wide')  # to distinguish from the IBIS-DR1 (deep) ID
+
+ibis_deep = Table(fitsio.read(ibis_deep_fn, columns=ibis_columns))
+
+idx1, idx2, d2d, d_ra, d_dec = match_coord(ibis_deep['ra'], ibis_deep['dec'], ibis['ra'], ibis['dec'], search_radius=1., plot_q=False)
+print(len(idx1)/len(ibis))
+ibis_deep_idx = idx1.copy()
+ibis_deep = ibis_deep[idx1]
+ibis = ibis[idx2]
+ibis['ibis_id_dr1'] = ibis_deep['ibis_id_dr1'].copy()
+print('Match to IBIS-deep:', len(ibis))
+
+hsc = Table(fitsio.read(hsc_fn, columns=hsc_columns, rows=ibis_deep_idx))
 # ibis = Table(fitsio.read(ibis_fn))
 # hsc = Table(fitsio.read(hsc_fn))
 assert np.all(ibis['ibis_id_dr1'] == hsc['ibis_id_dr1'])
 
 print(len(ibis), len(hsc))
 print(np.intersect1d(ibis.colnames, hsc.colnames))
-hsc.remove_columns(['ibis_id_dr1', 'ra', 'dec'])
+hsc.remove_columns(['ibis_id_dr1'])
 cat = hstack([ibis, hsc])
 print(len(cat))
-del ibis, hsc
+del ibis, ibis_deep, hsc
 
 # cut on radius
 field_c = SkyCoord(ra=field_ra * u.deg, dec=field_dec * u.deg, frame='icrs')
@@ -253,10 +268,8 @@ for band in ibis_filters:
     cat[band+'fibmag'] = flux_to_mag(cat[f'fiberflux_{band}'] * 10**(0.4 * ext_coeffs[band] * cat['ebv']))
 
 for band in hsc_filters:
-    mask = ~np.isnan(cat['{}_cmodel_flux'.format(band)])
-    cat[band+'mag'] = -99.
-    cat[band+'mag'][mask] = 22.5 - 2.5*np.log10(np.clip(cat['{}_cmodel_flux'.format(band)]/3630.78*10**(0.4*ext_coeffs[band]*cat['ebv']), fnodet, None))[mask]
-    cat[band+'mag'][~mask] = 30.0
+    # HSC r2 and i2 mags are still rmag and imag
+    cat[band[0]+'mag'] = flux_to_mag(cat[f'forced_flux_{band}'] * 10**(0.4 * ext_coeffs[band[0]] * cat['ebv']))
 
 # leave-one-out average flux of the other 4 IBIS bands
 for band in ibis_filters:
