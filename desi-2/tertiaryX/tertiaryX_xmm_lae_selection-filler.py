@@ -1,5 +1,4 @@
-# Select the LAEs with ~2x the density of the high-priority sample
-# Do not exclude previously observed objects
+# LAE filler sample
 
 import sys, os, glob, time, warnings
 import numpy as np
